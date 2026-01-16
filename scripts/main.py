@@ -188,14 +188,17 @@ class CMMCWatchPipeline:
             except Exception:
                 pass
 
-        # Generate new design
-        top_trend = self.trends[0] if self.trends else None
-        headline = top_trend.title if hasattr(top_trend, "title") else "CMMC Watch"
+        # Generate new design - convert trends to dicts first
+        trends_for_design = []
+        for t in self.trends[:5]:
+            if hasattr(t, "__dataclass_fields__"):
+                trends_for_design.append(asdict(t))
+            else:
+                trends_for_design.append(t)
 
         design = self.design_generator.generate(
-            headline=headline,
+            trends=trends_for_design,
             keywords=self.keywords[:10],
-            trends=self.trends[:5],
         )
 
         # Convert to dict if needed
