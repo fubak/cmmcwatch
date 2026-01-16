@@ -135,7 +135,7 @@ class CMMCWatchPipeline:
 
             # Step 8: PWA assets
             logger.info("[8/10] Generating PWA assets...")
-            save_pwa_assets(self.public_dir, site_name="CMMC Watch")
+            save_pwa_assets(self.public_dir)
 
             # Step 9: Sitemap
             logger.info("[9/10] Generating sitemap...")
