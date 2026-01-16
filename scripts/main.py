@@ -219,9 +219,10 @@ class CMMCWatchPipeline:
                 else:
                     trends_dict.append(t)
 
-            self.editorial_article = self.editorial_generator.generate(
-                trends=trends_dict,
+            self.editorial_article = self.editorial_generator.generate_editorial(
+                stories=trends_dict,
                 keywords=self.keywords,
+                design=self.design,
             )
             logger.info("Editorial article generated")
         except Exception as e:
@@ -253,9 +254,12 @@ class CMMCWatchPipeline:
             images=images_dict,
             design=self.design,
             keywords=self.keywords,
-            site_name="CMMC Watch",
-            site_tagline="Daily CMMC & Compliance News",
-            base_url="https://cmmcwatch.info",
+            editorial_article=(
+                asdict(self.editorial_article)
+                if self.editorial_article
+                and hasattr(self.editorial_article, "__dataclass_fields__")
+                else self.editorial_article
+            ),
         )
 
         builder = WebsiteBuilder()
