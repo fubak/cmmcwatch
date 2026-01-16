@@ -1,0 +1,219 @@
+/* ===== RESET & BASE ===== */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-secondary);
+    line-height: 1.6;
+    color: var(--color-text);
+    background: var(--color-bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--color-accent);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-primary);
+    line-height: 1.2;
+    margin-bottom: 0.5em;
+    color: var(--color-text);
+}
+
+.headline-xl {
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+}
+
+.headline-lg {
+    font-size: clamp(1.75rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.headline-md {
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.text-muted {
+    color: var(--color-muted);
+}
+
+/* Text transform variants */
+.text-transform-uppercase .headline-xl,
+.text-transform-uppercase .headline-lg,
+.text-transform-uppercase .headline-md,
+.text-transform-uppercase .section-title,
+.text-transform-uppercase .story-title {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.text-transform-capitalize .headline-xl,
+.text-transform-capitalize .headline-lg,
+.text-transform-capitalize .headline-md,
+.text-transform-capitalize .section-title,
+.text-transform-capitalize .story-title {
+    text-transform: capitalize;
+}
+
+/* ===== UTILITIES ===== */
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+.section {
+    margin-bottom: var(--section-gap);
+    scroll-margin-top: 6rem;
+}
+
+body.density-compact {
+    --section-gap: 2.5rem;
+    --card-padding: 1.1rem;
+    --card-gap: 1rem;
+    --card-min-height: 160px;
+}
+
+body.density-comfortable {
+    --section-gap: 3.5rem;
+    --card-padding: 1.5rem;
+    --card-gap: 1.5rem;
+    --card-min-height: 190px;
+}
+
+body.density-spacious {
+    --section-gap: 5rem;
+    --card-padding: 1.75rem;
+    --card-gap: 2rem;
+    --card-min-height: 230px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--color-border);
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-title::before {
+    content: '';
+    width: 4px;
+    height: 1.5rem;
+    background: var(--color-accent);
+    border-radius: 2px;
+}
+
+.section-count {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    background: var(--color-card-bg);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-sm);
+}
+
+/* ===== ANIMATIONS ===== */
+.animation-none *, .animation-none *::before, .animation-none *::after {
+    animation: none !important;
+    transition: none !important;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* ===== AD UNITS ===== */
+.ad-container {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+    min-height: 90px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius);
+    margin: 2rem 0;
+}
+
+@media print {
+    .ad-container { display: none !important; }
+}
+
+/* ===== MODE OVERRIDES ===== */
+body.light-mode {
+    --color-bg: #ffffff;
+    --color-bg-rgb: 255, 255, 255;
+    --color-text: #1a1a2e;
+    --color-muted: #64748b;
+    --color-card-bg: #f8fafc;
+    --color-border: #e2e8f0;
+    background-color: #ffffff !important;
+    color: #1a1a2e !important;
+}
+
+body.dark-mode {
+    --color-bg: #0a0a0a;
+    --color-bg-rgb: 10, 10, 10;
+    --color-text: #ffffff;
+    --color-muted: #a1a1aa;
+    --color-card-bg: #18181b;
+    --color-border: #27272a;
+    background-color: #0a0a0a !important;
+    color: #ffffff !important;
+}

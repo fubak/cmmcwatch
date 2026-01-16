@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block hero %}
+<header class="hero">
+    <div class="hero-content">
+        {% if design.theme_name %}
+        <div class="hero-eyebrow">
+            <span>•</span> {{ design.theme_name }} Mode
+        </div>
+        {% endif %}
+        
+        <h1>{{ hero_story.title }}</h1>
+        
+        <p class="hero-subtitle">{{ design.subheadline }}</p>
+        
+        <div class="hero-actions">
+            {% if hero_story.url %}
+            <a href="{{ hero_story.url }}" target="_blank" rel="noopener" class="hero-cta" aria-label="Read full story: {{ hero_story.title }}">Read Story</a>
+            {% endif %}
+            {% if design.story_capsules %}
+            <div class="hero-capsule">
+                <span style="color: var(--color-accent)">Trending:</span> 
+                {{ design.story_capsules[0] }}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="hero-meta">
+            <span>{{ date_str }}</span>
+            <span aria-hidden="true">•</span>
+            <span>{{ total_trends_count }} stories analyzed</span>
+        </div>
+    </div>
+</header>
+
+<div class="ticker-wrap" aria-label="Breaking news ticker">
+    <div class="ticker-label">Breaking</div>
+    <div class="ticker">
+        {% for trend in trends[:15] %}
+        <div class="ticker-item">
+            {# Display derived category or source part as badge #}
+            {% set source_display = trend.source | replace('_', ' ') | title %}
+            {% set category_badge_class = trend.source.split('_')[0] if '_' in trend.source else trend.source %}
+            <span class="ticker-source">{{ source_display }}</span>
+            <strong><a href="{{ trend.url }}" target="_blank" rel="noopener">{{ trend.title }}</a></strong>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<main id="main-content" role="main" class="container">
+
+    <section class="reading-controls" aria-label="Reading controls">
+        <div class="reading-group">
+            <span class="reading-label">Density</span>
+            <button class="reading-button" type="button" data-density="compact">Compact</button>
+            <button class="reading-button" type="button" data-density="comfortable">Comfortable</button>
+            <button class="reading-button" type="button" data-density="spacious">Spacious</button>
+        </div>
+        <div class="reading-group">
+            <span class="reading-label">View</span>
+            <button class="reading-button" type="button" data-view="grid">Grid</button>
+            <button class="reading-button" type="button" data-view="list">List</button>
+        </div>
+    </section>
+    
+    <!-- Word Cloud -->
+    <section class="word-cloud-section" aria-label="Trending keywords">
+        <div class="word-cloud">
+            {% for word, freq, size in word_cloud %}
+            <span class="word-cloud-item size-{{ size }}" role="img" aria-label="{{ word }}">{{ word }}</span>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Top Stories - Compact Horizontal Layout -->
+    {% set display_top_stories = top_stories[:9] %}
+    <section class="section top-stories-section">
+        <div class="section-header">
+            <h2 class="section-title">Top Stories</h2>
+            <span class="section-count">{{ display_top_stories|length }}</span>
+        </div>
+        <div class="top-stories">
+            {% for story in display_top_stories %}
+            {% set summary = story.summary or story.description %}
+            <article class="story-card {% if loop.first %}featured{% endif %}{% if not summary %} no-summary{% endif %}">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" data-source="{{ story.source | replace('_', ' ') | title }}" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        {% set img_src = story.image_url or placeholder_image_url %}
+                        {% set alt_text = story.title if story.image_url else ((story.category if story.category else story.source | replace('_', ' ') | title) + ' story: ' + story.title) %}
+                        <img src="{{ img_src }}"
+                             alt="{{ alt_text }}"
+                             class="story-image{% if not story.image_url %} placeholder{% endif %}"
+                             loading="eager"
+                             referrerpolicy="no-referrer"
+                             width="800"
+                             height="450">
+                    </figure>
+                    
+                    <div class="story-content">
+                        <header>
+                            {# Use derived category or source part for badge class and display #}
+                            {% set category_display = story.category if story.category else story.source | replace('_', ' ') | title %}
+                            {% set category_class = category_display | lower | replace(' ', '-') %}
+                            <span class="source-badge {{ category_class }}">{{ category_display }}</span>
+                            
+                            <h3 class="story-title">
+                                <a href="{{ story.url }}" target="_blank" rel="noopener">{{ story.title }}</a>
+                            </h3>
+                        </header>
+                        
+                        {% if summary %}
+                        <p class="story-summary">{{ summary[:120] }}{% if summary|length > 120 %}...{% endif %}</p>
+                        {% endif %}
+                        
+                        <footer class="story-meta">
+                            <span>{{ story.source | replace('_', ' ') | title }}</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="{{ story.timestamp }}">{{ story.time_ago }}</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Category Sections -->
+    {% for category in categories %}
+    <section class="section category-section" aria-labelledby="cat-{{ category.title|lower|replace(' ', '-') }}">
+        <div class="section-header">
+            <h2 id="cat-{{ category.title|lower|replace(' ', '-') }}" class="section-title">{{ category.title }}</h2>
+            <span class="section-count">{{ category.count }}</span>
+        </div>
+        <div class="stories-grid" style="--category-columns: {{ category.columns }}">
+            {% set category_stories = category.stories %}
+            {% for story in category_stories %}
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" data-source="{{ story.source | replace('_', ' ') | title }}" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        {% set img_src = story.image_url or placeholder_image_url %}
+                        {% set alt_text = story.title if story.image_url else ((story.category if story.category else story.source | replace('_', ' ') | title) + ' story: ' + story.title) %}
+                        <img src="{{ img_src }}"
+                             alt="{{ alt_text }}"
+                             class="story-image{% if not story.image_url %} placeholder{% endif %}"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="400"
+                             height="225">
+                    </figure>
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="{{ story.url }}" target="_blank" rel="noopener">{{ story.title }}</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>{{ story.source | replace('_', ' ') | title }}</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="{{ story.timestamp }}">{{ story.time_ago }}</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endfor %}
+
+</main>
+{% endblock %}

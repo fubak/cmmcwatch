@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="https://schema.org/WebPage">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Primary Meta Tags -->
+    <title>{{ page_title }}</title>
+    <meta name="title" content="{{ page_title }}">
+    <meta name="description" content="{{ meta_description }}">
+    <meta name="keywords" content="{{ keywords_str }}">
+    <meta name="author" content="DailyTrending.info">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ canonical_url }}">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="color-scheme" content="dark light">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta property="og:title" content="{{ page_title }}">
+    <meta property="og:description" content="{{ meta_description }}">
+    <meta property="og:site_name" content="DailyTrending.info">
+    <meta property="og:locale" content="en_US">
+    {{ og_image_tags | safe }}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@bradshannon">
+    <meta name="twitter:creator" content="@bradshannon">
+    <meta name="twitter:url" content="{{ canonical_url }}">
+    <meta name="twitter:title" content="{{ page_title }}">
+    <meta name="twitter:description" content="{{ meta_description }}">
+    {{ twitter_image_tags | safe }}
+
+    <!-- Additional SEO -->
+    <meta name="generator" content="DailyTrending.info Autonomous Generator">
+    <meta name="date" content="{{ date_iso }}">
+    <meta name="last-modified" content="{{ last_modified }}">
+
+    <!-- Structured Data -->
+    {{ structured_data | safe }}
+
+    <!-- Feeds -->
+    <link rel="alternate" type="application/rss+xml" title="DailyTrending.info RSS" href="https://dailytrending.info/feed.xml">
+
+    <!-- PWA Support -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DailyTrending">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family={{ font_primary }}:wght@400;500;600;700;800;900&family={{ font_secondary }}:wght@400;500;600&display=swap" rel="stylesheet">
+    {% if hero_image_url %}
+    <link rel="preload" as="image" href="{{ hero_image_url }}">
+    {% endif %}
+
+    <!-- Styles -->
+    <style>
+        /* CSS Variables */
+        :root {
+            --color-bg: {{ colors.bg }};
+            --color-bg-rgb: {{ colors.bg_rgb }};
+            --color-text: {{ colors.text }};
+            --color-accent: {{ colors.accent }};
+            --color-accent-secondary: {{ colors.accent_secondary }};
+            --color-muted: {{ colors.muted }};
+            --color-card-bg: {{ colors.card_bg }};
+            --color-border: {{ colors.border }};
+
+            --font-primary: '{{ font_primary_family }}', system-ui, sans-serif;
+            --font-secondary: '{{ font_secondary_family }}', system-ui, sans-serif;
+
+            --radius: {{ design.card_radius }};
+            --radius-sm: calc({{ design.card_radius }} * 0.5);
+            --radius-lg: calc({{ design.card_radius }} * 1.5);
+
+            --card-padding: {{ design.card_padding }};
+            --section-gap: {{ section_gap }};
+            --max-width: {{ design.max_width }};
+
+            --top-stories-columns: repeat(auto-fit, minmax(240px, 1fr));
+            --stories-grid-columns: repeat(auto-fit, minmax(220px, 1fr));
+
+            --hero-bg: {{ hero_bg_css | safe }};
+        }
+
+        /* Base Styles */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; font-size: 16px; }
+        body {
+            font-family: var(--font-secondary);
+            line-height: 1.6;
+            color: var(--color-text);
+            background: var(--color-bg);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        a { color: inherit; text-decoration: none; }
+        img { max-width: 100%; height: auto; }
+
+        /* Typography */
+        .headline-xl { font-family: var(--font-primary); font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; }
+        .headline-lg { font-family: var(--font-primary); font-size: clamp(1.75rem, 4vw, 3rem); font-weight: 700; line-height: 1.1; }
+        .headline-md { font-family: var(--font-primary); font-size: clamp(1.25rem, 2.5vw, 1.75rem); font-weight: 600; line-height: 1.2; }
+        
+        /* Layout Utilities */
+        .container { max-width: var(--max-width); margin: 0 auto; padding: 0 2rem; }
+        .section { margin-bottom: var(--section-gap); }
+        .skip-link { position: absolute; top: -40px; left: 0; background: var(--color-accent); color: white; padding: 8px; z-index: 100; transition: top 0.2s; }
+        .skip-link:focus { top: 0; }
+
+        /* Component Styles */
+        {% include "css/base.css" %}
+        {% include "css/layouts.css" %}
+        {% include "css/hero.css" %}
+        {% include "css/components.css" %}
+        {% include "components/nav.css" %}
+        {% include "components/footer.css" %}
+        
+        /* Custom Design Styles */
+        {{ custom_styles | safe }}
+    </style>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZNXRW8S7L"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XZNXRW8S7L');
+    </script>
+
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2196222970720414"
+         crossorigin="anonymous"></script>
+</head>
+<body class="{{ body_classes }}">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    {% include "components/nav.html" %}
+
+    <article itemscope itemtype="https://schema.org/Article">
+        {% block hero %}{% endblock %}
+        
+        {% block content %}{% endblock %}
+    </article>
+
+    {% include "components/footer.html" %}
+
+    <script>
+        (function() {
+            // Theme Toggle
+            const toggle = document.getElementById('theme-toggle');
+            const body = document.body;
+            const saved = localStorage.getItem('theme');
+
+            // Apply saved theme or default to dark mode for new users
+            if (saved === 'light') {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+            } else {
+                // Default to dark mode
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+                if (!saved) localStorage.setItem('theme', 'dark');
+            }
+
+            if (toggle) {
+                toggle.addEventListener('click', () => {
+                    // Current state check
+                    const isLight = body.classList.contains('light-mode');
+
+                    if (isLight) {
+                        // Switch to Dark
+                        body.classList.remove('light-mode');
+                        body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        // Switch to Light
+                        body.classList.remove('dark-mode');
+                        body.classList.add('light-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+
+            // Mobile Menu
+            const menuBtn = document.getElementById('mobile-menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+            if (menuBtn && navLinks) {
+                menuBtn.addEventListener('click', () => {
+                    navLinks.classList.toggle('active');
+                    menuBtn.setAttribute('aria-expanded', navLinks.classList.contains('active'));
+                });
+            }
+
+            // Reading controls
+            const densityButtons = document.querySelectorAll('[data-density]');
+            const viewButtons = document.querySelectorAll('[data-view]');
+            const densityClasses = ['density-compact', 'density-comfortable', 'density-spacious'];
+
+            const setDensityActive = (value) => {
+                densityButtons.forEach((btn) => {
+                    btn.classList.toggle('active', btn.dataset.density === value);
+                });
+            };
+
+            const setViewActive = (value) => {
+                viewButtons.forEach((btn) => {
+                    btn.classList.toggle('active', btn.dataset.view === value);
+                });
+            };
+
+            const applyDensity = (value) => {
+                densityClasses.forEach((cls) => body.classList.remove(cls));
+                if (value) {
+                    body.classList.add(`density-${value}`);
+                    localStorage.setItem('reading_density', value);
+                }
+                setDensityActive(value);
+            };
+
+            const applyView = (value) => {
+                body.classList.toggle('view-list', value === 'list');
+                localStorage.setItem('reading_view', value);
+                setViewActive(value);
+            };
+
+            if (densityButtons.length) {
+                const savedDensity = localStorage.getItem('reading_density');
+                // Default to compact for new users
+                applyDensity(savedDensity || 'compact');
+                if (!savedDensity) localStorage.setItem('reading_density', 'compact');
+
+                densityButtons.forEach((btn) => {
+                    btn.addEventListener('click', () => applyDensity(btn.dataset.density));
+                });
+            }
+
+            if (viewButtons.length) {
+                const savedView = localStorage.getItem('reading_view');
+                // Default to grid for new users
+                applyView(savedView || 'grid');
+                if (!savedView) localStorage.setItem('reading_view', 'grid');
+
+                viewButtons.forEach((btn) => {
+                    btn.addEventListener('click', () => applyView(btn.dataset.view));
+                });
+            }
+
+            // Save and Share actions
+            const savedKey = 'dailytrending_saved';
+            const saveButtons = document.querySelectorAll('.save-btn');
+            const shareButtons = document.querySelectorAll('.share-btn');
+
+            const getSaved = () => {
+                try {
+                    return JSON.parse(localStorage.getItem(savedKey) || '[]');
+                } catch (e) {
+                    return [];
+                }
+            };
+
+            const setSaved = (items) => {
+                localStorage.setItem(savedKey, JSON.stringify(items));
+            };
+
+            const updateSaveButton = (btn, isSaved) => {
+                btn.classList.toggle('saved', isSaved);
+                btn.setAttribute('aria-pressed', isSaved ? 'true' : 'false');
+                btn.title = isSaved ? 'Saved' : 'Save for later';
+            };
+
+            const isSavedUrl = (items, url) => items.some(item => item.url === url);
+
+            saveButtons.forEach((btn) => {
+                const url = btn.dataset.url || '';
+                const savedItems = getSaved();
+                updateSaveButton(btn, url && isSavedUrl(savedItems, url));
+
+                btn.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const targetUrl = btn.dataset.url || '';
+                    if (!targetUrl) {
+                        return;
+                    }
+
+                    const items = getSaved();
+                    const index = items.findIndex(item => item.url === targetUrl);
+                    if (index >= 0) {
+                        items.splice(index, 1);
+                        updateSaveButton(btn, false);
+                    } else {
+                        items.unshift({
+                            url: targetUrl,
+                            title: btn.dataset.title || '',
+                            source: btn.dataset.source || '',
+                            savedAt: new Date().toISOString()
+                        });
+                        updateSaveButton(btn, true);
+                    }
+                    setSaved(items);
+                });
+            });
+
+            shareButtons.forEach((btn) => {
+                btn.addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    const url = btn.dataset.url || window.location.href;
+                    const title = btn.dataset.title || document.title;
+
+                    try {
+                        if (navigator.share) {
+                            await navigator.share({ title, url });
+                        } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                            await navigator.clipboard.writeText(url);
+                            btn.setAttribute('data-shared', 'true');
+                            setTimeout(() => btn.removeAttribute('data-shared'), 1500);
+                        } else {
+                            window.prompt('Copy this link', url);
+                        }
+                    } catch (e) {
+                        // Ignore user-cancelled share
+                    }
+                });
+            });
+        })();
+    </script>
+    <script>
+        (function () {
+            const placeholderImage = "{{ placeholder_image_url }}";
+            const markBroken = (img) => {
+                if (!placeholderImage) return;
+                if (img.dataset.fallbackApplied) return;
+                img.dataset.fallbackApplied = 'true';
+                img.src = placeholderImage;
+                img.classList.add('story-image--placeholder');
+                img.title = img.title || 'Fallback image';
+            };
+
+            const bindErrors = () => {
+                document.querySelectorAll('.story-image').forEach((img) => {
+                    if (img.dataset.boundError) return;
+                    img.dataset.boundError = 'true';
+
+                    // Handle successful image load
+                    img.addEventListener('load', () => {
+                        img.setAttribute('loaded', '');
+                    });
+
+                    // Handle image error
+                    img.addEventListener('error', () => markBroken(img));
+
+                    // Handle already-loaded images
+                    if (img.complete) {
+                        if (img.naturalWidth === 0) {
+                            markBroken(img);
+                        } else {
+                            img.setAttribute('loaded', '');
+                        }
+                    }
+                });
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', bindErrors);
+            } else {
+                bindErrors();
+            }
+        })();
+    </script>
+</body>
+</html>
