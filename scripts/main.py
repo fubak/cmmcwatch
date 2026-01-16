@@ -113,7 +113,7 @@ class CMMCWatchPipeline:
             image_keywords = (
                 self.keywords[:5] if self.keywords else ["cybersecurity", "compliance"]
             )
-            self.images = self.image_fetcher.fetch_images(image_keywords)
+            self.images = self.image_fetcher.fetch_for_keywords(image_keywords)
             logger.info(f"Fetched {len(self.images)} images")
 
             # Step 4: Generate design
