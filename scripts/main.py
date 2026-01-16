@@ -283,9 +283,9 @@ class CMMCWatchPipeline:
         generate_rss_feed(
             trends=trends_dict,
             output_path=self.public_dir / "feed.xml",
-            site_title="CMMC Watch",
-            site_description="Daily CMMC & Compliance News Aggregator",
-            site_link="https://cmmcwatch.info",
+            title="CMMC Watch",
+            description="Daily CMMC & Compliance News Aggregator",
+            link="https://cmmcwatch.info",
         )
         logger.info(f"RSS feed saved to {self.public_dir / 'feed.xml'}")
 
