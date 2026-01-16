@@ -143,7 +143,7 @@ class CMMCWatchPipeline:
 
             # Step 10: Cleanup
             logger.info("[10/10] Cleaning up old archives...")
-            removed = self.archive_manager.cleanup_old_archives()
+            removed = self.archive_manager.cleanup_old()
             logger.info(f"Removed {removed} old archives")
 
             # Save pipeline data
