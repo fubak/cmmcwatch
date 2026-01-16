@@ -220,7 +220,7 @@ class CMMCWatchPipeline:
                     trends_dict.append(t)
 
             self.editorial_article = self.editorial_generator.generate_editorial(
-                stories=trends_dict,
+                trends=trends_dict,
                 keywords=self.keywords,
                 design=self.design,
             )
@@ -262,8 +262,8 @@ class CMMCWatchPipeline:
             ),
         )
 
-        builder = WebsiteBuilder()
-        html = builder.build(context)
+        builder = WebsiteBuilder(context)
+        html = builder.build()
 
         output_path = self.public_dir / "index.html"
         with open(output_path, "w", encoding="utf-8") as f:
