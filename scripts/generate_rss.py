@@ -257,7 +257,7 @@ def generate_cmmc_rss_feed(
     return generate_rss_feed(
         trends=cmmc_trends,
         output_path=output_path,
-        title="CMMC Watch - DailyTrending.info",
+        title="CMMC Watch",
         description="CMMC compliance, certification, and Defense Industrial Base news aggregated daily",
         link=f"{RSS_FEED_LINK}/cmmc",
         max_items=max_items,

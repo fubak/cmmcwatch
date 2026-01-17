@@ -1,0 +1,57 @@
+{
+  "name": "CMMC Watch",
+  "short_name": "CMMCWatch",
+  "description": "Daily CMMC, NIST 800-171, and federal cybersecurity compliance news aggregator",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "categories": [
+    "news",
+    "social"
+  ],
+  "lang": "en-US",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Today's Trends",
+      "short_name": "Trends",
+      "description": "View today's trending topics",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Archive",
+      "short_name": "Archive",
+      "description": "Browse past daily designs",
+      "url": "/archive/",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
