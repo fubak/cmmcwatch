@@ -15,14 +15,9 @@ def get_nav_links(active_page: str = "") -> str:
     """
     links = [
         ("/", "Home", "home"),
-        ("/tech/", "Tech", "tech"),
-        ("/world/", "World", "world"),
-        ("/science/", "Science", "science"),
-        ("/politics/", "Politics", "politics"),
-        ("/finance/", "Finance", "finance"),
-        ("/media/", "Media", "media"),
         ("/articles/", "Articles", "articles"),
         ("/archive/", "Archive", "archive"),
+        ("/feed.xml", "RSS Feed", "rss"),
     ]
 
     items = []

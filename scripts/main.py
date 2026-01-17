@@ -92,7 +92,16 @@ class CMMCWatchPipeline:
             # Step 1: Archive previous
             if archive:
                 logger.info("[1/10] Archiving previous website...")
-                self.archive_manager.archive_current()
+                # Load previous design to save with archive
+                prev_design = None
+                design_file = self.data_dir / "design.json"
+                if design_file.exists():
+                    try:
+                        with open(design_file) as f:
+                            prev_design = json.load(f)
+                    except Exception:
+                        pass
+                self.archive_manager.archive_current(design=prev_design)
 
             # Step 2: Collect trends
             logger.info("[2/10] Collecting CMMC trends...")

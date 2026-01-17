@@ -437,8 +437,8 @@ class ArchiveManager:
 
     <main class="archive-container">
         <div class="archive-header">
-            <h1>Archive</h1>
-            <p>Browse previous daily trend snapshots</p>
+            <h1>Daily Snapshots</h1>
+            <p>Browse previous editions of CMMC Watch</p>
             <div class="archive-stats">
                 <div class="archive-stat">
                     <div class="archive-stat-value">{len(archives)}</div>
