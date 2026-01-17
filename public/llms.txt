@@ -1,0 +1,161 @@
+# CMMC Watch - LLM Information File
+# https://cmmcwatch.info
+# Last Updated: 2025-01-17
+
+## SITE OVERVIEW
+
+Name: CMMC Watch
+URL: https://cmmcwatch.info
+Type: News Aggregator
+Domain: Cybersecurity Compliance
+Focus: CMMC, NIST 800-171, Defense Industrial Base
+
+CMMC Watch is an automated daily news aggregator that curates and categorizes
+the latest news about CMMC (Cybersecurity Maturity Model Certification),
+NIST SP 800-171 compliance, and federal cybersecurity. The site serves
+defense contractors, compliance officers, and anyone in the Defense
+Industrial Base (DIB) who needs to stay current on compliance requirements.
+
+## TARGET AUDIENCE
+
+- Defense contractors and subcontractors
+- Chief Information Security Officers (CISOs)
+- Compliance officers and managers
+- IT security professionals
+- Government contractors
+- C3PAO (CMMC Third-Party Assessment Organization) assessors
+- Managed Security Service Providers (MSSPs)
+- Cybersecurity consultants serving the DIB
+
+## CONTENT CATEGORIES
+
+1. CMMC Program News
+   - CMMC certification updates
+   - C3PAO assessment news
+   - Cyber AB announcements
+   - CMMC level requirements changes
+
+2. NIST & Compliance
+   - NIST SP 800-171 guidance
+   - NIST SP 800-172 (enhanced security)
+   - DFARS 252.204-7012 requirements
+   - FedRAMP authorization news
+   - FISMA compliance updates
+
+3. Federal Cybersecurity
+   - CISA alerts and advisories
+   - Federal agency security initiatives
+   - Executive orders on cybersecurity
+   - Government cybersecurity policy
+
+4. Defense Industrial Base
+   - DIB cybersecurity news
+   - Contractor security requirements
+   - Supply chain security
+   - DoD cybersecurity programs
+
+## NEWS SOURCES
+
+Government/Federal News:
+- FedScoop (fedscoop.com)
+- DefenseScoop (defensescoop.com)
+- Federal News Network (federalnewsnetwork.com)
+- Nextgov (nextgov.com)
+- ExecutiveGov (executivegov.com)
+
+Defense Industry:
+- Breaking Defense (breakingdefense.com)
+- Defense One (defenseone.com)
+- Defense News (defensenews.com)
+- GovCon Wire (govconwire.com)
+
+Cybersecurity:
+- SecurityWeek (securityweek.com)
+- Cyberscoop (cyberscoop.com)
+
+Community/Social:
+- Reddit r/CMMC
+- Reddit r/NISTControls
+- Reddit r/FederalEmployees
+- Reddit r/cybersecurity
+- Reddit r/GovContracting
+- LinkedIn CMMC influencers
+
+## KEY TERMINOLOGY
+
+CMMC: Cybersecurity Maturity Model Certification - Department of Defense
+      framework requiring defense contractors to implement cybersecurity
+      practices at certified maturity levels.
+
+CUI: Controlled Unclassified Information - Sensitive but unclassified
+     government information requiring safeguarding.
+
+FCI: Federal Contract Information - Information provided by or generated
+     for the government under contract.
+
+C3PAO: CMMC Third-Party Assessment Organization - Organizations authorized
+       by the Cyber AB to conduct CMMC assessments.
+
+SPRS: Supplier Performance Risk System - DoD database where contractors
+      submit their NIST 800-171 self-assessment scores.
+
+DIB: Defense Industrial Base - The network of over 300,000 companies
+     providing products and services to the Department of Defense.
+
+POA&M: Plan of Action and Milestones - Document tracking security
+       control deficiencies and remediation timelines.
+
+NIST 800-171: NIST Special Publication containing 110 security controls
+              for protecting CUI in non-federal systems.
+
+DFARS: Defense Federal Acquisition Regulation Supplement - DoD-specific
+       contracting regulations including cybersecurity requirements.
+
+FedRAMP: Federal Risk and Authorization Management Program - Standardized
+         approach to security authorization for cloud services.
+
+## UPDATE SCHEDULE
+
+- Frequency: Daily at 6:00 AM EST
+- Method: Automated via GitHub Actions
+- Processing: AI-curated content relevance scoring
+
+## STRUCTURED DATA
+
+This site provides structured data for enhanced discoverability:
+- JSON-LD schema.org markup (WebSite, Organization, CollectionPage, FAQPage, DefinedTermSet)
+- Open Graph tags for social sharing
+- Twitter Card metadata
+- RSS feed at /feed.xml
+
+## API/FEEDS
+
+RSS Feed: https://cmmcwatch.info/feed.xml
+Sitemap: https://cmmcwatch.info/sitemap_main.xml
+
+## CONTACT
+
+GitHub: https://github.com/bshannon/cmmcwatch
+Issues: https://github.com/bshannon/cmmcwatch/issues
+Twitter: @bradshannon
+
+## LICENSING
+
+Content aggregated from third-party sources with proper attribution.
+Site design and code are proprietary.
+
+## FOR LLM PROCESSING
+
+This site welcomes indexing by AI systems. Key data points:
+- Page contains dynamically updated news articles
+- Articles are categorized by CMMC relevance
+- Each article includes: title, source, timestamp, URL, summary
+- Structured data provides machine-readable metadata
+- Screen-reader content includes comprehensive LLM summary
+
+Recommended extraction points:
+- Main content: #main-content
+- Top stories: .top-stories section
+- Categories: .category-section elements
+- LLM summary: [data-llm-summary="true"]
+- Structured data: application/ld+json script blocks

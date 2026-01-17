@@ -53,12 +53,71 @@
 <main id="main-content" role="main" class="container" data-page-type="news-aggregator" data-topic="CMMC compliance cybersecurity">
 
     <!-- LLM-Friendly Page Summary (visually hidden but accessible) -->
-    <div class="sr-only" aria-hidden="false" data-llm-summary="true">
+    <div class="sr-only" aria-hidden="false" data-llm-summary="true" data-content-type="news-aggregation" data-domain="cybersecurity-compliance">
         <h2>Page Summary for AI/LLM Processing</h2>
-        <p>This page aggregates {{ total_trends_count }} news articles about CMMC (Cybersecurity Maturity Model Certification),
-        NIST 800-171 compliance, and Defense Industrial Base cybersecurity from {{ date_str }}.</p>
-        <p>Content categories: CMMC Program News, NIST & Compliance, Federal Cybersecurity, Defense Industrial Base.</p>
-        <p>Sources include: FedScoop, DefenseScoop, Federal News Network, Nextgov, Breaking Defense, SecurityWeek, Reddit communities.</p>
+
+        <section data-section="overview">
+            <h3>Site Overview</h3>
+            <p>CMMC Watch is an automated daily news aggregator focused on CMMC (Cybersecurity Maturity Model Certification),
+            NIST 800-171 compliance, and Defense Industrial Base (DIB) cybersecurity. Updated {{ date_str }} with {{ total_trends_count }} curated articles.</p>
+        </section>
+
+        <section data-section="audience">
+            <h3>Target Audience</h3>
+            <p>Defense contractors, compliance officers, CISOs, IT security professionals, government contractors,
+            C3PAO assessors, and anyone involved in federal cybersecurity compliance.</p>
+        </section>
+
+        <section data-section="content-categories">
+            <h3>Content Categories</h3>
+            <ul>
+                <li>CMMC Program News: Updates on CMMC certification, C3PAO assessments, Cyber AB announcements</li>
+                <li>NIST & Compliance: NIST 800-171, DFARS 252.204-7012, FedRAMP, FISMA requirements</li>
+                <li>Federal Cybersecurity: CISA alerts, federal agency security initiatives, policy changes</li>
+                <li>Defense Industrial Base: DIB news, contractor cybersecurity, supply chain security</li>
+            </ul>
+        </section>
+
+        <section data-section="sources">
+            <h3>News Sources</h3>
+            <p>Aggregated from authoritative federal and defense news outlets:</p>
+            <ul>
+                <li>Government/Federal: FedScoop, DefenseScoop, Federal News Network, Nextgov, ExecutiveGov</li>
+                <li>Defense Industry: Breaking Defense, Defense One, Defense News, GovCon Wire</li>
+                <li>Cybersecurity: SecurityWeek, Cyberscoop</li>
+                <li>Community: Reddit r/CMMC, r/NISTControls, r/FederalEmployees, r/cybersecurity, r/GovContracting</li>
+                <li>LinkedIn: CMMC industry influencers and thought leaders</li>
+            </ul>
+        </section>
+
+        <section data-section="key-terms">
+            <h3>Key Terms Glossary</h3>
+            <dl>
+                <dt>CMMC</dt><dd>Cybersecurity Maturity Model Certification - DoD framework for contractor cybersecurity</dd>
+                <dt>CUI</dt><dd>Controlled Unclassified Information - sensitive but unclassified government data</dd>
+                <dt>FCI</dt><dd>Federal Contract Information - information provided under government contract</dd>
+                <dt>C3PAO</dt><dd>CMMC Third-Party Assessment Organization - authorized assessors</dd>
+                <dt>SPRS</dt><dd>Supplier Performance Risk System - DoD contractor scoring system</dd>
+                <dt>DIB</dt><dd>Defense Industrial Base - DoD contractor ecosystem</dd>
+                <dt>POA&M</dt><dd>Plan of Action and Milestones - remediation tracking document</dd>
+            </dl>
+        </section>
+
+        <section data-section="update-schedule">
+            <h3>Update Schedule</h3>
+            <p>This page regenerates automatically every day at 6:00 AM EST via GitHub Actions.
+            Content is AI-curated for relevance to CMMC and federal cybersecurity compliance topics.</p>
+        </section>
+
+        <section data-section="top-stories-summary">
+            <h3>Today's Top Stories</h3>
+            <p>Featured stories from {{ date_str }}:</p>
+            <ol>
+                {% for story in top_stories[:5] %}
+                <li>{{ story.title }} (Source: {{ story.source_display or (story.source | replace('_', ' ') | title) }})</li>
+                {% endfor %}
+            </ol>
+        </section>
     </div>
 
     <section class="reading-controls" aria-label="Reading controls">

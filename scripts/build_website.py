@@ -671,6 +671,46 @@ class WebsiteBuilder:
     def _build_structured_data(self) -> str:
         """Generate comprehensive JSON-LD structured data for SEO and LLMs."""
 
+        # Organization schema - establishes CMMC Watch as a publisher entity
+        organization_schema = {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "@id": "https://cmmcwatch.info/#organization",
+            "name": "CMMC Watch",
+            "alternateName": "CMMCWatch",
+            "url": "https://cmmcwatch.info/",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://cmmcwatch.info/icons/icon-512.png",
+                "width": 512,
+                "height": 512,
+            },
+            "description": "Daily automated news aggregator for CMMC, NIST 800-171, and federal cybersecurity compliance. Serving defense contractors and the Defense Industrial Base.",
+            "foundingDate": "2024",
+            "sameAs": [
+                "https://twitter.com/bradshannon",
+                "https://github.com/bshannon/cmmcwatch",
+            ],
+            "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "technical support",
+                "url": "https://github.com/bshannon/cmmcwatch/issues",
+            },
+            "areaServed": {
+                "@type": "Country",
+                "name": "United States",
+            },
+            "knowsAbout": [
+                "CMMC",
+                "NIST 800-171",
+                "Cybersecurity",
+                "Defense Industrial Base",
+                "Federal Compliance",
+                "FedRAMP",
+                "DFARS",
+            ],
+        }
+
         # Base WebSite schema
         website_schema = {
             "@context": "https://schema.org",
@@ -679,16 +719,40 @@ class WebsiteBuilder:
             "alternateName": "CMMC Watch",
             "url": "https://cmmcwatch.info/",
             "description": "Daily CMMC & NIST compliance news aggregator for defense contractors",
+            "publisher": {"@id": "https://cmmcwatch.info/#organization"},
             "potentialAction": {
                 "@type": "SearchAction",
                 "target": "https://cmmcwatch.info/?q={search_term_string}",
                 "query-input": "required name=search_term_string",
             },
-            "sameAs": [],
+            "sameAs": [
+                "https://twitter.com/bradshannon",
+                "https://github.com/bshannon/cmmcwatch",
+            ],
             "speakable": {
                 "@type": "SpeakableSpecification",
                 "cssSelector": [".hero-content h1", ".hero-subtitle", ".story-title"],
             },
+        }
+
+        # BreadcrumbList schema for navigation context
+        breadcrumb_schema = {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https://cmmcwatch.info/",
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Daily News",
+                    "item": f"https://cmmcwatch.info/#news-{self.ctx.generated_at.replace(' ', '-').replace(',', '')}",
+                },
+            ],
         }
 
         # CollectionPage with ItemList
@@ -740,17 +804,49 @@ class WebsiteBuilder:
             },
         }
 
-        # FAQPage schema for common questions
+        # FAQPage schema for common questions - expanded for better SEO
         faq_schema = {
             "@context": "https://schema.org",
             "@type": "FAQPage",
             "mainEntity": [
                 {
                     "@type": "Question",
+                    "name": "What is CMMC?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "CMMC (Cybersecurity Maturity Model Certification) is a Department of Defense framework requiring defense contractors to implement and certify cybersecurity practices. It builds on NIST SP 800-171 requirements and establishes three maturity levels for protecting Controlled Unclassified Information (CUI) and Federal Contract Information (FCI).",
+                    },
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the difference between CMMC Level 1, Level 2, and Level 3?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "CMMC Level 1 (Foundational) requires 17 basic cyber hygiene practices and allows self-assessment. Level 2 (Advanced) requires all 110 NIST SP 800-171 controls and third-party assessment by a C3PAO for most contractors. Level 3 (Expert) adds additional controls from NIST SP 800-172 and requires government-led assessments for the most sensitive programs.",
+                    },
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is NIST SP 800-171?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "NIST Special Publication 800-171 provides security requirements for protecting Controlled Unclassified Information (CUI) in non-federal systems. It contains 110 security controls across 14 families including Access Control, Audit and Accountability, Configuration Management, and Incident Response. CMMC Level 2 is based on these requirements.",
+                    },
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is a C3PAO?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "A C3PAO (CMMC Third-Party Assessment Organization) is an organization authorized by the Cyber AB to conduct CMMC Level 2 assessments. C3PAOs employ certified CMMC assessors who evaluate whether defense contractors meet the required security controls before they can be awarded contracts requiring CMMC certification.",
+                    },
+                },
+                {
+                    "@type": "Question",
                     "name": "How often is CMMC Watch updated?",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "CMMC Watch regenerates automatically every day at 6 AM EST via GitHub Actions, aggregating the latest CMMC and compliance news from government, defense industry, and Reddit sources.",
+                        "text": "CMMC Watch regenerates automatically every day at 6 AM EST via GitHub Actions, aggregating the latest CMMC and compliance news from government, defense industry, and Reddit sources. The site uses AI to curate and categorize the most relevant stories for defense contractors.",
                     },
                 },
                 {
@@ -758,16 +854,94 @@ class WebsiteBuilder:
                     "name": "What sources does CMMC Watch aggregate?",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "We aggregate from FedScoop, DefenseScoop, Federal News Network, Nextgov, Breaking Defense, Defense One, Defense News, ExecutiveGov, SecurityWeek, Cyberscoop, GovCon Wire, and Reddit communities r/CMMC, r/NISTControls, and r/FederalEmployees.",
+                        "text": "We aggregate from major federal and defense news sources including FedScoop, DefenseScoop, Federal News Network, Nextgov, Breaking Defense, Defense One, Defense News, ExecutiveGov, SecurityWeek, Cyberscoop, and GovCon Wire. We also monitor Reddit communities like r/CMMC, r/NISTControls, r/FederalEmployees, and r/GovContracting.",
                     },
                 },
                 {
                     "@type": "Question",
-                    "name": "What is CMMC?",
+                    "name": "When does CMMC go into effect?",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "CMMC (Cybersecurity Maturity Model Certification) is a DoD framework requiring defense contractors to implement cybersecurity practices. CMMC Watch tracks news about CMMC compliance, NIST 800-171, and related federal cybersecurity requirements.",
+                        "text": "The CMMC 2.0 final rule was published in October 2024 and became effective December 16, 2024. DoD is implementing CMMC requirements in a phased approach, with requirements appearing in new contracts starting in 2025. Check CMMC Watch daily for the latest implementation timeline updates.",
                     },
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the Defense Industrial Base (DIB)?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The Defense Industrial Base (DIB) comprises over 300,000 companies that provide products and services to the Department of Defense. These contractors must protect sensitive government information through cybersecurity frameworks like CMMC. CMMC Watch covers news relevant to all DIB organizations.",
+                    },
+                },
+            ],
+        }
+
+        # DefinedTermSet schema for CMMC terminology - helps LLMs understand domain terms
+        defined_terms_schema = {
+            "@context": "https://schema.org",
+            "@type": "DefinedTermSet",
+            "name": "CMMC and Federal Cybersecurity Glossary",
+            "description": "Key terms and acronyms used in CMMC compliance and federal cybersecurity",
+            "hasDefinedTerm": [
+                {
+                    "@type": "DefinedTerm",
+                    "name": "CMMC",
+                    "description": "Cybersecurity Maturity Model Certification - DoD framework for contractor cybersecurity",
+                    "termCode": "CMMC",
+                },
+                {
+                    "@type": "DefinedTerm",
+                    "name": "CUI",
+                    "description": "Controlled Unclassified Information - sensitive but unclassified government data requiring protection",
+                    "termCode": "CUI",
+                },
+                {
+                    "@type": "DefinedTerm",
+                    "name": "FCI",
+                    "description": "Federal Contract Information - information provided by or generated for the government under contract",
+                    "termCode": "FCI",
+                },
+                {
+                    "@type": "DefinedTerm",
+                    "name": "C3PAO",
+                    "description": "CMMC Third-Party Assessment Organization - authorized to conduct CMMC assessments",
+                    "termCode": "C3PAO",
+                },
+                {
+                    "@type": "DefinedTerm",
+                    "name": "SPRS",
+                    "description": "Supplier Performance Risk System - DoD system for recording contractor security scores",
+                    "termCode": "SPRS",
+                },
+                {
+                    "@type": "DefinedTerm",
+                    "name": "NIST 800-171",
+                    "description": "NIST Special Publication with 110 security controls for protecting CUI",
+                    "termCode": "NIST SP 800-171",
+                },
+                {
+                    "@type": "DefinedTerm",
+                    "name": "DFARS",
+                    "description": "Defense Federal Acquisition Regulation Supplement - DoD contracting regulations",
+                    "termCode": "DFARS",
+                },
+                {
+                    "@type": "DefinedTerm",
+                    "name": "FedRAMP",
+                    "description": "Federal Risk and Authorization Management Program - cloud security authorization",
+                    "termCode": "FedRAMP",
+                },
+                {
+                    "@type": "DefinedTerm",
+                    "name": "DIB",
+                    "description": "Defense Industrial Base - companies providing products/services to DoD",
+                    "termCode": "DIB",
+                },
+                {
+                    "@type": "DefinedTerm",
+                    "name": "POA&M",
+                    "description": "Plan of Action and Milestones - document tracking security remediation",
+                    "termCode": "POA&M",
                 },
             ],
         }
@@ -775,7 +949,14 @@ class WebsiteBuilder:
         # Combine all schemas using @graph
         combined_schema = {
             "@context": "https://schema.org",
-            "@graph": [website_schema, collection_schema, faq_schema],
+            "@graph": [
+                organization_schema,
+                website_schema,
+                breadcrumb_schema,
+                collection_schema,
+                faq_schema,
+                defined_terms_schema,
+            ],
         }
 
         return f'<script type="application/ld+json">\n{json.dumps(combined_schema, indent=2)}\n</script>'
