@@ -9,8 +9,14 @@
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr;
     gap: 3rem;
+}
+
+@media (max-width: 768px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+    }
 }
 
 .footer-brand {
@@ -49,6 +55,38 @@
 
 .footer-links a:hover {
     color: var(--color-accent);
+}
+
+.footer-author-section h4 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--color-text);
+    margin-bottom: 1rem;
+}
+
+.footer-author-bio {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.footer-linkedin {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.footer-linkedin:hover {
+    color: #0077b5;
+    background: rgba(0, 119, 181, 0.1);
 }
 
 .footer-bottom {
