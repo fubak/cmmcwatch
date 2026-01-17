@@ -133,32 +133,27 @@ DIB_KEYWORDS = [
 # ============================================================================
 
 # Key CMMC influencers to track on LinkedIn
-# Stay within free tier: max 10 profiles, checked once daily
+# Reduced to 4 key profiles to stay within Apify free tier ($5/month)
+# Full list available but commented out to reduce API costs
 CMMC_LINKEDIN_PROFILES = [
-    # === Government Officials ===
     # Katie Arrington - DoD CIO (former CISO, original CMMC architect)
     "https://www.linkedin.com/in/katie-arrington-a6949425/",
     # Stacy Bostjanick - DoD CIO Chief DIB Cybersecurity (CMMC implementation lead)
     "https://www.linkedin.com/in/stacy-bostjanick-a3b67173/",
     # Matthew Travis - Cyber-AB CEO (former CISA Deputy Director)
     "https://www.linkedin.com/in/matthewtravisdc/",
-    # === Summit 7 Personnel ===
-    # Scott Edwards - Summit 7 CEO & President
-    "https://www.linkedin.com/in/mscottedwards/",
-    # Jacob Horne - Summit 7 Chief Security Evangelist (former NSA analyst)
-    "https://www.linkedin.com/in/jacob-evan-horne/",
-    # Daniel Akridge - Summit 7 Director of Engagement, hosts "That CMMC Show"
-    "https://www.linkedin.com/in/danielakridge/",
-    # Jacob Hill - Summit 7 Director of Cybersecurity, GRC Academy founder
-    "https://www.linkedin.com/in/jacobrhill/",
-    # === Industry Experts ===
-    # Amira Armond - Kieri Solutions (C3PAO), cmmcaudit.org editor, C3PAO Forum vice chair
+    # Amira Armond - Kieri Solutions (C3PAO), cmmcaudit.org editor
     "https://www.linkedin.com/in/amira-armond/",
+    # Additional profiles (uncomment if API budget allows):
+    # "https://www.linkedin.com/in/mscottedwards/",  # Scott Edwards - Summit 7 CEO
+    # "https://www.linkedin.com/in/jacob-evan-horne/",  # Jacob Horne - Summit 7
+    # "https://www.linkedin.com/in/danielakridge/",  # Daniel Akridge - "That CMMC Show"
+    # "https://www.linkedin.com/in/jacobrhill/",  # Jacob Hill - Summit 7
 ]
 
 # LinkedIn scraper limits (to stay within Apify free tier)
-LINKEDIN_MAX_PROFILES = 10  # Max profiles per run
-LINKEDIN_MAX_POSTS_PER_PROFILE = 5  # Max posts per profile
+LINKEDIN_MAX_PROFILES = 4  # Max profiles per run (reduced from 10)
+LINKEDIN_MAX_POSTS_PER_PROFILE = 3  # Max posts per profile (reduced from 5)
 
 # ============================================================================
 # CMMC WATCH KEYWORDS

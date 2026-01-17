@@ -792,6 +792,33 @@ class WebsiteBuilder:
 
         return f'<script type="application/ld+json">\n{json.dumps(combined_schema, indent=2)}\n</script>'
 
+    def _get_og_image_url(self) -> str:
+        """Get the best image URL for Open Graph sharing.
+
+        Prefers cybersecurity-themed images for brand consistency.
+        Falls back to hero image or first stock image.
+        """
+        # First try to find a cybersecurity-themed stock image
+        if self.ctx.images:
+            for img in self.ctx.images:
+                alt_text = (img.get("alt_text", "") or "").lower()
+                if any(
+                    kw in alt_text for kw in ["hacker", "cyber", "security", "mask"]
+                ):
+                    return img.get("url_large") or img.get("url_original", "")
+
+            # Fall back to first stock image
+            first_img = self.ctx.images[0]
+            return first_img.get("url_large") or first_img.get("url_original", "")
+
+        # Fall back to hero image if no stock images
+        if self._hero_image:
+            return self._hero_image.get("url_large") or self._hero_image.get(
+                "url_original", ""
+            )
+
+        return ""
+
     def _assign_fallback_images(self):
         """Assign stock images to trends that don't have article images.
 
@@ -1021,9 +1048,8 @@ class WebsiteBuilder:
             "total_trends_count": len(self.ctx.trends),
             "word_cloud": self.keyword_freq,
             "categories": categories,
-            # SEO - Static branded OG image for consistent social sharing
-            "og_image_tags": '<meta property="og:image" content="https://cmmcwatch.info/og-image.png">\n    <meta property="og:image:width" content="1200">\n    <meta property="og:image:height" content="630">\n    <meta property="og:image:type" content="image/png">',
-            "twitter_image_tags": '<meta name="twitter:image" content="https://cmmcwatch.info/twitter-image.png">\n    <meta name="twitter:card" content="summary_large_image">',
+            # SEO - Dynamic OG image from stock collection for social sharing
+            "og_image_url": self._get_og_image_url(),
             "structured_data": self._build_structured_data(),
         }
 

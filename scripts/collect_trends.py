@@ -431,6 +431,9 @@ class TrendCollector:
             "cmmc_rss_fedscoop",
             "cmmc_rss_defensescoop",
             "cmmc_rss_securityweek",
+            "cmmc_rss_executivegov",
+            "cmmc_rss_cyberscoop",
+            "cmmc_rss_federal_news_network",
         ]
 
         trends_to_fetch = [
@@ -445,7 +448,7 @@ class TrendCollector:
         logger.info(f"Fetching og:image for {len(trends_to_fetch)} articles...")
         fetched = 0
 
-        for trend in trends_to_fetch[:10]:  # Limit to 10 requests
+        for trend in trends_to_fetch[:15]:  # Limit to 15 requests
             try:
                 og_image = self._fetch_og_image(trend.url)
                 if og_image:
