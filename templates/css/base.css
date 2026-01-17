@@ -193,19 +193,150 @@ body.density-spacious {
     50% { transform: scale(1.2); }
 }
 
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* ===== LOADING STATES / SKELETON SCREENS ===== */
+.story-image {
+    background: linear-gradient(
+        90deg,
+        var(--color-card-bg) 0%,
+        var(--color-border) 50%,
+        var(--color-card-bg) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.story-image[loaded] {
+    animation: none;
+    background: none;
+}
+
+/* Placeholder image styling */
+.story-image.placeholder,
+.story-image--placeholder {
+    background: var(--color-card-bg);
+    animation: none;
+}
+
+/* Card skeleton before content loads */
+.story-card {
+    position: relative;
+}
+
+.story-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--color-card-bg);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Loading indicator for slow connections */
+.story-content {
+    min-height: 60px;
+}
+
+/* Smooth image reveal */
+.story-image {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.story-image[loaded],
+.story-image.placeholder,
+.story-image--placeholder {
+    opacity: 1;
+}
+
+/* ===== ACCESSIBILITY / SCREEN READER ONLY ===== */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: inherit;
+    margin: inherit;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+}
+
 /* ===== AD UNITS ===== */
 .ad-container {
     display: flex;
     justify-content: center;
-    padding: 1rem 0;
-    min-height: 90px;
-    background: rgba(255, 255, 255, 0.02);
+    align-items: center;
+    padding: 1rem;
+    min-height: 100px;
+    background: rgba(128, 128, 128, 0.05);
     border-radius: var(--radius);
-    margin: 2rem 0;
+    margin: 1.5rem 0;
+    overflow: hidden;
+}
+
+.ad-container--footer {
+    margin-top: 2rem;
+    margin-bottom: 0;
+}
+
+.ad-container ins {
+    max-width: 100%;
+}
+
+/* Hide ads on mobile if too intrusive - optional */
+@media (max-width: 480px) {
+    .ad-container {
+        margin: 1rem 0;
+        min-height: 80px;
+        padding: 0.5rem;
+    }
 }
 
 @media print {
     .ad-container { display: none !important; }
+}
+
+/* ===== THEME TRANSITIONS ===== */
+body,
+body *,
+body *::before,
+body *::after {
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+/* Disable transitions for elements that shouldn't animate */
+img,
+video,
+.story-image,
+.ad-container,
+.adsbygoogle {
+    transition: none !important;
 }
 
 /* ===== MODE OVERRIDES ===== */
@@ -216,8 +347,37 @@ body.light-mode {
     --color-muted: #64748b;
     --color-card-bg: #f8fafc;
     --color-border: #e2e8f0;
+    --color-accent: #2563eb;
+    --color-accent-secondary: #7c3aed;
     background-color: #ffffff !important;
     color: #1a1a2e !important;
+}
+
+/* Light mode specific enhancements */
+body.light-mode .story-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .story-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+body.light-mode .nav {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border);
+}
+
+body.light-mode .footer {
+    background: #f1f5f9;
+}
+
+body.light-mode .section-header {
+    border-bottom-color: var(--color-accent);
+}
+
+body.light-mode .ad-container {
+    background: rgba(0, 0, 0, 0.02);
 }
 
 body.dark-mode {
@@ -229,4 +389,18 @@ body.dark-mode {
     --color-border: #27272a;
     background-color: #0a0a0a !important;
     color: #ffffff !important;
+}
+
+/* Dark mode specific enhancements */
+body.dark-mode .story-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .story-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .nav {
+    background: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(10px);
 }

@@ -513,14 +513,92 @@ body.layout-split .top-stories {
 }
 
 /* Responsive: Tablet - Two Columns */
-@media (min-width: 641px) and (max-width: 1024px) {
+/* ===== TABLET BREAKPOINT (769px - 1024px) ===== */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .container {
+        padding: 2rem 1.5rem;
+    }
+
+    /* Top Stories: 3-column grid on tablet */
     .top-stories {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .top-stories article.story-card {
+        min-height: 180px;
     }
 
     .top-stories article.story-card.featured {
         grid-column: span 2;
         grid-row: span 2;
+    }
+
+    .top-stories article.story-card.featured .story-media {
+        min-height: 280px;
+        height: 280px;
+    }
+
+    .top-stories .story-title {
+        font-size: 0.9rem;
+        -webkit-line-clamp: 2;
+    }
+
+    .top-stories article.story-card.featured .story-title {
+        font-size: 1.2rem;
+        -webkit-line-clamp: 3;
+    }
+
+    /* Category grids: 3 columns on tablet */
+    .stories-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 1rem;
+    }
+
+    .stories-grid .story-title {
+        font-size: 0.85rem;
+    }
+
+    /* Reduce section spacing on tablet */
+    .section {
+        margin-bottom: 2.5rem;
+    }
+
+    .section-header {
+        margin-bottom: 1rem;
+    }
+
+    /* Hero adjustments */
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    /* Reading controls inline on tablet */
+    .reading-controls {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+/* ===== SMALL TABLET / LARGE PHONE (641px - 768px) ===== */
+@media (min-width: 641px) and (max-width: 768px) {
+    .top-stories {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .top-stories article.story-card.featured {
+        grid-column: span 2;
+        grid-row: span 1;
+    }
+
+    .stories-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem;
     }
 }
 

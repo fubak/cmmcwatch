@@ -53,7 +53,7 @@
     {{ structured_data | safe }}
 
     <!-- Feeds -->
-    <link rel="alternate" type="application/rss+xml" title="CMMC Watch RSS" href="https://cmmcwatch.com/feed.xml">
+    <link rel="alternate" type="application/rss+xml" title="CMMC Watch RSS Feed" href="https://cmmcwatch.info/feed.xml">
 
     <!-- PWA Support -->
     <link rel="manifest" href="/manifest.json">
@@ -62,12 +62,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CMMC Watch">
 
-    <!-- Fonts -->
+    <!-- Preconnect to external resources for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="preconnect" href="https://pagead2.googlesyndication.com">
+    <link rel="preconnect" href="https://images.pexels.com">
+    <link rel="dns-prefetch" href="https://www.google-analytics.com">
+
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family={{ font_primary }}:wght@400;500;600;700;800;900&family={{ font_secondary }}:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Preload critical resources -->
     {% if hero_image_url %}
-    <link rel="preload" as="image" href="{{ hero_image_url }}">
+    <link rel="preload" as="image" href="{{ hero_image_url }}" fetchpriority="high">
     {% endif %}
 
     <!-- Styles -->
