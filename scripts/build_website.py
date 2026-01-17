@@ -164,6 +164,42 @@ class WebsiteBuilder:
             )
         return categories
 
+    # Source display name mapping
+    SOURCE_DISPLAY_MAP = {
+        # RSS feeds
+        "cmmc_rss_fedscoop": "FedScoop",
+        "cmmc_rss_defensescoop": "DefenseScoop",
+        "cmmc_rss_federal_news_network": "Federal News Network",
+        "cmmc_rss_nextgov_cybersecurity": "Nextgov",
+        "cmmc_rss_breaking_defense": "Breaking Defense",
+        "cmmc_rss_defense_one": "Defense One",
+        "cmmc_rss_defense_news": "Defense News",
+        "cmmc_rss_executivegov": "ExecutiveGov",
+        "cmmc_rss_securityweek": "SecurityWeek",
+        "cmmc_rss_cyberscoop": "Cyberscoop",
+        "cmmc_rss_govcon_wire": "GovCon Wire",
+        # Reddit
+        "cmmc_reddit_cmmc": "r/CMMC",
+        "cmmc_reddit_nistcontrols": "r/NISTControls",
+        "cmmc_reddit_federalemployees": "r/FederalEmployees",
+        "cmmc_reddit_cybersecurity": "r/cybersecurity",
+        "cmmc_reddit_govcontracting": "r/GovContracting",
+        # LinkedIn
+        "cmmc_linkedin": "LinkedIn",
+    }
+
+    def _get_source_display_name(self, source: str) -> str:
+        """Get display-friendly name for a source."""
+        if source in self.SOURCE_DISPLAY_MAP:
+            return self.SOURCE_DISPLAY_MAP[source]
+        # Fallback: clean up the source name
+        name = (
+            source.replace("cmmc_rss_", "")
+            .replace("cmmc_reddit_", "r/")
+            .replace("cmmc_", "")
+        )
+        return name.replace("_", " ").title()
+
     def _find_relevant_hero_image(self) -> Optional[Dict]:
         """Find an image that matches the headline/top story content.
 
@@ -358,6 +394,9 @@ class WebsiteBuilder:
             trend["category_display"] = self.CATEGORY_DISPLAY_MAP.get(
                 category, category.replace("_", " ").title()
             )
+
+            # Set display-friendly source name
+            trend["source_display"] = self._get_source_display_name(source)
 
             # Format timestamp for display
             if trend.get("timestamp"):
@@ -738,9 +777,90 @@ class WebsiteBuilder:
 
         return f'<script type="application/ld+json">\n{json.dumps(combined_schema, indent=2)}\n</script>'
 
+    def _assign_fallback_images(self):
+        """Assign stock images to trends that don't have article images.
+
+        Uses category-based mapping to assign relevant cybersecurity images.
+        Rotates through available images to avoid repetition.
+        """
+        if not self.ctx.images:
+            return
+
+        # Map categories to preferred image keywords
+        category_keywords = {
+            "federal_cybersecurity": ["hacker", "cyber", "security", "computer"],
+            "nist_compliance": ["hacker", "security", "cyber", "mask"],
+            "cmmc_program": ["hacker", "cyber", "computer", "security"],
+            "defense_industrial_base": ["hacker", "cyber", "security"],
+        }
+
+        # Find cybersecurity-related images (hacker, cyber, etc.)
+        cyber_images = []
+        other_images = []
+
+        for img in self.ctx.images:
+            alt_text = (img.get("alt_text", "") or "").lower()
+            if any(
+                kw in alt_text
+                for kw in ["hacker", "cyber", "security", "mask", "computer"]
+            ):
+                cyber_images.append(img)
+            else:
+                other_images.append(img)
+
+        # Prioritize cyber images, then others
+        fallback_pool = cyber_images + other_images
+
+        if not fallback_pool:
+            return
+
+        # Track used images to rotate through pool
+        used_count = {}
+        for img in fallback_pool:
+            used_count[img.get("id")] = 0
+
+        # Assign images to trends without them
+        for trend in self.ctx.trends:
+            if trend.get("image_url"):
+                continue  # Already has an image
+
+            category = trend.get("category", "")
+
+            # Find best matching image based on category keywords
+            best_img = None
+            keywords = category_keywords.get(category, [])
+
+            for img in fallback_pool:
+                alt_text = (img.get("alt_text", "") or "").lower()
+                if any(kw in alt_text for kw in keywords):
+                    # Prefer least-used images
+                    if best_img is None or used_count[img.get("id")] < used_count.get(
+                        best_img.get("id"), 0
+                    ):
+                        best_img = img
+
+            # If no category match, use least-used image
+            if not best_img:
+                best_img = min(
+                    fallback_pool, key=lambda x: used_count.get(x.get("id"), 0)
+                )
+
+            # Assign the image
+            if best_img:
+                trend["image_url"] = best_img.get("url_medium") or best_img.get(
+                    "url_large"
+                )
+                trend["image_source"] = "stock"  # Mark as stock image
+                used_count[best_img.get("id")] = (
+                    used_count.get(best_img.get("id"), 0) + 1
+                )
+
     def build(self) -> str:
         """Render the website using Jinja2 templates."""
         template = self.env.get_template("index.html")
+
+        # Assign fallback images to trends without article images
+        self._assign_fallback_images()
 
         def hex_to_rgb(value: str, fallback: str = "10, 10, 10") -> str:
             """Convert a hex color (e.g. #0a0a0a) to an RGB string."""
