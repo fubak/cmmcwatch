@@ -2208,11 +2208,11 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editorial Articles | CMMC Watch</title>
+    <title>Daily Analysis | CMMC Watch</title>
     <meta name="description" content="Browse {total_articles} daily editorial articles analyzing trending news and technology stories. Search, filter by mood, and explore our archive.">
     <link rel="canonical" href="https://cmmcwatch.com/articles/">
 
-    <meta property="og:title" content="Editorial Articles | CMMC Watch">
+    <meta property="og:title" content="Daily Analysis | CMMC Watch">
     <meta property="og:description" content="Browse {total_articles} daily editorial articles analyzing trending news and technology stories.">
     <meta property="og:type" content="website">
 
@@ -2751,8 +2751,8 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
     <div class="container">
         <header class="page-header">
-            <h1>Editorial Articles</h1>
-            <p>Daily analysis and insights from CMMC Watch</p>
+            <h1>Daily Analysis</h1>
+            <p>Expert insights on CMMC and federal cybersecurity</p>
         </header>
 
         <div class="stats-bar" aria-label="Article statistics">
