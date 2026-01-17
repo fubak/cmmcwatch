@@ -8,29 +8,26 @@ Focused sources:
 - LinkedIn posts from key CMMC influencers
 """
 
-import os
 import re
 import time
-import hashlib
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field, asdict
-from typing import List, Dict, Optional, Set
+from dataclasses import dataclass, field
+from datetime import datetime
 from difflib import SequenceMatcher
+from typing import Dict, List, Optional
 
-import requests
 import feedparser
+import requests
 from bs4 import BeautifulSoup
-
 from config import (
-    LIMITS,
-    TIMEOUTS,
-    DELAYS,
-    CMMC_KEYWORDS,
     CMMC_CORE_KEYWORDS,
-    NIST_KEYWORDS,
-    DIB_KEYWORDS,
+    CMMC_KEYWORDS,
     CMMC_LINKEDIN_PROFILES,
     CMMC_RSS_FEEDS,
+    DELAYS,
+    DIB_KEYWORDS,
+    LIMITS,
+    NIST_KEYWORDS,
+    TIMEOUTS,
     setup_logging,
 )
 
@@ -531,7 +528,7 @@ class TrendCollector:
         even if older articles have slightly higher keyword relevance.
         """
         now = datetime.now()
-        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        now.replace(hour=0, minute=0, second=0, microsecond=0)
 
         for trend in self.trends:
             recency_boost = 0.0

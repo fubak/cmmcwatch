@@ -1,0 +1,30 @@
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+# Disable strict checking - codebase has many pre-existing type issues
+check_untyped_defs = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+warn_return_any = false
+warn_unused_configs = false
+no_implicit_optional = false
+allow_redefinition = true
+disable_error_code = ["no-redef", "assignment", "var-annotated", "arg-type", "index", "attr-defined", "call-overload", "operator", "list-item"]
+
+[[tool.mypy.overrides]]
+module = [
+    "requests.*",
+    "bs4.*",
+    "jinja2.*",
+    "feedparser.*",
+    "scripts.*",
+]
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]  # Line too long - handled by formatter

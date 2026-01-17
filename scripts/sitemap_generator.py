@@ -10,10 +10,10 @@ Includes:
 """
 
 import json
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Optional
-import xml.etree.ElementTree as ET
+from typing import List, Optional
 
 
 def generate_sitemap(

@@ -6,18 +6,18 @@ RSS Feed Generator - Generates an RSS feed from collected trends.
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Dict, Optional
-from xml.etree import ElementTree as ET
+from typing import Dict, List, Optional
 from xml.dom import minidom
+from xml.etree import ElementTree as ET
 
 from config import (
-    setup_logging,
-    RSS_FEED_TITLE,
+    DATA_DIR,
+    PUBLIC_DIR,
     RSS_FEED_DESCRIPTION,
     RSS_FEED_LINK,
     RSS_FEED_MAX_ITEMS,
-    DATA_DIR,
-    PUBLIC_DIR,
+    RSS_FEED_TITLE,
+    setup_logging,
 )
 
 # Setup logging

@@ -4,21 +4,20 @@ Archive Manager - Manages daily archives of generated websites.
 Features: Daily snapshots, browsable index, retention policy.
 """
 
-import os
+import html
 import json
 import re
 import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Dict, Optional
-import html
+from typing import Dict, List, Optional
 
 # Import shared components for consistent header/footer
 from shared_components import (
-    build_header,
     build_footer,
-    get_header_styles,
+    build_header,
     get_footer_styles,
+    get_header_styles,
     get_theme_script,
 )
 
@@ -522,7 +521,7 @@ def main():
     else:
         # Default: show status
         archives = manager.list_archives()
-        print(f"Archive Status:")
+        print("Archive Status:")
         print(f"  Location: {manager.archive_dir}")
         print(f"  Archives: {len(archives)}")
 

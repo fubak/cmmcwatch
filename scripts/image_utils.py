@@ -4,10 +4,9 @@ Image utilities for validating and sanitizing image URLs.
 Improves reliability of article images in story cards.
 """
 
-import re
-from urllib.parse import urlparse, urljoin
-from typing import Optional, Tuple
 import logging
+from typing import Optional, Tuple
+from urllib.parse import urljoin, urlparse
 
 logger = logging.getLogger(__name__)
 

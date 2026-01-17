@@ -6,13 +6,13 @@ Provides utilities for better error tracking, correlation, and debugging
 throughout the DailyTrending.info pipeline.
 """
 
+import functools
 import logging
 import time
-import functools
 import uuid
-from typing import Optional, Dict, Any, Callable
 from contextlib import contextmanager
 from datetime import datetime
+from typing import Any, Callable, Dict, Optional
 
 
 class StructuredLogger:

@@ -5,8 +5,8 @@ Configuration settings for CMMC Watch pipeline.
 Centralizes all magic numbers, timeouts, and environment-specific settings.
 """
 
-import os
 import logging
+import os
 from pathlib import Path
 
 # ============================================================================

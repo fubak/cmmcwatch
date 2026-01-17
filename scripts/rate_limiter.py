@@ -5,12 +5,13 @@ Rate Limiter Module - Manages API rate limits for Google AI, OpenRouter, and Gro
 Checks rate limits before making API calls and implements backoff strategies.
 """
 
+import logging
 import os
 import time
-import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Dict, Tuple
+from typing import Dict, Optional, Tuple
+
 import requests
 
 logger = logging.getLogger(__name__)
@@ -162,7 +163,7 @@ class RateLimiter:
                 # Extract rate limit info
                 rate_limit = data.get("rate_limit", {})
                 requests_remaining = rate_limit.get("requests")
-                interval = rate_limit.get("interval", "minute")
+                rate_limit.get("interval", "minute")
 
                 # Check usage
                 usage = data.get("usage", 0)
@@ -488,7 +489,7 @@ class RateLimiter:
         limit_requests = headers.get("x-ratelimit-limit-requests")
         remaining_tokens = headers.get("x-ratelimit-remaining-tokens")
         limit_tokens = headers.get("x-ratelimit-limit-tokens")
-        reset_time = headers.get("x-ratelimit-reset-requests")
+        headers.get("x-ratelimit-reset-requests")
 
         if remaining_requests is not None:
             try:

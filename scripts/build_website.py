@@ -11,31 +11,20 @@ Features:
 - Jinja2 templating
 """
 
-import os
-import json
 import html
+import json
+import os
 import random
-import hashlib
 import re
-from datetime import datetime
-from typing import List, Dict, Optional, Tuple
-from dataclasses import dataclass, asdict
 from collections import defaultdict
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple
 
 import requests
 from bs4 import BeautifulSoup
-
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-
 from fetch_images import FallbackImageGenerator
-from shared_components import (
-    build_header,
-    build_footer,
-    get_header_styles,
-    get_footer_styles,
-    get_theme_script,
-)
-
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 LAYOUT_TEMPLATES = ["newspaper", "magazine", "bold", "mosaic"]
 HERO_STYLES = [
@@ -681,7 +670,6 @@ class WebsiteBuilder:
 
     def _build_structured_data(self) -> str:
         """Generate comprehensive JSON-LD structured data for SEO and LLMs."""
-        import json
 
         # Base WebSite schema
         website_schema = {
@@ -938,8 +926,8 @@ class WebsiteBuilder:
         hover_effect = d.get("hover_effect", "lift")
         animation_level = d.get("animation_level", "subtle")
         custom_styles = f"""
-            .hero-content {{ 
-                text-align: { 'center' if d.get('hero_style') in ['minimal', 'centered'] else 'left' }; 
+            .hero-content {{
+                text-align: { 'center' if d.get('hero_style') in ['minimal', 'centered'] else 'left' };
             }}
             .story-card {{
                 border-radius: {d.get('card_radius', '1rem')};

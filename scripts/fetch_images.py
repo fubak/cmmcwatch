@@ -5,40 +5,39 @@ Provides fallback mechanisms and persistent caching.
 Sources: Pexels (primary) → Unsplash → Pixabay (CC0).
 """
 
-import os
-import json
-import time
-import random
 import hashlib
-import tempfile
+import json
+import os
+import random
 import re
-from pathlib import Path
+import tempfile
+import time
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional, Tuple
-from dataclasses import dataclass, asdict, field
-from urllib.parse import quote_plus
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 import requests
 
 try:
-    from rate_limiter import get_rate_limiter, check_before_call
+    from rate_limiter import check_before_call
 except ImportError:
-    from scripts.rate_limiter import get_rate_limiter, check_before_call
+    from scripts.rate_limiter import check_before_call
 
 from config import (
-    setup_logging,
+    DELAYS,
     IMAGE_CACHE_DIR,
     IMAGE_CACHE_MAX_AGE_DAYS,
     IMAGE_CACHE_MAX_ENTRIES,
-    TIMEOUTS,
-    RETRY_MAX_ATTEMPTS,
-    RETRY_BACKOFF_FACTOR,
-    RETRY_STATUS_CODES,
-    DELAYS,
     MIN_IMAGES_REQUIRED,
     PEXELS_KEYS,
-    UNSPLASH_KEYS,
     PIXABAY_KEYS,
+    RETRY_BACKOFF_FACTOR,
+    RETRY_MAX_ATTEMPTS,
+    RETRY_STATUS_CODES,
+    TIMEOUTS,
+    UNSPLASH_KEYS,
+    setup_logging,
 )
 
 # Setup logging

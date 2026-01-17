@@ -18,9 +18,9 @@ To stay within free limits:
 
 import os
 import time
-from datetime import datetime
-from typing import List, Dict, Optional
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Dict, List, Optional
 
 from config import setup_logging
 

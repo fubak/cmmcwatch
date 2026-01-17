@@ -15,38 +15,29 @@ Pipeline steps:
 10. Clean up old archives
 """
 
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
+from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
-from dataclasses import asdict
-from typing import List
 
 # Add scripts directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from archive_manager import ArchiveManager
+from collect_trends import TrendCollector
 from config import (
-    setup_logging,
     PROJECT_ROOT,
-    DATA_DIR,
-    PUBLIC_DIR,
+    setup_logging,
 )
-from collect_trends import TrendCollector, Trend
+from editorial_generator import EditorialGenerator
 from fetch_images import ImageFetcher
 from generate_design import DesignGenerator
-from archive_manager import ArchiveManager
 from generate_rss import generate_rss_feed
-from editorial_generator import EditorialGenerator
 from pwa_generator import save_pwa_assets
 from sitemap_generator import save_sitemap
-from shared_components import (
-    build_header,
-    build_footer,
-    get_header_styles,
-    get_footer_styles,
-)
 
 # Setup logging
 logger = setup_logging("pipeline")
@@ -243,7 +234,7 @@ class CMMCWatchPipeline:
 
     def _build_website(self):
         """Build the main HTML website."""
-        from build_website import WebsiteBuilder, BuildContext
+        from build_website import BuildContext, WebsiteBuilder
 
         # Prepare trends as dicts
         trends_dict = []

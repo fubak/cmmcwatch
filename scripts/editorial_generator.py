@@ -13,11 +13,12 @@ import logging
 import os
 import re
 import time
-import requests
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
+
+import requests
 
 # Site configuration
 SITE_NAME = "CMMC Watch"
@@ -25,30 +26,28 @@ SITE_URL = "https://cmmcwatch.com"
 
 try:
     from rate_limiter import (
-        get_rate_limiter,
         check_before_call,
+        get_rate_limiter,
         mark_provider_exhausted,
-        is_provider_exhausted,
     )
     from shared_components import (
-        build_header,
         build_footer,
-        get_header_styles,
+        build_header,
         get_footer_styles,
+        get_header_styles,
         get_theme_script,
     )
 except ImportError:
     from scripts.rate_limiter import (
-        get_rate_limiter,
         check_before_call,
+        get_rate_limiter,
         mark_provider_exhausted,
-        is_provider_exhausted,
     )
     from scripts.shared_components import (
-        build_header,
         build_footer,
-        get_header_styles,
+        build_header,
         get_footer_styles,
+        get_header_styles,
         get_theme_script,
     )
 
