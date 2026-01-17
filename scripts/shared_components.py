@@ -114,11 +114,9 @@ def build_footer(date_str: str = None, style_info: str = "") -> str:
                 <h4 class="footer-section-title">Explore</h4>
                 <ul class="footer-links">
                     <li><a href="/">Home</a></li>
-                    <li><a href="/tech/">Tech</a></li>
-                    <li><a href="/world/">World</a></li>
                     <li><a href="/articles/">Articles</a></li>
                     <li><a href="/archive/">Archive</a></li>
-                    <li><a href="/media/">Media</a></li>
+                    <li><a href="/feed.xml">RSS Feed</a></li>
                 </ul>
             </div>
         </div>
