@@ -155,10 +155,14 @@ class EditorialGenerator:
         openrouter_key: Optional[str] = None,
         google_key: Optional[str] = None,
         public_dir: Optional[Path] = None,
+        ollama_url: Optional[str] = None,
     ):
         self.groq_key = groq_key or os.getenv("GROQ_API_KEY")
         self.openrouter_key = openrouter_key or os.getenv("OPENROUTER_API_KEY")
         self.google_key = google_key or os.getenv("GOOGLE_AI_API_KEY")
+        self.ollama_url = ollama_url or os.getenv(
+            "OLLAMA_URL", "http://localhost:11434"
+        )
         self.public_dir = public_dir or Path(__file__).parent.parent / "public"
         self.articles_dir = self.public_dir / "articles"
         self.session = requests.Session()
@@ -226,8 +230,11 @@ class EditorialGenerator:
         Returns:
             EditorialArticle if successful, None otherwise
         """
-        if not self.groq_key:
-            logger.warning("No Groq API key - skipping editorial generation")
+        # Check if at least one AI provider is available
+        has_ollama = self._check_ollama_available()
+        has_api_keys = self.groq_key or self.openrouter_key or self.google_key
+        if not has_ollama and not has_api_keys:
+            logger.warning("No AI provider available - skipping editorial generation")
             return None
 
         if len(trends) < 3:
@@ -431,7 +438,9 @@ Respond with ONLY a valid JSON object:
         Returns:
             List of WhyThisMatters objects
         """
-        if not self.groq_key:
+        has_ollama = self._check_ollama_available()
+        has_api_keys = self.groq_key or self.openrouter_key or self.google_key
+        if not has_ollama and not has_api_keys:
             return []
 
         top_stories = trends[:count]
@@ -1242,6 +1251,11 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
         Note: Editorial defaults to 'complex' as it requires high-quality writing.
         """
+        # Always try Ollama first if available (local, free, fast)
+        result = self._call_ollama(prompt, max_tokens)
+        if result:
+            return result
+
         if task_complexity == "simple":
             # For simple tasks, prioritize free models to save quota
             result = self._call_opencode(prompt, max_tokens, max_retries)
@@ -1288,6 +1302,40 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                 return result
 
             return self._call_groq_direct(prompt, max_tokens, max_retries)
+
+    def _check_ollama_available(self) -> bool:
+        """Check if Ollama is running and accessible."""
+        try:
+            response = self.session.get(f"{self.ollama_url}/api/tags", timeout=5)
+            return response.status_code == 200
+        except Exception:
+            return False
+
+    def _call_ollama(self, prompt: str, max_tokens: int = 800) -> Optional[str]:
+        """Call local Ollama for LLM inference (free, fast, private)."""
+        try:
+            logger.info("Trying Ollama (local)...")
+            response = self.session.post(
+                f"{self.ollama_url}/api/generate",
+                json={
+                    "model": "llama3.2",
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "num_predict": max_tokens,
+                        "temperature": 0.7,
+                    },
+                },
+                timeout=180,  # Longer timeout for editorial content
+            )
+            response.raise_for_status()
+            result = response.json().get("response", "")
+            if result:
+                logger.info("Ollama success")
+                return result
+        except Exception as e:
+            logger.info(f"Ollama not available: {e}")
+        return None
 
     def _call_google_ai(
         self, prompt: str, max_tokens: int = 800, max_retries: int = 1

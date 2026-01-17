@@ -27,14 +27,25 @@ from pathlib import Path
 import requests
 
 try:
-    from rate_limiter import get_rate_limiter, check_before_call, mark_provider_exhausted, is_provider_exhausted
+    from rate_limiter import (
+        get_rate_limiter,
+        check_before_call,
+        mark_provider_exhausted,
+        is_provider_exhausted,
+    )
 except ImportError:
-    from scripts.rate_limiter import get_rate_limiter, check_before_call, mark_provider_exhausted, is_provider_exhausted
+    from scripts.rate_limiter import (
+        get_rate_limiter,
+        check_before_call,
+        mark_provider_exhausted,
+        is_provider_exhausted,
+    )
 
 
 @dataclass
 class DesignSpec:
     """Complete specification for a generated design."""
+
     # Identity
     theme_name: str = "Default"
     personality: str = "modern"
@@ -86,11 +97,19 @@ class DesignSpec:
     use_float_animation: bool = False
 
     # New design dimensions
-    image_treatment: str = "none"  # none, grayscale, sepia, saturate, contrast, vignette
-    typography_scale: Dict[str, str] = field(default_factory=dict)  # headline sizes per personality
-    section_divider: str = "none"  # none, line, thick_line, gradient_line, dots, fade, wave
+    image_treatment: str = (
+        "none"  # none, grayscale, sepia, saturate, contrast, vignette
+    )
+    typography_scale: Dict[str, str] = field(
+        default_factory=dict
+    )  # headline sizes per personality
+    section_divider: str = (
+        "none"  # none, line, thick_line, gradient_line, dots, fade, wave
+    )
     card_aspect_ratio: str = "auto"  # auto, landscape, portrait, square, wide, classic
-    content_sentiment: str = "neutral"  # breaking, positive, negative, entertainment, neutral
+    content_sentiment: str = (
+        "neutral"  # breaking, positive, negative, entertainment, neutral
+    )
     contrast_validated: bool = True  # Whether colors pass WCAG AA
 
     # Content
@@ -292,144 +311,264 @@ COLOR_SCHEMES = [
     # Dark themes
     {
         "name": "Midnight Indigo",
-        "bg": "#0a0a0a", "text": "#ffffff", "accent": "#6366f1",
-        "accent_secondary": "#8b5cf6", "muted": "#a1a1aa",
-        "card_bg": "#18181b", "border": "#27272a", "dark": True,
-        "mood": "professional", "personalities": ["corporate", "tech", "minimal"]
+        "bg": "#0a0a0a",
+        "text": "#ffffff",
+        "accent": "#6366f1",
+        "accent_secondary": "#8b5cf6",
+        "muted": "#a1a1aa",
+        "card_bg": "#18181b",
+        "border": "#27272a",
+        "dark": True,
+        "mood": "professional",
+        "personalities": ["corporate", "tech", "minimal"],
     },
     {
         "name": "Cyberpunk Neon",
-        "bg": "#0d0d0d", "text": "#f0f0f0", "accent": "#00ff88",
-        "accent_secondary": "#00ccff", "muted": "#888888",
-        "card_bg": "#1a1a1a", "border": "#333333", "dark": True,
-        "mood": "futuristic", "personalities": ["tech", "playful", "dashboard"]
+        "bg": "#0d0d0d",
+        "text": "#f0f0f0",
+        "accent": "#00ff88",
+        "accent_secondary": "#00ccff",
+        "muted": "#888888",
+        "card_bg": "#1a1a1a",
+        "border": "#333333",
+        "dark": True,
+        "mood": "futuristic",
+        "personalities": ["tech", "playful", "dashboard"],
     },
     {
         "name": "Warm Ember",
-        "bg": "#1a1410", "text": "#fef3c7", "accent": "#f59e0b",
-        "accent_secondary": "#ef4444", "muted": "#d4a574",
-        "card_bg": "#292017", "border": "#3d2d1f", "dark": True,
-        "mood": "warm", "personalities": ["editorial", "magazine"]
+        "bg": "#1a1410",
+        "text": "#fef3c7",
+        "accent": "#f59e0b",
+        "accent_secondary": "#ef4444",
+        "muted": "#d4a574",
+        "card_bg": "#292017",
+        "border": "#3d2d1f",
+        "dark": True,
+        "mood": "warm",
+        "personalities": ["editorial", "magazine"],
     },
     {
         "name": "Ocean Depths",
-        "bg": "#0a1628", "text": "#e2e8f0", "accent": "#0ea5e9",
-        "accent_secondary": "#06b6d4", "muted": "#64748b",
-        "card_bg": "#0f2847", "border": "#1e3a5f", "dark": True,
-        "mood": "calm", "personalities": ["corporate", "news"]
+        "bg": "#0a1628",
+        "text": "#e2e8f0",
+        "accent": "#0ea5e9",
+        "accent_secondary": "#06b6d4",
+        "muted": "#64748b",
+        "card_bg": "#0f2847",
+        "border": "#1e3a5f",
+        "dark": True,
+        "mood": "calm",
+        "personalities": ["corporate", "news"],
     },
     {
         "name": "Forest Night",
-        "bg": "#0a120a", "text": "#ecfdf5", "accent": "#10b981",
-        "accent_secondary": "#34d399", "muted": "#6b7c6b",
-        "card_bg": "#152015", "border": "#1f3520", "dark": True,
-        "mood": "natural", "personalities": ["minimal", "editorial"]
+        "bg": "#0a120a",
+        "text": "#ecfdf5",
+        "accent": "#10b981",
+        "accent_secondary": "#34d399",
+        "muted": "#6b7c6b",
+        "card_bg": "#152015",
+        "border": "#1f3520",
+        "dark": True,
+        "mood": "natural",
+        "personalities": ["minimal", "editorial"],
     },
     {
         "name": "Royal Purple",
-        "bg": "#0f0a1a", "text": "#f5f3ff", "accent": "#a855f7",
-        "accent_secondary": "#c084fc", "muted": "#9c8fac",
-        "card_bg": "#1a1025", "border": "#2e1f4a", "dark": True,
-        "mood": "elegant", "personalities": ["magazine", "playful"]
+        "bg": "#0f0a1a",
+        "text": "#f5f3ff",
+        "accent": "#a855f7",
+        "accent_secondary": "#c084fc",
+        "muted": "#9c8fac",
+        "card_bg": "#1a1025",
+        "border": "#2e1f4a",
+        "dark": True,
+        "mood": "elegant",
+        "personalities": ["magazine", "playful"],
     },
     {
         "name": "Crimson Dark",
-        "bg": "#0f0a0a", "text": "#fef2f2", "accent": "#ef4444",
-        "accent_secondary": "#f87171", "muted": "#a89090",
-        "card_bg": "#1a1010", "border": "#3f1f1f", "dark": True,
-        "mood": "bold", "personalities": ["news", "brutalist"]
+        "bg": "#0f0a0a",
+        "text": "#fef2f2",
+        "accent": "#ef4444",
+        "accent_secondary": "#f87171",
+        "muted": "#a89090",
+        "card_bg": "#1a1010",
+        "border": "#3f1f1f",
+        "dark": True,
+        "mood": "bold",
+        "personalities": ["news", "brutalist"],
     },
     {
         "name": "Soft Rose",
-        "bg": "#1a0f14", "text": "#fdf2f8", "accent": "#ec4899",
-        "accent_secondary": "#f472b6", "muted": "#a88899",
-        "card_bg": "#251520", "border": "#3d1f30", "dark": True,
-        "mood": "playful", "personalities": ["playful", "magazine"]
+        "bg": "#1a0f14",
+        "text": "#fdf2f8",
+        "accent": "#ec4899",
+        "accent_secondary": "#f472b6",
+        "muted": "#a88899",
+        "card_bg": "#251520",
+        "border": "#3d1f30",
+        "dark": True,
+        "mood": "playful",
+        "personalities": ["playful", "magazine"],
     },
     {
         "name": "Arctic Night",
-        "bg": "#0f1419", "text": "#f0f9ff", "accent": "#38bdf8",
-        "accent_secondary": "#7dd3fc", "muted": "#7899a8",
-        "card_bg": "#1a2633", "border": "#243544", "dark": True,
-        "mood": "cool", "personalities": ["tech", "dashboard"]
+        "bg": "#0f1419",
+        "text": "#f0f9ff",
+        "accent": "#38bdf8",
+        "accent_secondary": "#7dd3fc",
+        "muted": "#7899a8",
+        "card_bg": "#1a2633",
+        "border": "#243544",
+        "dark": True,
+        "mood": "cool",
+        "personalities": ["tech", "dashboard"],
     },
     {
         "name": "Slate Dark",
-        "bg": "#0f172a", "text": "#f8fafc", "accent": "#f97316",
-        "accent_secondary": "#fb923c", "muted": "#94a3b8",
-        "card_bg": "#1e293b", "border": "#334155", "dark": True,
-        "mood": "modern", "personalities": ["corporate", "news"]
+        "bg": "#0f172a",
+        "text": "#f8fafc",
+        "accent": "#f97316",
+        "accent_secondary": "#fb923c",
+        "muted": "#94a3b8",
+        "card_bg": "#1e293b",
+        "border": "#334155",
+        "dark": True,
+        "mood": "modern",
+        "personalities": ["corporate", "news"],
     },
     {
         "name": "Noir",
-        "bg": "#000000", "text": "#ffffff", "accent": "#ffffff",
-        "accent_secondary": "#a3a3a3", "muted": "#737373",
-        "card_bg": "#171717", "border": "#262626", "dark": True,
-        "mood": "dramatic", "personalities": ["brutalist", "editorial", "minimal"]
+        "bg": "#000000",
+        "text": "#ffffff",
+        "accent": "#ffffff",
+        "accent_secondary": "#a3a3a3",
+        "muted": "#737373",
+        "card_bg": "#171717",
+        "border": "#262626",
+        "dark": True,
+        "mood": "dramatic",
+        "personalities": ["brutalist", "editorial", "minimal"],
     },
     {
         "name": "Matrix",
-        "bg": "#0a0a0a", "text": "#e2e8f0", "accent": "#38bdf8",
-        "accent_secondary": "#22d3ee", "muted": "#7c9ab3",
-        "card_bg": "#0d141c", "border": "#1c2733", "dark": True,
-        "mood": "retro", "personalities": ["tech", "brutalist"]
+        "bg": "#0a0a0a",
+        "text": "#e2e8f0",
+        "accent": "#38bdf8",
+        "accent_secondary": "#22d3ee",
+        "muted": "#7c9ab3",
+        "card_bg": "#0d141c",
+        "border": "#1c2733",
+        "dark": True,
+        "mood": "retro",
+        "personalities": ["tech", "brutalist"],
     },
     # Light themes
     {
         "name": "Clean White",
-        "bg": "#ffffff", "text": "#18181b", "accent": "#6366f1",
-        "accent_secondary": "#8b5cf6", "muted": "#71717a",
-        "card_bg": "#f4f4f5", "border": "#e4e4e7", "dark": False,
-        "mood": "clean", "personalities": ["minimal", "corporate"]
+        "bg": "#ffffff",
+        "text": "#18181b",
+        "accent": "#6366f1",
+        "accent_secondary": "#8b5cf6",
+        "muted": "#71717a",
+        "card_bg": "#f4f4f5",
+        "border": "#e4e4e7",
+        "dark": False,
+        "mood": "clean",
+        "personalities": ["minimal", "corporate"],
     },
     {
         "name": "Warm Paper",
-        "bg": "#faf9f6", "text": "#1c1917", "accent": "#ea580c",
-        "accent_secondary": "#f97316", "muted": "#78716c",
-        "card_bg": "#f5f4f0", "border": "#e7e5e4", "dark": False,
-        "mood": "warm", "personalities": ["editorial", "magazine"]
+        "bg": "#faf9f6",
+        "text": "#1c1917",
+        "accent": "#ea580c",
+        "accent_secondary": "#f97316",
+        "muted": "#78716c",
+        "card_bg": "#f5f4f0",
+        "border": "#e7e5e4",
+        "dark": False,
+        "mood": "warm",
+        "personalities": ["editorial", "magazine"],
     },
     {
         "name": "Cool Gray",
-        "bg": "#f8fafc", "text": "#0f172a", "accent": "#3b82f6",
-        "accent_secondary": "#60a5fa", "muted": "#64748b",
-        "card_bg": "#f1f5f9", "border": "#e2e8f0", "dark": False,
-        "mood": "professional", "personalities": ["corporate", "news", "dashboard"]
+        "bg": "#f8fafc",
+        "text": "#0f172a",
+        "accent": "#3b82f6",
+        "accent_secondary": "#60a5fa",
+        "muted": "#64748b",
+        "card_bg": "#f1f5f9",
+        "border": "#e2e8f0",
+        "dark": False,
+        "mood": "professional",
+        "personalities": ["corporate", "news", "dashboard"],
     },
     {
         "name": "Mint Fresh",
-        "bg": "#f0fdf4", "text": "#14532d", "accent": "#16a34a",
-        "accent_secondary": "#22c55e", "muted": "#4ade80",
-        "card_bg": "#dcfce7", "border": "#bbf7d0", "dark": False,
-        "mood": "fresh", "personalities": ["playful", "minimal"]
+        "bg": "#f0fdf4",
+        "text": "#14532d",
+        "accent": "#16a34a",
+        "accent_secondary": "#22c55e",
+        "muted": "#4ade80",
+        "card_bg": "#dcfce7",
+        "border": "#bbf7d0",
+        "dark": False,
+        "mood": "fresh",
+        "personalities": ["playful", "minimal"],
     },
     {
         "name": "Lavender Mist",
-        "bg": "#faf5ff", "text": "#3b0764", "accent": "#9333ea",
-        "accent_secondary": "#a855f7", "muted": "#c084fc",
-        "card_bg": "#f3e8ff", "border": "#e9d5ff", "dark": False,
-        "mood": "creative", "personalities": ["playful", "magazine"]
+        "bg": "#faf5ff",
+        "text": "#3b0764",
+        "accent": "#9333ea",
+        "accent_secondary": "#a855f7",
+        "muted": "#c084fc",
+        "card_bg": "#f3e8ff",
+        "border": "#e9d5ff",
+        "dark": False,
+        "mood": "creative",
+        "personalities": ["playful", "magazine"],
     },
     {
         "name": "Newspaper",
-        "bg": "#f5f5dc", "text": "#1a1a1a", "accent": "#b91c1c",
-        "accent_secondary": "#dc2626", "muted": "#525252",
-        "card_bg": "#fafad2", "border": "#d4d4a8", "dark": False,
-        "mood": "classic", "personalities": ["news", "editorial"]
+        "bg": "#f5f5dc",
+        "text": "#1a1a1a",
+        "accent": "#b91c1c",
+        "accent_secondary": "#dc2626",
+        "muted": "#525252",
+        "card_bg": "#fafad2",
+        "border": "#d4d4a8",
+        "dark": False,
+        "mood": "classic",
+        "personalities": ["news", "editorial"],
     },
     {
         "name": "Terminal",
-        "bg": "#1e1e1e", "text": "#d4d4d4", "accent": "#569cd6",
-        "accent_secondary": "#4ec9b0", "muted": "#808080",
-        "card_bg": "#252526", "border": "#3c3c3c", "dark": True,
-        "mood": "technical", "personalities": ["tech", "dashboard", "brutalist"]
+        "bg": "#1e1e1e",
+        "text": "#d4d4d4",
+        "accent": "#569cd6",
+        "accent_secondary": "#4ec9b0",
+        "muted": "#808080",
+        "card_bg": "#252526",
+        "border": "#3c3c3c",
+        "dark": True,
+        "mood": "technical",
+        "personalities": ["tech", "dashboard", "brutalist"],
     },
     {
         "name": "Sunset Gradient",
-        "bg": "#1a1a2e", "text": "#eaeaea", "accent": "#e94560",
-        "accent_secondary": "#ff6b6b", "muted": "#a0a0a0",
-        "card_bg": "#16213e", "border": "#0f3460", "dark": True,
-        "mood": "vibrant", "personalities": ["playful", "tech"]
+        "bg": "#1a1a2e",
+        "text": "#eaeaea",
+        "accent": "#e94560",
+        "accent_secondary": "#ff6b6b",
+        "muted": "#a0a0a0",
+        "card_bg": "#16213e",
+        "border": "#0f3460",
+        "dark": True,
+        "mood": "vibrant",
+        "personalities": ["playful", "tech"],
     },
 ]
 
@@ -438,23 +577,23 @@ COLOR_SCHEMES = [
 # ============================================================================
 
 LAYOUT_PATTERNS = [
-    "newspaper",   # Classic columns
-    "magazine",    # Large featured images
-    "dashboard",   # Data-dense grid
-    "minimal",     # Clean, centered
-    "bold",        # Large typography
-    "mosaic",      # Asymmetric grid
+    "newspaper",  # Classic columns
+    "magazine",  # Large featured images
+    "dashboard",  # Data-dense grid
+    "minimal",  # Clean, centered
+    "bold",  # Large typography
+    "mosaic",  # Asymmetric grid
 ]
 
 HERO_PATTERNS = [
-    "full",        # Full viewport
-    "split",       # Split screen
-    "minimal",     # Compact
-    "gradient",    # Animated gradient
-    "ticker",      # Breaking news style
-    "cinematic",   # Wide letterbox with blur
-    "stack",       # Vertically stacked headline
-    "marquee",     # Scrolling ticker bar
+    "full",  # Full viewport
+    "split",  # Split screen
+    "minimal",  # Compact
+    "gradient",  # Animated gradient
+    "ticker",  # Breaking news style
+    "cinematic",  # Wide letterbox with blur
+    "stack",  # Vertically stacked headline
+    "marquee",  # Scrolling ticker bar
 ]
 
 # ============================================================================
@@ -475,10 +614,18 @@ BACKGROUND_PATTERNS = {
 ACCENT_STYLES = {
     "none": {},
     "glow": {"box-shadow": "0 0 60px -20px var(--color-accent)"},
-    "neon_border": {"border": "2px solid var(--color-accent)", "box-shadow": "0 0 20px var(--color-accent), inset 0 0 20px rgba(255,255,255,0.05)"},
-    "gradient_border": {"border-image": "linear-gradient(135deg, var(--color-accent), var(--color-accent-secondary)) 1"},
+    "neon_border": {
+        "border": "2px solid var(--color-accent)",
+        "box-shadow": "0 0 20px var(--color-accent), inset 0 0 20px rgba(255,255,255,0.05)",
+    },
+    "gradient_border": {
+        "border-image": "linear-gradient(135deg, var(--color-accent), var(--color-accent-secondary)) 1"
+    },
     "underline": {"border-bottom": "3px solid var(--color-accent)"},
-    "corner_accent": {"border-top": "4px solid var(--color-accent)", "border-left": "4px solid var(--color-accent)"},
+    "corner_accent": {
+        "border-top": "4px solid var(--color-accent)",
+        "border-left": "4px solid var(--color-accent)",
+    },
     "pill_badge": {"border-radius": "9999px", "padding": "0.5rem 1.5rem"},
 }
 
@@ -518,14 +665,14 @@ ANIMATION_PRESETS = {
 
 # Special visual modes for dramatic variation
 SPECIAL_MODES = [
-    "standard",      # Normal look
-    "high_contrast", # Maximum readability
-    "duotone",       # Two-color aesthetic
-    "monochrome",    # Single accent color
-    "vibrant",       # Saturated colors
-    "muted",         # Desaturated, subtle
-    "retro",         # Vintage feel
-    "glassmorphism", # Frosted glass everywhere
+    "standard",  # Normal look
+    "high_contrast",  # Maximum readability
+    "duotone",  # Two-color aesthetic
+    "monochrome",  # Single accent color
+    "vibrant",  # Saturated colors
+    "muted",  # Desaturated, subtle
+    "retro",  # Vintage feel
+    "glassmorphism",  # Frosted glass everywhere
 ]
 
 # ============================================================================
@@ -535,8 +682,18 @@ SPECIAL_MODES = [
 
 # Valid hero styles that have CSS implementations in build_website.py
 HERO_STYLES_WITH_CSS = [
-    "cinematic", "glassmorphism", "neon", "duotone", "particles",
-    "waves", "geometric", "spotlight", "glitch", "aurora", "mesh", "retro"
+    "cinematic",
+    "glassmorphism",
+    "neon",
+    "duotone",
+    "particles",
+    "waves",
+    "geometric",
+    "spotlight",
+    "glitch",
+    "aurora",
+    "mesh",
+    "retro",
 ]
 
 PERSONALITY_HERO_ALIGNMENT = {
@@ -562,7 +719,9 @@ IMAGE_TREATMENTS = {
     "saturate": {"filter": "saturate(1.3)"},
     "contrast": {"filter": "contrast(1.1)"},
     "vignette": {"box-shadow": "inset 0 0 100px rgba(0,0,0,0.5)"},
-    "blur_edges": {"mask-image": "radial-gradient(ellipse, black 50%, transparent 100%)"},
+    "blur_edges": {
+        "mask-image": "radial-gradient(ellipse, black 50%, transparent 100%)"
+    },
     "duotone_warm": {"filter": "sepia(20%) saturate(1.2) hue-rotate(-10deg)"},
     "duotone_cool": {"filter": "saturate(0.8) hue-rotate(20deg)"},
 }
@@ -585,7 +744,7 @@ PERSONALITY_IMAGE_TREATMENTS = {
 
 TYPOGRAPHY_SCALES = {
     "brutalist": {
-        "scale_ratio": 1.5,        # Dramatic jumps
+        "scale_ratio": 1.5,  # Dramatic jumps
         "base_size": "1rem",
         "headline_xl": "clamp(3rem, 10vw, 6rem)",
         "headline_lg": "clamp(2rem, 5vw, 3.5rem)",
@@ -593,7 +752,7 @@ TYPOGRAPHY_SCALES = {
         "letter_spacing_headings": "0.05em",
     },
     "editorial": {
-        "scale_ratio": 1.25,       # Classic proportions
+        "scale_ratio": 1.25,  # Classic proportions
         "base_size": "1.1rem",
         "headline_xl": "clamp(2.5rem, 7vw, 4.5rem)",
         "headline_lg": "clamp(1.75rem, 4vw, 2.75rem)",
@@ -601,7 +760,7 @@ TYPOGRAPHY_SCALES = {
         "letter_spacing_headings": "0",
     },
     "minimal": {
-        "scale_ratio": 1.2,        # Subtle differences
+        "scale_ratio": 1.2,  # Subtle differences
         "base_size": "1rem",
         "headline_xl": "clamp(2rem, 6vw, 4rem)",
         "headline_lg": "clamp(1.5rem, 3.5vw, 2.5rem)",
@@ -617,7 +776,7 @@ TYPOGRAPHY_SCALES = {
         "letter_spacing_headings": "0",
     },
     "playful": {
-        "scale_ratio": 1.4,        # Fun, bouncy
+        "scale_ratio": 1.4,  # Fun, bouncy
         "base_size": "1rem",
         "headline_xl": "clamp(2.75rem, 9vw, 5.5rem)",
         "headline_lg": "clamp(1.75rem, 4.5vw, 3rem)",
@@ -633,7 +792,7 @@ TYPOGRAPHY_SCALES = {
         "letter_spacing_headings": "0.02em",
     },
     "news": {
-        "scale_ratio": 1.35,       # Authority
+        "scale_ratio": 1.35,  # Authority
         "base_size": "1rem",
         "headline_xl": "clamp(2.5rem, 8vw, 5rem)",
         "headline_lg": "clamp(1.75rem, 4vw, 3rem)",
@@ -649,7 +808,7 @@ TYPOGRAPHY_SCALES = {
         "letter_spacing_headings": "-0.01em",
     },
     "dashboard": {
-        "scale_ratio": 1.15,       # Compact, data-dense
+        "scale_ratio": 1.15,  # Compact, data-dense
         "base_size": "0.9rem",
         "headline_xl": "clamp(2rem, 6vw, 3.5rem)",
         "headline_lg": "clamp(1.5rem, 3.5vw, 2.25rem)",
@@ -689,12 +848,12 @@ PERSONALITY_SECTION_DIVIDERS = {
 # ============================================================================
 
 CARD_ASPECT_RATIOS = {
-    "auto": "auto",           # Natural content flow
-    "landscape": "16/9",      # Wide cards
-    "portrait": "3/4",        # Tall cards
-    "square": "1/1",          # Equal dimensions
-    "wide": "21/9",           # Ultra-wide
-    "classic": "4/3",         # Traditional
+    "auto": "auto",  # Natural content flow
+    "landscape": "16/9",  # Wide cards
+    "portrait": "3/4",  # Tall cards
+    "square": "1/1",  # Equal dimensions
+    "wide": "21/9",  # Ultra-wide
+    "classic": "4/3",  # Traditional
 }
 
 PERSONALITY_CARD_RATIOS = {
@@ -715,22 +874,28 @@ PERSONALITY_CARD_RATIOS = {
 # Ensures text is readable against backgrounds (WCAG AA requires 4.5:1 for normal text)
 # ============================================================================
 
+
 def hex_to_rgb(hex_color: str) -> tuple:
     """Convert hex color to RGB tuple."""
-    hex_color = hex_color.lstrip('#')
+    hex_color = hex_color.lstrip("#")
     if len(hex_color) == 3:
-        hex_color = ''.join([c*2 for c in hex_color])
-    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        hex_color = "".join([c * 2 for c in hex_color])
+    return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
 
 
 def get_relative_luminance(rgb: tuple) -> float:
     """Calculate relative luminance per WCAG 2.1 specification."""
+
     def channel_luminance(c):
         c = c / 255
         return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
 
     r, g, b = rgb
-    return 0.2126 * channel_luminance(r) + 0.7152 * channel_luminance(g) + 0.0722 * channel_luminance(b)
+    return (
+        0.2126 * channel_luminance(r)
+        + 0.7152 * channel_luminance(g)
+        + 0.0722 * channel_luminance(b)
+    )
 
 
 def calculate_contrast_ratio(color1: str, color2: str) -> float:
@@ -745,13 +910,17 @@ def calculate_contrast_ratio(color1: str, color2: str) -> float:
         return 1.0  # Return lowest ratio if calculation fails
 
 
-def validate_color_contrast(text_color: str, bg_color: str, min_ratio: float = 4.5) -> bool:
+def validate_color_contrast(
+    text_color: str, bg_color: str, min_ratio: float = 4.5
+) -> bool:
     """Check if text color has sufficient contrast against background (WCAG AA)."""
     ratio = calculate_contrast_ratio(text_color, bg_color)
     return ratio >= min_ratio
 
 
-def adjust_color_for_contrast(text_color: str, bg_color: str, min_ratio: float = 4.5) -> str:
+def adjust_color_for_contrast(
+    text_color: str, bg_color: str, min_ratio: float = 4.5
+) -> str:
     """Adjust text color to meet minimum contrast ratio if needed."""
     if validate_color_contrast(text_color, bg_color, min_ratio):
         return text_color
@@ -772,22 +941,45 @@ def adjust_color_for_contrast(text_color: str, bg_color: str, min_ratio: float =
 # ============================================================================
 
 SENTIMENT_ANIMATION_MAP = {
-    "breaking": "moderate",    # Breaking news: moderate activity
-    "urgent": "moderate",      # Urgent news: attention-grabbing
-    "positive": "playful",     # Good news: celebratory
-    "negative": "subtle",      # Serious news: restrained
-    "neutral": "subtle",       # Normal: balanced
-    "tech": "moderate",        # Tech news: modern feel
-    "entertainment": "playful", # Entertainment: fun
+    "breaking": "moderate",  # Breaking news: moderate activity
+    "urgent": "moderate",  # Urgent news: attention-grabbing
+    "positive": "playful",  # Good news: celebratory
+    "negative": "subtle",  # Serious news: restrained
+    "neutral": "subtle",  # Normal: balanced
+    "tech": "moderate",  # Tech news: modern feel
+    "entertainment": "playful",  # Entertainment: fun
 }
+
 
 def analyze_content_sentiment(trends: list, keywords: list) -> str:
     """Analyze content to determine appropriate animation intensity."""
     # Keywords that suggest different sentiments
     breaking_words = ["breaking", "just in", "urgent", "developing", "alert"]
-    positive_words = ["success", "breakthrough", "wins", "celebrates", "achieves", "record"]
-    negative_words = ["crisis", "disaster", "death", "crash", "fails", "warning", "threat"]
-    entertainment_words = ["movie", "music", "celebrity", "game", "sports", "entertainment"]
+    positive_words = [
+        "success",
+        "breakthrough",
+        "wins",
+        "celebrates",
+        "achieves",
+        "record",
+    ]
+    negative_words = [
+        "crisis",
+        "disaster",
+        "death",
+        "crash",
+        "fails",
+        "warning",
+        "threat",
+    ]
+    entertainment_words = [
+        "movie",
+        "music",
+        "celebrity",
+        "game",
+        "sports",
+        "entertainment",
+    ]
 
     # Count occurrences - handle None values safely
     text_parts = []
@@ -816,15 +1008,23 @@ def analyze_content_sentiment(trends: list, keywords: list) -> str:
     return "neutral"
 
 
-def get_content_aware_animation(trends: list, keywords: list, base_animation: str) -> str:
+def get_content_aware_animation(
+    trends: list, keywords: list, base_animation: str
+) -> str:
     """Get animation level adjusted for content sentiment."""
     sentiment = analyze_content_sentiment(trends, keywords)
     suggested = SENTIMENT_ANIMATION_MAP.get(sentiment, "subtle")
 
     # Balance between personality preference and content sentiment
     animation_levels = ["none", "subtle", "moderate", "playful", "energetic"]
-    base_idx = animation_levels.index(base_animation) if base_animation in animation_levels else 1
-    suggested_idx = animation_levels.index(suggested) if suggested in animation_levels else 1
+    base_idx = (
+        animation_levels.index(base_animation)
+        if base_animation in animation_levels
+        else 1
+    )
+    suggested_idx = (
+        animation_levels.index(suggested) if suggested in animation_levels else 1
+    )
 
     # Average the two, rounding toward the suggested
     final_idx = (base_idx + suggested_idx + 1) // 2
@@ -842,13 +1042,19 @@ class DesignGenerator:
         self,
         groq_key: Optional[str] = None,
         openrouter_key: Optional[str] = None,
-        google_key: Optional[str] = None
+        google_key: Optional[str] = None,
+        ollama_url: Optional[str] = None,
     ):
-        self.groq_key = groq_key or os.getenv('GROQ_API_KEY')
-        self.openrouter_key = openrouter_key or os.getenv('OPENROUTER_API_KEY')
-        self.google_key = google_key or os.getenv('GOOGLE_AI_API_KEY')
+        self.groq_key = groq_key or os.getenv("GROQ_API_KEY")
+        self.openrouter_key = openrouter_key or os.getenv("OPENROUTER_API_KEY")
+        self.google_key = google_key or os.getenv("GOOGLE_AI_API_KEY")
+        self.ollama_url = ollama_url or os.getenv(
+            "OLLAMA_URL", "http://localhost:11434"
+        )
         self.session = requests.Session()
-        self.history_path = Path(__file__).parent.parent / "data" / "design_history.json"
+        self.history_path = (
+            Path(__file__).parent.parent / "data" / "design_history.json"
+        )
         self._last_call_time = 0.0  # Track last API call for rate limiting
 
     def generate(self, trends: List[Dict], keywords: List[str]) -> DesignSpec:
@@ -877,7 +1083,7 @@ class DesignGenerator:
         rng: random.Random,
         trends: List[Dict],
         keywords: List[str],
-        ai_data: Optional[Dict] = None
+        ai_data: Optional[Dict] = None,
     ) -> DesignSpec:
         """Generate design by combining multiple style dimensions."""
 
@@ -890,8 +1096,7 @@ class DesignGenerator:
 
         # 2. Select color scheme that matches personality
         matching_schemes = [
-            s for s in COLOR_SCHEMES
-            if personality_name in s.get("personalities", [])
+            s for s in COLOR_SCHEMES if personality_name in s.get("personalities", [])
         ]
         if not matching_schemes:
             matching_schemes = COLOR_SCHEMES
@@ -918,10 +1123,16 @@ class DesignGenerator:
 
         # Select hero style aligned with personality for visual consistency
         # Use only hero styles that have CSS implementations
-        personality_heroes = PERSONALITY_HERO_ALIGNMENT.get(personality_name, HERO_STYLES_WITH_CSS)
+        personality_heroes = PERSONALITY_HERO_ALIGNMENT.get(
+            personality_name, HERO_STYLES_WITH_CSS
+        )
         # Filter to only include valid hero styles with CSS
         valid_heroes = [h for h in personality_heroes if h in HERO_STYLES_WITH_CSS]
-        hero_style = rng.choice(valid_heroes) if valid_heroes else rng.choice(HERO_STYLES_WITH_CSS)
+        hero_style = (
+            rng.choice(valid_heroes)
+            if valid_heroes
+            else rng.choice(HERO_STYLES_WITH_CSS)
+        )
 
         # 5b. Select creative flourishes based on personality
         bg_pattern = self._select_background_pattern(personality_name, rng)
@@ -935,7 +1146,9 @@ class DesignGenerator:
         image_treatment = rng.choice(image_treatments)
 
         # Typography scale based on personality
-        typography_scale = TYPOGRAPHY_SCALES.get(personality_name, TYPOGRAPHY_SCALES["editorial"])
+        typography_scale = TYPOGRAPHY_SCALES.get(
+            personality_name, TYPOGRAPHY_SCALES["editorial"]
+        )
 
         # Section divider based on personality
         section_dividers = PERSONALITY_SECTION_DIVIDERS.get(personality_name, ["line"])
@@ -963,34 +1176,36 @@ class DesignGenerator:
         cta_options: List[str] = []
 
         if ai_data:
-            variants = ai_data.get('variants') or []
+            variants = ai_data.get("variants") or []
             if variants:
-                selected_variant = self._select_ai_variant(variants, keywords, recent_themes)
-            story_capsules = ai_data.get('story_capsules') or []
-            cta_options = ai_data.get('ctas') or []
+                selected_variant = self._select_ai_variant(
+                    variants, keywords, recent_themes
+                )
+            story_capsules = ai_data.get("story_capsules") or []
+            cta_options = ai_data.get("ctas") or []
 
         # 7. Generate headline and subheadline
         if selected_variant:
-            headline = selected_variant.get('headline') or self._create_headline(trends, rng)
-            subheadline = selected_variant.get('subheadline') or self._create_subheadline(keywords, rng)
+            headline = selected_variant.get("headline") or self._create_headline(
+                trends, rng
+            )
+            subheadline = selected_variant.get(
+                "subheadline"
+            ) or self._create_subheadline(keywords, rng)
             # Override scheme with AI colors/theme
-            if selected_variant.get('color_accent'):
+            if selected_variant.get("color_accent"):
                 scheme = {**scheme}
-                scheme['accent'] = selected_variant['color_accent']
-            if selected_variant.get('color_accent_secondary'):
-                scheme['accent_secondary'] = selected_variant['color_accent_secondary']
-            if selected_variant.get('theme_name'):
-                scheme['name'] = selected_variant['theme_name']
+                scheme["accent"] = selected_variant["color_accent"]
+            if selected_variant.get("color_accent_secondary"):
+                scheme["accent_secondary"] = selected_variant["color_accent_secondary"]
+            if selected_variant.get("theme_name"):
+                scheme["name"] = selected_variant["theme_name"]
         else:
             headline = self._create_headline(trends, rng)
             subheadline = self._create_subheadline(keywords, rng)
 
         # Map spacing to padding values
-        padding_map = {
-            "compact": "1rem",
-            "comfortable": "1.5rem",
-            "spacious": "2rem"
-        }
+        padding_map = {"compact": "1rem", "comfortable": "1.5rem", "spacious": "2rem"}
 
         # Map border radius
         radius_map = {
@@ -1009,13 +1224,11 @@ class DesignGenerator:
             theme_name=scheme["name"],
             personality=personality_name,
             mood=scheme.get("mood", "modern"),
-
             # Typography
             font_primary=fonts[0],
             font_secondary=fonts[1],
             font_style=font_style,
             text_transform_headings=text_transform,
-
             # Colors
             color_bg=scheme["bg"],
             color_text=scheme["text"],
@@ -1025,25 +1238,20 @@ class DesignGenerator:
             color_card_bg=scheme["card_bg"],
             color_border=scheme["border"],
             is_dark_mode=scheme.get("dark", True),
-
             # Layout
             layout_style=layout_style,
             spacing=spacing,
-
             # Cards
             card_style=card_style,
             card_radius=radius_map.get(border_radius, "1rem"),
             card_padding=padding_map.get(spacing, "1.5rem"),
-
             # Effects
             animation_level=animation,
             use_gradients=personality.get("use_gradients", True),
             use_blur=card_style == "glass",
             hover_effect=hover_effect,
-
             # Hero
             hero_style=hero_style,
-
             # Creative flourishes
             background_pattern=bg_pattern,
             accent_style=accent_style,
@@ -1052,7 +1260,6 @@ class DesignGenerator:
             hover_transform=animation_preset.get("hover_transform", "translateY(-2px)"),
             use_pulse_animation=animation_preset.get("pulse", False),
             use_float_animation=animation_preset.get("float", False),
-
             # New design dimensions
             image_treatment=image_treatment,
             typography_scale=typography_scale,
@@ -1060,14 +1267,12 @@ class DesignGenerator:
             card_aspect_ratio=card_aspect_ratio,
             content_sentiment=content_sentiment,
             contrast_validated=contrast_validated,
-
             # Content
             headline=headline,
             subheadline=subheadline,
             story_capsules=story_capsules[:8],
             cta_options=cta_options[:3],
             cta_primary=(cta_options[0] if cta_options else ""),
-
             # Meta
             design_seed=datetime.now().strftime("%Y-%m-%d"),
         )
@@ -1104,7 +1309,9 @@ class DesignGenerator:
         options = accent_weights.get(personality, ["none"])
         return rng.choice(options)
 
-    def _select_special_mode(self, personality: str, scheme: Dict, rng: random.Random) -> str:
+    def _select_special_mode(
+        self, personality: str, scheme: Dict, rng: random.Random
+    ) -> str:
         """Select a special visual mode for dramatic variation."""
         mode_weights = {
             "brutalist": ["standard", "high_contrast", "monochrome", "duotone"],
@@ -1120,26 +1327,30 @@ class DesignGenerator:
         options = mode_weights.get(personality, ["standard"])
         return rng.choice(options)
 
-    def _select_ai_variant(self, variants: List[Dict], keywords: List[str], recent_themes: List[str]) -> Optional[Dict]:
+    def _select_ai_variant(
+        self, variants: List[Dict], keywords: List[str], recent_themes: List[str]
+    ) -> Optional[Dict]:
         """Choose an AI variant deterministically while avoiding recent repeats."""
         if not variants:
             return None
 
         # Deterministic index based on date + top keyword
-        seed_basis = datetime.now().strftime("%Y-%m-%d") + (keywords[0] if keywords else "")
+        seed_basis = datetime.now().strftime("%Y-%m-%d") + (
+            keywords[0] if keywords else ""
+        )
         idx = int(hashlib.sha256(seed_basis.encode()).hexdigest(), 16) % len(variants)
 
         # Try to avoid recent theme reuse
         for offset in range(len(variants)):
             candidate = variants[(idx + offset) % len(variants)]
-            theme_name = (candidate.get('theme_name') or "").lower()
+            theme_name = (candidate.get("theme_name") or "").lower()
             if theme_name and theme_name not in recent_themes:
                 self._store_theme(theme_name)
                 return candidate
 
         # Fallback to deterministic choice
         chosen = variants[idx]
-        theme_name = (chosen.get('theme_name') or "").lower()
+        theme_name = (chosen.get("theme_name") or "").lower()
         if theme_name:
             self._store_theme(theme_name)
         return chosen
@@ -1154,9 +1365,9 @@ class DesignGenerator:
         # Expand to 30 trends with descriptions for richer understanding
         trend_lines = []
         for i, t in enumerate(trends[:30]):
-            source = t.get('source', 'unknown').replace('_', ' ').title()
-            title = t.get('title', '')[:80]
-            desc = (t.get('description', '') or '')[:120]
+            source = t.get("source", "unknown").replace("_", " ").title()
+            title = t.get("title", "")[:80]
+            desc = (t.get("description", "") or "")[:120]
 
             # Format: [Source] Title
             trend_lines.append(f"{i+1}. [{source}] {title}")
@@ -1167,16 +1378,16 @@ class DesignGenerator:
         # Calculate source distribution for category awareness
         sources = {}
         for t in trends:
-            src = t.get('source', 'other')
+            src = t.get("source", "other")
             # Normalize source names
-            if 'rss' in src.lower():
-                category = 'News' if 'news' in src.lower() else 'Tech'
-            elif src in ['hackernews', 'lobsters', 'github_trending']:
-                category = 'Tech'
-            elif src == 'reddit':
-                category = 'Social'
+            if "rss" in src.lower():
+                category = "News" if "news" in src.lower() else "Tech"
+            elif src in ["hackernews", "lobsters", "github_trending"]:
+                category = "Tech"
+            elif src == "reddit":
+                category = "Social"
             else:
-                category = src.replace('_', ' ').title()
+                category = src.replace("_", " ").title()
             sources[category] = sources.get(category, 0) + 1
 
         # Sort by count descending
@@ -1186,12 +1397,17 @@ class DesignGenerator:
         )
 
         # Detect breaking news / urgency signals
-        urgency_keywords = ['breaking', 'urgent', 'just in', 'developing', 'alert']
+        urgency_keywords = ["breaking", "urgent", "just in", "developing", "alert"]
         breaking_count = sum(
-            1 for t in trends
-            if any(kw in t.get('title', '').lower() for kw in urgency_keywords)
+            1
+            for t in trends
+            if any(kw in t.get("title", "").lower() for kw in urgency_keywords)
         )
-        urgency_note = f"BREAKING NEWS DETECTED: {breaking_count} urgent stories" if breaking_count > 0 else ""
+        urgency_note = (
+            f"BREAKING NEWS DETECTED: {breaking_count} urgent stories"
+            if breaking_count > 0
+            else ""
+        )
 
         context = f"""TODAY'S TRENDING STORIES ({len(trends)} total):
 {chr(10).join(trend_lines)}
@@ -1204,7 +1420,9 @@ TOP KEYWORDS: {', '.join(keywords[:25])}"""
 
         return context
 
-    def _try_ai_generation(self, trends: List[Dict], keywords: List[str]) -> Optional[Dict]:
+    def _try_ai_generation(
+        self, trends: List[Dict], keywords: List[str]
+    ) -> Optional[Dict]:
         """Try to get AI-generated design elements with rich context."""
         # Build rich context with expanded trend information
         rich_context = self._build_rich_context(trends, keywords)
@@ -1276,7 +1494,13 @@ Respond with ONLY a valid JSON object:
             return bool(self.openrouter_key)
         return False
 
-    def _call_groq(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1, task_complexity: str = 'simple') -> Optional[str]:
+    def _call_groq(
+        self,
+        prompt: str,
+        max_tokens: int = 1000,
+        max_retries: int = 1,
+        task_complexity: str = "simple",
+    ) -> Optional[str]:
         """
         Call LLM API with smart provider routing based on task complexity.
 
@@ -1285,7 +1509,12 @@ Respond with ONLY a valid JSON object:
 
         Note: Design generation is 'simple' by default as it's a structured output task.
         """
-        if task_complexity == 'simple':
+        # Always try Ollama first if available (local, free, fast)
+        result = self._call_ollama(prompt, max_tokens)
+        if result:
+            return result
+
+        if task_complexity == "simple":
             # For simple tasks, prioritize free models to save quota
             result = self._call_opencode(prompt, max_tokens, max_retries)
             if result:
@@ -1332,7 +1561,35 @@ Respond with ONLY a valid JSON object:
 
             return self._call_groq_direct(prompt, max_tokens, max_retries)
 
-    def _call_google_ai(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
+    def _call_ollama(self, prompt: str, max_tokens: int = 1000) -> Optional[str]:
+        """Call local Ollama for LLM inference (free, fast, private)."""
+        try:
+            print("    Trying Ollama (local)...")
+            response = self.session.post(
+                f"{self.ollama_url}/api/generate",
+                json={
+                    "model": "llama3.2",
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "num_predict": max_tokens,
+                        "temperature": 0.7,
+                    },
+                },
+                timeout=120,
+            )
+            response.raise_for_status()
+            result = response.json().get("response", "")
+            if result:
+                print("    Ollama success")
+                return result
+        except Exception as e:
+            print(f"    Ollama not available: {e}")
+        return None
+
+    def _call_google_ai(
+        self, prompt: str, max_tokens: int = 1000, max_retries: int = 1
+    ) -> Optional[str]:
         """Call Google AI (Gemini) API - primary provider with generous free tier."""
         if not self.google_key:
             print("    No Google AI API key available")
@@ -1340,7 +1597,7 @@ Respond with ONLY a valid JSON object:
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('google')
+        status = check_before_call("google")
 
         if not status.is_available:
             print(f"    Google AI not available: {status.error}")
@@ -1356,35 +1613,37 @@ Respond with ONLY a valid JSON object:
 
         for attempt in range(max_retries):
             try:
-                print(f"    Trying Google AI {model} (attempt {attempt + 1}/{max_retries})")
+                print(
+                    f"    Trying Google AI {model} (attempt {attempt + 1}/{max_retries})"
+                )
                 response = self.session.post(
                     url,
                     headers={
                         "x-goog-api-key": self.google_key,
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
                     json={
                         "contents": [{"parts": [{"text": prompt}]}],
                         "generationConfig": {
                             "maxOutputTokens": max_tokens,
-                            "temperature": 0.7
-                        }
+                            "temperature": 0.7,
+                        },
                     },
-                    timeout=60
+                    timeout=60,
                 )
                 response.raise_for_status()
 
                 # Update rate limiter tracking
-                rate_limiter._last_call_time['google'] = time.time()
+                rate_limiter._last_call_time["google"] = time.time()
 
                 # Parse response
                 data = response.json()
-                candidates = data.get('candidates', [])
+                candidates = data.get("candidates", [])
                 if candidates:
-                    content = candidates[0].get('content', {})
-                    parts = content.get('parts', [])
+                    content = candidates[0].get("content", {})
+                    parts = content.get("parts", [])
                     if parts:
-                        text = parts[0].get('text', '')
+                        text = parts[0].get("text", "")
                         if text:
                             print(f"    Google AI success with {model}")
                             return text
@@ -1395,20 +1654,26 @@ Respond with ONLY a valid JSON object:
                     try:
                         error_data = response.json()
                         error_msg = str(error_data).lower()
-                        if 'quota' in error_msg or 'exhausted' in error_msg or 'daily' in error_msg:
+                        if (
+                            "quota" in error_msg
+                            or "exhausted" in error_msg
+                            or "daily" in error_msg
+                        ):
                             # This is a quota exhaustion - mark provider as exhausted
-                            mark_provider_exhausted('google', 'daily quota exceeded')
+                            mark_provider_exhausted("google", "daily quota exceeded")
                             return None
                     except Exception:
                         pass
 
                     # Temporary rate limit - wait and retry
-                    retry_after = response.headers.get('Retry-After', '10')
+                    retry_after = response.headers.get("Retry-After", "10")
                     try:
                         wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                     except ValueError:
                         wait_time = self.MAX_RETRY_WAIT
-                    print(f"    Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                    print(
+                        f"    Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                    )
                     time.sleep(wait_time)
                     continue
                 print(f"    Google AI failed: {e}")
@@ -1420,7 +1685,9 @@ Respond with ONLY a valid JSON object:
         print("    Google AI: Max retries exceeded")
         return None
 
-    def _call_openrouter(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
+    def _call_openrouter(
+        self, prompt: str, max_tokens: int = 1000, max_retries: int = 1
+    ) -> Optional[str]:
         """Call OpenRouter API with free models (primary)."""
         if not self.openrouter_key:
             print("    No OpenRouter API key available")
@@ -1428,14 +1695,16 @@ Respond with ONLY a valid JSON object:
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('openrouter')
+        status = check_before_call("openrouter")
 
         if not status.is_available:
             print(f"    OpenRouter not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            print(f"    Waiting {status.wait_seconds:.1f}s for OpenRouter rate limit...")
+            print(
+                f"    Waiting {status.wait_seconds:.1f}s for OpenRouter rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
         # Free models to try in order of preference
@@ -1448,41 +1717,52 @@ Respond with ONLY a valid JSON object:
         for model in free_models:
             for attempt in range(max_retries):
                 try:
-                    print(f"    Trying OpenRouter {model} (attempt {attempt + 1}/{max_retries})")
+                    print(
+                        f"    Trying OpenRouter {model} (attempt {attempt + 1}/{max_retries})"
+                    )
                     response = self.session.post(
                         "https://openrouter.ai/api/v1/chat/completions",
                         headers={
                             "Authorization": f"Bearer {self.openrouter_key}",
                             "Content-Type": "application/json",
                             "HTTP-Referer": "https://dailytrending.info",
-                            "X-Title": "DailyTrending.info"
+                            "X-Title": "DailyTrending.info",
                         },
                         json={
                             "model": model,
                             "messages": [{"role": "user", "content": prompt}],
                             "max_tokens": max_tokens,
-                            "temperature": 0.7
+                            "temperature": 0.7,
                         },
-                        timeout=60
+                        timeout=60,
                     )
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers('openrouter', dict(response.headers))
+                    rate_limiter.update_from_response_headers(
+                        "openrouter", dict(response.headers)
+                    )
 
-                    result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                    result = (
+                        response.json()
+                        .get("choices", [{}])[0]
+                        .get("message", {})
+                        .get("content")
+                    )
                     if result:
                         print(f"    OpenRouter success with {model}")
                         return result
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
                         # Parse retry-after header if available
-                        retry_after = response.headers.get('Retry-After', '10')
+                        retry_after = response.headers.get("Retry-After", "10")
                         try:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        print(f"    OpenRouter {model} rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        print(
+                            f"    OpenRouter {model} rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                        )
                         time.sleep(wait_time)
                         continue
                     print(f"    OpenRouter {model} failed: {e}")
@@ -1494,14 +1774,16 @@ Respond with ONLY a valid JSON object:
         print("    All OpenRouter models failed")
         return None
 
-    def _call_groq_direct(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
+    def _call_groq_direct(
+        self, prompt: str, max_tokens: int = 1000, max_retries: int = 1
+    ) -> Optional[str]:
         """Call Groq API directly (fallback)."""
         if not self.groq_key:
             return None
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('groq')
+        status = check_before_call("groq")
 
         if not status.is_available:
             print(f"    Groq not available: {status.error}")
@@ -1523,31 +1805,40 @@ Respond with ONLY a valid JSON object:
                     "https://api.groq.com/openai/v1/chat/completions",
                     headers={
                         "Authorization": f"Bearer {self.groq_key}",
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
                     json={
                         "model": "llama-3.3-70b-versatile",
                         "messages": [{"role": "user", "content": prompt}],
                         "max_tokens": max_tokens,
-                        "temperature": 0.7
+                        "temperature": 0.7,
                     },
-                    timeout=45
+                    timeout=45,
                 )
                 response.raise_for_status()
 
                 # Update rate limiter from response headers
-                rate_limiter.update_from_response_headers('groq', dict(response.headers))
+                rate_limiter.update_from_response_headers(
+                    "groq", dict(response.headers)
+                )
 
-                return response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                return (
+                    response.json()
+                    .get("choices", [{}])[0]
+                    .get("message", {})
+                    .get("content")
+                )
             except requests.exceptions.HTTPError as e:
                 if response.status_code == 429:
                     # Parse retry-after header if available
-                    retry_after = response.headers.get('Retry-After', '10')
+                    retry_after = response.headers.get("Retry-After", "10")
                     try:
                         wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                     except ValueError:
                         wait_time = self.MAX_RETRY_WAIT
-                    print(f"    Groq rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                    print(
+                        f"    Groq rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                    )
                     time.sleep(wait_time)
                     continue
                 print(f"    Groq API error: {e}")
@@ -1559,15 +1850,17 @@ Respond with ONLY a valid JSON object:
         print("    Groq API: Max retries exceeded")
         return None
 
-    def _call_opencode(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
+    def _call_opencode(
+        self, prompt: str, max_tokens: int = 1000, max_retries: int = 1
+    ) -> Optional[str]:
         """Call OpenCode API with free models (glm-4.7-free, minimax-m2.1-free)."""
-        opencode_key = os.getenv('OPENCODE_API_KEY')
+        opencode_key = os.getenv("OPENCODE_API_KEY")
         if not opencode_key:
             return None
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('opencode')
+        status = check_before_call("opencode")
 
         if not status.is_available:
             print(f"    OpenCode not available: {status.error}")
@@ -1589,40 +1882,51 @@ Respond with ONLY a valid JSON object:
             for attempt in range(max_retries):
                 try:
                     self._last_call_time = time.time()
-                    print(f"    Trying OpenCode {model} (attempt {attempt + 1}/{max_retries})")
+                    print(
+                        f"    Trying OpenCode {model} (attempt {attempt + 1}/{max_retries})"
+                    )
                     response = self.session.post(
                         "https://opencode.ai/zen/v1/chat/completions",
                         headers={
                             "Authorization": f"Bearer {opencode_key}",
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
                         },
                         json={
                             "model": model,
                             "messages": [{"role": "user", "content": prompt}],
                             "max_tokens": max_tokens,
-                            "temperature": 0.7
+                            "temperature": 0.7,
                         },
-                        timeout=60
+                        timeout=60,
                     )
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers('opencode', dict(response.headers))
-                    rate_limiter._last_call_time['opencode'] = time.time()
+                    rate_limiter.update_from_response_headers(
+                        "opencode", dict(response.headers)
+                    )
+                    rate_limiter._last_call_time["opencode"] = time.time()
 
-                    result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                    result = (
+                        response.json()
+                        .get("choices", [{}])[0]
+                        .get("message", {})
+                        .get("content")
+                    )
                     if result:
                         print(f"    OpenCode success with {model}")
                         return result
 
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
-                        retry_after = response.headers.get('Retry-After', '10')
+                        retry_after = response.headers.get("Retry-After", "10")
                         try:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        print(f"    OpenCode rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        print(
+                            f"    OpenCode rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                        )
                         time.sleep(wait_time)
                         continue
                     print(f"    OpenCode API error with {model}: {e}")
@@ -1634,22 +1938,26 @@ Respond with ONLY a valid JSON object:
         print("    All OpenCode models failed")
         return None
 
-    def _call_huggingface(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
+    def _call_huggingface(
+        self, prompt: str, max_tokens: int = 1000, max_retries: int = 1
+    ) -> Optional[str]:
         """Call Hugging Face Inference API with free models."""
-        huggingface_key = os.getenv('HUGGINGFACE_API_KEY')
+        huggingface_key = os.getenv("HUGGINGFACE_API_KEY")
         if not huggingface_key:
             return None
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('huggingface')
+        status = check_before_call("huggingface")
 
         if not status.is_available:
             print(f"    Hugging Face not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            print(f"    Waiting {status.wait_seconds:.1f}s for Hugging Face rate limit...")
+            print(
+                f"    Waiting {status.wait_seconds:.1f}s for Hugging Face rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
         # Proactive rate limiting
@@ -1668,49 +1976,57 @@ Respond with ONLY a valid JSON object:
             for attempt in range(max_retries):
                 try:
                     self._last_call_time = time.time()
-                    print(f"    Trying Hugging Face {model} (attempt {attempt + 1}/{max_retries})")
+                    print(
+                        f"    Trying Hugging Face {model} (attempt {attempt + 1}/{max_retries})"
+                    )
                     response = self.session.post(
                         f"https://api-inference.huggingface.co/models/{model}",
                         headers={
                             "Authorization": f"Bearer {huggingface_key}",
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
                         },
                         json={
                             "inputs": prompt,
                             "parameters": {
                                 "max_new_tokens": max_tokens,
                                 "temperature": 0.7,
-                                "return_full_text": False
-                            }
+                                "return_full_text": False,
+                            },
                         },
-                        timeout=60
+                        timeout=60,
                     )
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers('huggingface', dict(response.headers))
-                    rate_limiter._last_call_time['huggingface'] = time.time()
+                    rate_limiter.update_from_response_headers(
+                        "huggingface", dict(response.headers)
+                    )
+                    rate_limiter._last_call_time["huggingface"] = time.time()
 
                     result = response.json()
                     if isinstance(result, list) and len(result) > 0:
-                        text = result[0].get('generated_text', '')
+                        text = result[0].get("generated_text", "")
                         if text:
                             print(f"    Hugging Face success with {model}")
                             return text
 
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
-                        retry_after = response.headers.get('Retry-After', '10')
+                        retry_after = response.headers.get("Retry-After", "10")
                         try:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        print(f"    Hugging Face rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        print(
+                            f"    Hugging Face rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                        )
                         time.sleep(wait_time)
                         continue
                     elif response.status_code == 503:
                         # Model is loading, wait and retry
-                        print(f"    Hugging Face model {model} is loading, waiting {self.MAX_RETRY_WAIT}s...")
+                        print(
+                            f"    Hugging Face model {model} is loading, waiting {self.MAX_RETRY_WAIT}s..."
+                        )
                         time.sleep(self.MAX_RETRY_WAIT)
                         continue
                     print(f"    Hugging Face API error with {model}: {e}")
@@ -1722,15 +2038,17 @@ Respond with ONLY a valid JSON object:
         print("    All Hugging Face models failed")
         return None
 
-    def _call_mistral(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
+    def _call_mistral(
+        self, prompt: str, max_tokens: int = 1000, max_retries: int = 1
+    ) -> Optional[str]:
         """Call Mistral AI API - high quality free tier models."""
-        mistral_key = os.getenv('MISTRAL_API_KEY')
+        mistral_key = os.getenv("MISTRAL_API_KEY")
         if not mistral_key:
             return None
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('mistral')
+        status = check_before_call("mistral")
 
         if not status.is_available:
             print(f"    Mistral not available: {status.error}")
@@ -1753,40 +2071,51 @@ Respond with ONLY a valid JSON object:
             for attempt in range(max_retries):
                 try:
                     self._last_call_time = time.time()
-                    print(f"    Trying Mistral {model} (attempt {attempt + 1}/{max_retries})")
+                    print(
+                        f"    Trying Mistral {model} (attempt {attempt + 1}/{max_retries})"
+                    )
                     response = self.session.post(
                         "https://api.mistral.ai/v1/chat/completions",
                         headers={
                             "Authorization": f"Bearer {mistral_key}",
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
                         },
                         json={
                             "model": model,
                             "messages": [{"role": "user", "content": prompt}],
                             "max_tokens": max_tokens,
-                            "temperature": 0.7
+                            "temperature": 0.7,
                         },
-                        timeout=60
+                        timeout=60,
                     )
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers('mistral', dict(response.headers))
-                    rate_limiter._last_call_time['mistral'] = time.time()
+                    rate_limiter.update_from_response_headers(
+                        "mistral", dict(response.headers)
+                    )
+                    rate_limiter._last_call_time["mistral"] = time.time()
 
-                    result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                    result = (
+                        response.json()
+                        .get("choices", [{}])[0]
+                        .get("message", {})
+                        .get("content")
+                    )
                     if result:
                         print(f"    Mistral success with {model}")
                         return result
 
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
-                        retry_after = response.headers.get('Retry-After', '10')
+                        retry_after = response.headers.get("Retry-After", "10")
                         try:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        print(f"    Mistral rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        print(
+                            f"    Mistral rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                        )
                         time.sleep(wait_time)
                         continue
                     print(f"    Mistral API error with {model}: {e}")
@@ -1800,7 +2129,7 @@ Respond with ONLY a valid JSON object:
 
     def _parse_ai_response(self, response: str) -> Optional[Dict]:
         try:
-            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            json_match = re.search(r"\{.*\}", response, re.DOTALL)
             payload = json_match.group() if json_match else response
 
             # Try parsing as-is first
@@ -1812,22 +2141,28 @@ Respond with ONLY a valid JSON object:
                     s = match.group(0)
                     inner = s[1:-1]  # Remove quotes
                     # Only escape raw control characters
-                    inner = inner.replace('\n', '\\n')
-                    inner = inner.replace('\r', '\\r')
-                    inner = inner.replace('\t', '\\t')
-                    inner = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', lambda m: f'\\u{ord(m.group()):04x}', inner)
+                    inner = inner.replace("\n", "\\n")
+                    inner = inner.replace("\r", "\\r")
+                    inner = inner.replace("\t", "\\t")
+                    inner = re.sub(
+                        r"[\x00-\x08\x0b\x0c\x0e-\x1f]",
+                        lambda m: f"\\u{ord(m.group()):04x}",
+                        inner,
+                    )
                     return f'"{inner}"'
 
                 try:
-                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, payload)
+                    sanitized = re.sub(
+                        r'"(?:[^"\\]|\\.)*"', escape_string_contents, payload
+                    )
                     data = json.loads(sanitized)
                 except (json.JSONDecodeError, Exception):
                     # Last resort: strip all control chars except structural whitespace
-                    stripped = re.sub(r'[\x00-\x09\x0b\x0c\x0e-\x1f]', ' ', payload)
+                    stripped = re.sub(r"[\x00-\x09\x0b\x0c\x0e-\x1f]", " ", payload)
                     data = json.loads(stripped)
 
             # Normalize single-variant responses
-            if data and 'variants' not in data:
+            if data and "variants" not in data:
                 data = {
                     "variants": [
                         {
@@ -1835,7 +2170,9 @@ Respond with ONLY a valid JSON object:
                             "headline": data.get("headline"),
                             "subheadline": data.get("subheadline"),
                             "color_accent": data.get("color_accent"),
-                            "color_accent_secondary": data.get("color_accent_secondary"),
+                            "color_accent_secondary": data.get(
+                                "color_accent_secondary"
+                            ),
                             "cta": data.get("cta") or data.get("cta_primary"),
                         }
                     ]
@@ -1852,7 +2189,7 @@ Respond with ONLY a valid JSON object:
 
         # STRICT: Always use the top trend title for the Hero Headline
         # This ensures the headline matches the hero image and top story link
-        return trends[0].get('title', 'Trending Now')
+        return trends[0].get("title", "Trending Now")
 
     def _create_subheadline(self, keywords: List[str], rng: random.Random) -> str:
         """Create a subheadline."""
@@ -1869,18 +2206,18 @@ Respond with ONLY a valid JSON object:
 
         template = rng.choice(templates)
 
-        if '{kw' in template and len(keywords) >= 3:
+        if "{kw" in template and len(keywords) >= 3:
             return template.format(
                 kw1=keywords[0].title(),
                 kw2=keywords[1].title(),
-                kw3=keywords[2].title()
+                kw3=keywords[2].title(),
             )
 
         return template
 
     def save(self, spec: DesignSpec, filepath: str):
         """Save design spec to JSON."""
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(asdict(spec), f, indent=2)
         print(f"Saved design spec to {filepath}")
 
@@ -1893,9 +2230,10 @@ Respond with ONLY a valid JSON object:
                 data = json.load(f)
             cutoff = datetime.now() - timedelta(days=days)
             recent = [
-                entry.get('theme', '').lower()
+                entry.get("theme", "").lower()
                 for entry in data
-                if entry.get('timestamp') and datetime.fromisoformat(entry['timestamp']) > cutoff
+                if entry.get("timestamp")
+                and datetime.fromisoformat(entry["timestamp"]) > cutoff
             ]
             return [r for r in recent if r]
         except Exception:
@@ -1911,7 +2249,7 @@ Respond with ONLY a valid JSON object:
                     history = json.load(f)
             history.append({"theme": theme, "timestamp": datetime.now().isoformat()})
             history = history[-30:]  # keep compact
-            with open(self.history_path, 'w') as f:
+            with open(self.history_path, "w") as f:
                 json.dump(history, f, indent=2)
         except Exception:
             pass
@@ -1931,16 +2269,16 @@ def calculate_combinations():
     heroes = len(HERO_PATTERNS)
 
     total = (
-        personalities *
-        avg_schemes_per_personality *
-        avg_fonts_per_style *
-        card_styles *
-        radii *
-        spacings *
-        animations *
-        hovers *
-        layouts *
-        heroes
+        personalities
+        * avg_schemes_per_personality
+        * avg_fonts_per_style
+        * card_styles
+        * radii
+        * spacings
+        * animations
+        * hovers
+        * layouts
+        * heroes
     )
     return total
 
@@ -1948,6 +2286,7 @@ def calculate_combinations():
 def main():
     """Test design generation."""
     from dotenv import load_dotenv
+
     load_dotenv()
 
     print(f"Total possible combinations: ~{calculate_combinations():,}")
