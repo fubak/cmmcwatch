@@ -94,7 +94,7 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                     </button>
                 </div>
-                <div class="story-wrapper">
+                <div class="story-wrapper clickable-card" data-href="{{ story.url }}" role="link" tabindex="0" aria-label="Read story: {{ story.title }}">
                     <figure class="story-media">
                         {% set img_src = story.image_url or placeholder_image_url %}
                         {% set alt_text = story.title if story.image_url else ((story.category if story.category else story.source | replace('_', ' ') | title) + ' story: ' + story.title) %}
@@ -115,7 +115,7 @@
                             <span class="source-badge {{ category_class }}">{{ category_display }}</span>
                             
                             <h3 class="story-title">
-                                <a href="{{ story.url }}" target="_blank" rel="noopener">{{ story.title }}</a>
+                                <a href="{{ story.url }}" target="_blank" rel="noopener" tabindex="-1">{{ story.title }}</a>
                             </h3>
                         </header>
                         
@@ -154,7 +154,7 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                     </button>
                 </div>
-                <div class="story-wrapper">
+                <div class="story-wrapper clickable-card" data-href="{{ story.url }}" role="link" tabindex="0" aria-label="Read story: {{ story.title }}">
                     <figure class="story-media">
                         {% set img_src = story.image_url or placeholder_image_url %}
                         {% set alt_text = story.title if story.image_url else ((story.category if story.category else story.source | replace('_', ' ') | title) + ' story: ' + story.title) %}
@@ -168,7 +168,7 @@
                     </figure>
                     <div class="story-content">
                         <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="{{ story.url }}" target="_blank" rel="noopener">{{ story.title }}</a>
+                            <a href="{{ story.url }}" target="_blank" rel="noopener" tabindex="-1">{{ story.title }}</a>
                         </h3>
                         <footer class="story-meta">
                             <span>{{ story.source | replace('_', ' ') | title }}</span>

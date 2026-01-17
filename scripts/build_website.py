@@ -131,6 +131,15 @@ class WebsiteBuilder:
         return 4
 
     def _prepare_categories(self) -> List[dict]:
+        """Map raw category keys to display-friendly names."""
+        # Mapping for CMMC-specific category display
+        category_display_map = {
+            "cmmc_program": "🎯 CMMC Program News",
+            "nist_compliance": "📋 NIST & Compliance", 
+            "defense_industrial_base": "🛡️ Defense Industrial Base",
+            "federal_cybersecurity": "🔒 Federal Cybersecurity"
+        }
+        
         categories = []
         sorted_groups = sorted(
             self.grouped_trends.items(), key=lambda x: len(x[1]), reverse=True
@@ -138,9 +147,13 @@ class WebsiteBuilder:
         for title, stories in sorted_groups:
             display_stories = stories[: self._category_card_limit]
             columns = self._choose_column_count(len(display_stories))
+            
+            # Use display-friendly title if available, otherwise clean up the raw title
+            display_title = category_display_map.get(title, title.replace('_', ' ').title())
+            
             categories.append(
                 {
-                    "title": title,
+                    "title": display_title,
                     "stories": display_stories,
                     "count": len(display_stories),
                     "columns": columns,
@@ -490,11 +503,37 @@ class WebsiteBuilder:
             story["description"] = description
 
     def _calculate_keyword_freq(self) -> List[Tuple[str, int, int]]:
-        """Calculate keyword frequencies and assign size classes 1-6."""
+        """Calculate keyword frequencies and assign size classes 1-6.
+        
+        Extracts keywords from trend titles and descriptions since individual
+        trends may not have keywords populated.
+        """
+        # Common stopwords to exclude
+        stopwords = {
+            "this", "that", "with", "from", "have", "been", "will", "what",
+            "when", "where", "their", "there", "about", "would", "could",
+            "should", "which", "these", "those", "them", "they", "were",
+            "being", "more", "some", "other", "into", "than", "then",
+            "also", "just", "only", "over", "such", "after", "before",
+            "most", "said", "says", "year", "years", "first", "last",
+            "news", "report", "reports", "reported", "story", "stories",
+        }
+        
         freq = defaultdict(int)
+        
         for trend in self.ctx.trends:
-            for kw in trend.get("keywords", []):
-                freq[kw.lower()] += 1
+            # First try using existing keywords
+            keywords = trend.get("keywords", [])
+            if keywords:
+                for kw in keywords:
+                    freq[kw.lower()] += 1
+            else:
+                # Extract keywords from title and description
+                text = (trend.get("title", "") + " " + trend.get("description", "")).lower()
+                words = re.findall(r"\b[a-zA-Z]{4,}\b", text)
+                for word in words:
+                    if word not in stopwords:
+                        freq[word] += 1
 
         sorted_freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)[:50]
 
@@ -522,13 +561,13 @@ class WebsiteBuilder:
 
     def _build_page_title(self) -> str:
         """Build SEO-optimized page title - static for homepage to build domain authority."""
-        return "DailyTrending.info | AI-Curated Tech & World News Aggregator"
+        return "CMMC Watch | Daily CMMC & NIST Compliance News Aggregator"
 
     def _build_meta_description(self) -> str:
         """Build SEO-optimized meta description with consistent keywords."""
         return (
-            "Real-time dashboard of trending tech, science, and world news stories. "
-            "AI-curated daily from Hacker News, NPR, BBC, Reddit, and 12+ sources. "
+            "Daily aggregation of CMMC, NIST 800-171, and federal cybersecurity compliance news. "
+            "Automated collection from government, defense industry, and compliance sources. "
             f"Updated {self.ctx.generated_at} with {len(self.ctx.trends)} stories."
         )
 
@@ -540,16 +579,16 @@ class WebsiteBuilder:
         website_schema = {
             "@context": "https://schema.org",
             "@type": "WebSite",
-            "name": "DailyTrending.info",
-            "alternateName": "Daily Trending",
-            "url": "https://dailytrending.info/",
-            "description": "AI-curated technology and world news aggregator, updated daily",
+            "name": "CMMC Watch",
+            "alternateName": "CMMC Watch",
+            "url": "https://cmmcwatch.info/",
+            "description": "Daily CMMC & NIST compliance news aggregator for defense contractors",
             "potentialAction": {
                 "@type": "SearchAction",
-                "target": "https://dailytrending.info/?q={search_term_string}",
+                "target": "https://cmmcwatch.info/?q={search_term_string}",
                 "query-input": "required name=search_term_string",
             },
-            "sameAs": ["https://twitter.com/bradshannon"],
+            "sameAs": [],
             "speakable": {
                 "@type": "SpeakableSpecification",
                 "cssSelector": [".hero-content h1", ".hero-subtitle", ".story-title"],
@@ -595,9 +634,9 @@ class WebsiteBuilder:
         collection_schema = {
             "@context": "https://schema.org",
             "@type": "CollectionPage",
-            "name": f"Daily Trending Topics - {self.ctx.generated_at}",
+            "name": f"CMMC & Compliance News - {self.ctx.generated_at}",
             "description": self._build_meta_description(),
-            "url": "https://dailytrending.info/",
+            "url": "https://cmmcwatch.info/",
             "datePublished": datetime.now().isoformat(),
             "mainEntity": {
                 "@type": "ItemList",
@@ -613,26 +652,26 @@ class WebsiteBuilder:
             "mainEntity": [
                 {
                     "@type": "Question",
-                    "name": "How often is DailyTrending.info updated?",
+                    "name": "How often is CMMC Watch updated?",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "DailyTrending.info regenerates automatically every day at 6 AM EST via GitHub Actions, aggregating the latest trending stories from 12+ sources including Hacker News, NPR, BBC, Reddit, and GitHub.",
+                        "text": "CMMC Watch regenerates automatically every day at 6 AM EST via GitHub Actions, aggregating the latest CMMC and compliance news from government, defense industry, and Reddit sources.",
                     },
                 },
                 {
                     "@type": "Question",
-                    "name": "What sources does DailyTrending.info aggregate?",
+                    "name": "What sources does CMMC Watch aggregate?",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "We aggregate from 12 curated sources: Hacker News, Lobsters, GitHub Trending, Reddit (r/technology, r/worldnews, r/programming), NPR, BBC, Reuters, Wikipedia Current Events, and specialized tech RSS feeds.",
+                        "text": "We aggregate from FedScoop, DefenseScoop, Federal News Network, Nextgov, Breaking Defense, Defense One, Defense News, ExecutiveGov, SecurityWeek, Cyberscoop, GovCon Wire, and Reddit communities r/CMMC, r/NISTControls, and r/FederalEmployees.",
                     },
                 },
                 {
                     "@type": "Question",
-                    "name": "Is DailyTrending.info content AI-generated?",
+                    "name": "What is CMMC?",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "Headlines and summaries are sourced from original publishers. Our AI curates, ranks, and selects trending topics, and generates unique editorial analysis for top stories.",
+                        "text": "CMMC (Cybersecurity Maturity Model Certification) is a DoD framework requiring defense contractors to implement cybersecurity practices. CMMC Watch tracks news about CMMC compliance, NIST 800-171, and related federal cybersecurity requirements.",
                     },
                 },
             ],
@@ -753,7 +792,7 @@ class WebsiteBuilder:
             "page_title": self._build_page_title(),
             "meta_description": self._build_meta_description(),
             "keywords_str": ", ".join(self.ctx.keywords[:15]),
-            "canonical_url": "https://dailytrending.info/",
+            "canonical_url": "https://cmmcwatch.info/",
             "date_str": self.ctx.generated_at,
             "date_iso": datetime.now().strftime("%Y-%m-%d"),
             "last_modified": datetime.now().isoformat(),
@@ -794,8 +833,8 @@ class WebsiteBuilder:
             "word_cloud": self.keyword_freq,
             "categories": categories,
             # SEO - Static branded OG image for consistent social sharing
-            "og_image_tags": '<meta property="og:image" content="https://dailytrending.info/og-image.png">\n    <meta property="og:image:width" content="1200">\n    <meta property="og:image:height" content="630">\n    <meta property="og:image:type" content="image/png">',
-            "twitter_image_tags": '<meta name="twitter:image" content="https://dailytrending.info/twitter-image.png">\n    <meta name="twitter:card" content="summary_large_image">',
+            "og_image_tags": '<meta property="og:image" content="https://cmmcwatch.info/og-image.png">\n    <meta property="og:image:width" content="1200">\n    <meta property="og:image:height" content="630">\n    <meta property="og:image:type" content="image/png">',
+            "twitter_image_tags": '<meta name="twitter:image" content="https://cmmcwatch.info/twitter-image.png">\n    <meta name="twitter:card" content="summary_large_image">',
             "structured_data": self._build_structured_data(),
         }
 

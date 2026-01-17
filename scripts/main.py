@@ -64,6 +64,9 @@ class CMMCWatchPipeline:
         self.public_dir.mkdir(parents=True, exist_ok=True)
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
+        # Load environment FIRST before initializing components that need API keys
+        self._load_environment()
+
         # Initialize components
         self.trend_collector = TrendCollector()
         self.image_fetcher = ImageFetcher()
@@ -86,9 +89,6 @@ class CMMCWatchPipeline:
         logger.info("=" * 60)
 
         try:
-            # Load environment
-            self._load_environment()
-
             # Step 1: Archive previous
             if archive:
                 logger.info("[1/10] Archiving previous website...")
