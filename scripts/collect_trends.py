@@ -81,6 +81,9 @@ class TrendCollector:
         # Deduplicate
         self._deduplicate()
 
+        # Apply recency boost and sort by combined score
+        self._apply_recency_and_sort()
+
         # Fetch og:image for articles without images
         self._fetch_missing_images()
 
@@ -520,6 +523,47 @@ class TrendCollector:
         if removed > 0:
             logger.info(f"Removed {removed} duplicate trends")
         self.trends = unique
+
+    def _apply_recency_and_sort(self):
+        """Apply recency boost to scores and sort trends by combined score.
+
+        Recency boost ensures today's articles rank higher than older ones,
+        even if older articles have slightly higher keyword relevance.
+        """
+        now = datetime.now()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        for trend in self.trends:
+            recency_boost = 0.0
+
+            if trend.timestamp:
+                age = now - trend.timestamp
+                hours_old = age.total_seconds() / 3600
+
+                if hours_old < 6:
+                    # Very fresh (< 6 hours): major boost
+                    recency_boost = 2.0
+                elif hours_old < 12:
+                    # Fresh (< 12 hours): strong boost
+                    recency_boost = 1.5
+                elif hours_old < 24:
+                    # Today (< 24 hours): good boost
+                    recency_boost = 1.0
+                elif hours_old < 48:
+                    # Yesterday (< 48 hours): small boost
+                    recency_boost = 0.5
+                elif hours_old < 72:
+                    # 2-3 days old: minimal boost
+                    recency_boost = 0.2
+                # Older articles get no recency boost (0.0)
+
+            # Store the combined score (original score + recency boost)
+            trend.score = trend.score + recency_boost
+
+        # Sort by combined score (highest first)
+        self.trends.sort(key=lambda t: t.score, reverse=True)
+
+        logger.info(f"Applied recency boost and sorted {len(self.trends)} trends")
 
     def _extract_global_keywords(self):
         """Extract global keywords from all trends."""
