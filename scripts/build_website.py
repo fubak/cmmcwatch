@@ -130,16 +130,17 @@ class WebsiteBuilder:
         # Card counts should be multiples of 4 for even distribution
         return 4
 
+    # Class-level mapping for CMMC category display names
+    CATEGORY_DISPLAY_MAP = {
+        "cmmc_program": "🎯 CMMC Program News",
+        "nist_compliance": "📋 NIST & Compliance",
+        "defense_industrial_base": "🛡️ Defense Industrial Base",
+        "federal_cybersecurity": "🔒 Federal Cybersecurity",
+    }
+
     def _prepare_categories(self) -> List[dict]:
         """Map raw category keys to display-friendly names."""
-        # Mapping for CMMC-specific category display
-        category_display_map = {
-            "cmmc_program": "🎯 CMMC Program News",
-            "nist_compliance": "📋 NIST & Compliance", 
-            "defense_industrial_base": "🛡️ Defense Industrial Base",
-            "federal_cybersecurity": "🔒 Federal Cybersecurity"
-        }
-        
+
         categories = []
         sorted_groups = sorted(
             self.grouped_trends.items(), key=lambda x: len(x[1]), reverse=True
@@ -147,10 +148,12 @@ class WebsiteBuilder:
         for title, stories in sorted_groups:
             display_stories = stories[: self._category_card_limit]
             columns = self._choose_column_count(len(display_stories))
-            
+
             # Use display-friendly title if available, otherwise clean up the raw title
-            display_title = category_display_map.get(title, title.replace('_', ' ').title())
-            
+            display_title = self.CATEGORY_DISPLAY_MAP.get(
+                title, title.replace("_", " ").title()
+            )
+
             categories.append(
                 {
                     "title": display_title,
@@ -350,6 +353,12 @@ class WebsiteBuilder:
                         category = cat
                         break
 
+            # Set display-friendly category name for badge
+            trend["category"] = category
+            trend["category_display"] = self.CATEGORY_DISPLAY_MAP.get(
+                category, category.replace("_", " ").title()
+            )
+
             # Format timestamp for display
             if trend.get("timestamp"):
                 ts = trend["timestamp"]
@@ -504,23 +513,65 @@ class WebsiteBuilder:
 
     def _calculate_keyword_freq(self) -> List[Tuple[str, int, int]]:
         """Calculate keyword frequencies and assign size classes 1-6.
-        
+
         Extracts keywords from trend titles and descriptions since individual
         trends may not have keywords populated.
         """
         # Common stopwords to exclude
         stopwords = {
-            "this", "that", "with", "from", "have", "been", "will", "what",
-            "when", "where", "their", "there", "about", "would", "could",
-            "should", "which", "these", "those", "them", "they", "were",
-            "being", "more", "some", "other", "into", "than", "then",
-            "also", "just", "only", "over", "such", "after", "before",
-            "most", "said", "says", "year", "years", "first", "last",
-            "news", "report", "reports", "reported", "story", "stories",
+            "this",
+            "that",
+            "with",
+            "from",
+            "have",
+            "been",
+            "will",
+            "what",
+            "when",
+            "where",
+            "their",
+            "there",
+            "about",
+            "would",
+            "could",
+            "should",
+            "which",
+            "these",
+            "those",
+            "them",
+            "they",
+            "were",
+            "being",
+            "more",
+            "some",
+            "other",
+            "into",
+            "than",
+            "then",
+            "also",
+            "just",
+            "only",
+            "over",
+            "such",
+            "after",
+            "before",
+            "most",
+            "said",
+            "says",
+            "year",
+            "years",
+            "first",
+            "last",
+            "news",
+            "report",
+            "reports",
+            "reported",
+            "story",
+            "stories",
         }
-        
+
         freq = defaultdict(int)
-        
+
         for trend in self.ctx.trends:
             # First try using existing keywords
             keywords = trend.get("keywords", [])
@@ -529,7 +580,9 @@ class WebsiteBuilder:
                     freq[kw.lower()] += 1
             else:
                 # Extract keywords from title and description
-                text = (trend.get("title", "") + " " + trend.get("description", "")).lower()
+                text = (
+                    trend.get("title", "") + " " + trend.get("description", "")
+                ).lower()
                 words = re.findall(r"\b[a-zA-Z]{4,}\b", text)
                 for word in words:
                     if word not in stopwords:
@@ -824,7 +877,8 @@ class WebsiteBuilder:
             "hero_bg_css": hero_bg_css,
             "body_classes": " ".join(body_classes),
             "custom_styles": custom_styles,
-            "placeholder_image_url": "/assets/nano-banana.png",
+            # SVG placeholder with gradient (avoids missing asset file)
+            "placeholder_image_url": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231a1a2e'/%3E%3Cstop offset='100%25' stop-color='%2316213e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='800' height='450'/%3E%3Ctext x='400' y='225' fill='%234a4a6a' font-family='system-ui' font-size='14' text-anchor='middle' dy='.3em'%3ECMMC Watch%3C/text%3E%3C/svg%3E",
             # Content
             "hero_story": self.ctx.trends[0] if self.ctx.trends else {},
             "top_stories": self._select_top_stories(),

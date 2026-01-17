@@ -81,6 +81,9 @@ class TrendCollector:
         # Deduplicate
         self._deduplicate()
 
+        # Fetch og:image for articles without images
+        self._fetch_missing_images()
+
         # Extract global keywords
         self._extract_global_keywords()
 
@@ -269,20 +272,189 @@ class TrendCollector:
         return re.sub(r"\s+", " ", clean)[:500]
 
     def _extract_image_from_entry(self, entry) -> Optional[str]:
-        """Extract image URL from RSS entry."""
+        """Extract image URL from RSS entry.
+
+        Checks multiple sources in priority order:
+        1. media_content (standard RSS media extension)
+        2. media_thumbnail (common in many feeds)
+        3. enclosures (RSS 2.0 standard)
+        4. Images embedded in content HTML
+        5. Images embedded in summary HTML
+        """
         # Check media_content
         if hasattr(entry, "media_content") and entry.media_content:
             for media in entry.media_content:
                 if media.get("medium") == "image" or media.get("type", "").startswith(
                     "image"
                 ):
-                    return media.get("url")
+                    url = media.get("url")
+                    if url and self._is_valid_image_url(url):
+                        return url
+
+        # Check media_thumbnail
+        if hasattr(entry, "media_thumbnail") and entry.media_thumbnail:
+            for thumb in entry.media_thumbnail:
+                url = thumb.get("url")
+                if url and self._is_valid_image_url(url):
+                    return url
 
         # Check enclosures
         if hasattr(entry, "enclosures") and entry.enclosures:
             for enc in entry.enclosures:
                 if enc.get("type", "").startswith("image"):
-                    return enc.get("href") or enc.get("url")
+                    url = enc.get("href") or enc.get("url")
+                    if url and self._is_valid_image_url(url):
+                        return url
+
+        # Check content HTML for img tags
+        if hasattr(entry, "content") and entry.content:
+            content_html = entry.content[0].get("value", "")
+            img_url = self._extract_img_from_html(content_html)
+            if img_url:
+                return img_url
+
+        # Check summary HTML for img tags
+        summary = entry.get("summary", "")
+        if summary and "<img" in summary:
+            img_url = self._extract_img_from_html(summary)
+            if img_url:
+                return img_url
+
+        return None
+
+    def _extract_img_from_html(self, html: str) -> Optional[str]:
+        """Extract first valid image URL from HTML content."""
+        if not html or "<img" not in html:
+            return None
+
+        # Use regex to find img src attributes
+        img_pattern = r'<img[^>]+src=["\']([^"\']+)["\']'
+        matches = re.findall(img_pattern, html, re.IGNORECASE)
+
+        for url in matches:
+            if self._is_valid_image_url(url):
+                return url
+        return None
+
+    def _is_valid_image_url(self, url: str) -> bool:
+        """Check if URL is a valid image URL (not a tracking pixel or icon)."""
+        if not url:
+            return False
+
+        url_lower = url.lower()
+
+        # Skip tracking pixels and tiny images
+        skip_patterns = [
+            "pixel",
+            "tracking",
+            "beacon",
+            "1x1",
+            "spacer",
+            "blank",
+            "clear.gif",
+            "gravatar",
+            "avatar",
+            "icon",
+            "logo",
+            "badge",
+            "button",
+            "sprite",
+        ]
+        if any(p in url_lower for p in skip_patterns):
+            return False
+
+        # Must be http(s) URL
+        if not url.startswith(("http://", "https://")):
+            return False
+
+        # Should have image extension or be from known image CDNs
+        image_extensions = (".jpg", ".jpeg", ".png", ".gif", ".webp")
+        image_cdns = [
+            "images.",
+            "img.",
+            "cdn.",
+            "media.",
+            "wp-content/uploads",
+            "cloudfront",
+            "amazonaws",
+            "imgix",
+            "arcpublishing",
+        ]
+
+        has_extension = any(
+            url_lower.endswith(ext) or f"{ext}?" in url_lower
+            for ext in image_extensions
+        )
+        from_cdn = any(cdn in url_lower for cdn in image_cdns)
+
+        return has_extension or from_cdn
+
+    def _fetch_missing_images(self):
+        """Fetch og:image from article pages for trends without images.
+
+        Only fetches from sources known to have og:image on their pages.
+        Limited to prevent slowdown.
+        """
+        # Sources known to have og:image on article pages
+        sources_with_og_image = [
+            "cmmc_rss_fedscoop",
+            "cmmc_rss_defensescoop",
+            "cmmc_rss_securityweek",
+        ]
+
+        trends_to_fetch = [
+            t
+            for t in self.trends
+            if not t.image_url and any(s in t.source for s in sources_with_og_image)
+        ]
+
+        if not trends_to_fetch:
+            return
+
+        logger.info(f"Fetching og:image for {len(trends_to_fetch)} articles...")
+        fetched = 0
+
+        for trend in trends_to_fetch[:10]:  # Limit to 10 requests
+            try:
+                og_image = self._fetch_og_image(trend.url)
+                if og_image:
+                    trend.image_url = og_image
+                    fetched += 1
+                time.sleep(0.3)  # Rate limiting
+            except Exception as e:
+                logger.debug(f"Failed to fetch og:image for {trend.url}: {e}")
+
+        if fetched:
+            logger.info(f"  Fetched {fetched} og:images from article pages")
+
+    def _fetch_og_image(self, url: str) -> Optional[str]:
+        """Fetch og:image meta tag from article page."""
+        if not url:
+            return None
+
+        try:
+            response = self.session.get(
+                url,
+                timeout=5,
+                headers={"User-Agent": "Mozilla/5.0 (compatible; CMMCWatch/1.0)"},
+            )
+            response.raise_for_status()
+
+            # Look for og:image meta tag
+            patterns = [
+                r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)',
+                r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image',
+            ]
+
+            for pattern in patterns:
+                match = re.search(pattern, response.text, re.IGNORECASE)
+                if match:
+                    img_url = match.group(1)
+                    if self._is_valid_image_url(img_url):
+                        return img_url
+
+        except requests.RequestException:
+            pass
 
         return None
 

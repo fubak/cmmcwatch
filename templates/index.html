@@ -109,10 +109,10 @@
                     
                     <div class="story-content">
                         <header>
-                            {# Use derived category or source part for badge class and display #}
-                            {% set category_display = story.category if story.category else story.source | replace('_', ' ') | title %}
-                            {% set category_class = category_display | lower | replace(' ', '-') %}
-                            <span class="source-badge {{ category_class }}">{{ category_display }}</span>
+                            {# Use pre-computed category_display for badge with emoji #}
+                            {% set badge_text = story.category_display if story.category_display else (story.category | replace('_', ' ') | title if story.category else story.source | replace('_', ' ') | title) %}
+                            {% set category_class = story.category | lower | replace(' ', '-') if story.category else 'other' %}
+                            <span class="source-badge {{ category_class }}">{{ badge_text }}</span>
                             
                             <h3 class="story-title">
                                 <a href="{{ story.url }}" target="_blank" rel="noopener" tabindex="-1">{{ story.title }}</a>
