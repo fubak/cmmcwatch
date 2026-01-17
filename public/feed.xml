@@ -5,8 +5,8 @@
     <description>Daily CMMC &amp; Compliance News Aggregator</description>
     <link>https://cmmcwatch.com</link>
     <language>en-us</language>
-    <lastBuildDate>Sat, 17 Jan 2026 17:06:34 +0000</lastBuildDate>
-    <pubDate>Sat, 17 Jan 2026 17:06:34 +0000</pubDate>
+    <lastBuildDate>Sat, 17 Jan 2026 17:23:14 +0000</lastBuildDate>
+    <pubDate>Sat, 17 Jan 2026 17:23:14 +0000</pubDate>
     <generator>CMMC Watch Pipeline</generator>
     <atom:link href="https://cmmcwatch.com/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
@@ -18,6 +18,16 @@
       <pubDate>Fri, 16 Jan 2026 14:09:23  +0000</pubDate>
       <dc:creator>CMMC Watch</dc:creator>
       <content:encoded>&lt;h3&gt;NIST SP 800-171 Rev. 3 Audit &amp; Accountability - DoD ODP&lt;/h3&gt;&lt;p&gt;I’m currently working on implementing NIST SP 800-171 rev.3 ( Audit &amp; Accountability - AU controls) in an on-prem Active Directory environment and I’d like to get some real-world input from people who have done this in practice (Yes I know CMMC lvl2 is based on rev2 but we need to comply with rev3) One area that’s still somewhat unclear to me is how others interpret and implement logging for “Security Relevant Files and Objects events (Create / Access / Modify / Delete / Permission Modification &lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Reddit Cmmc&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.reddit.com/r/CMMC/comments/1qegxhh/nist_sp_800171_rev_3_audit_accountability_dod_odp/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
+    </item>
+    <item>
+      <title>Experience automating FedRAMP ConMon reports?</title>
+      <link>https://www.reddit.com/r/cybersecurity/comments/1qepcpq/experience_automating_fedramp_conmon_reports/</link>
+      <description>Has anyone had success automating the creation of monthly continuous monitoring reports (i.e., inventory reports) using the FedRAMP report templates? If so, did you acquire a tool to do that? What has worked for your team? We are struggling with this time-consuming, manual process and would love some advice. submitted by /u/lieses2980 [link] [comments]</description>
+      <category>cmmc_reddit_cybersecurity</category>
+      <guid isPermaLink="true">https://www.reddit.com/r/cybersecurity/comments/1qepcpq/experience_automating_fedramp_conmon_reports/</guid>
+      <pubDate>Fri, 16 Jan 2026 19:17:15  +0000</pubDate>
+      <dc:creator>CMMC Watch</dc:creator>
+      <content:encoded>&lt;h3&gt;Experience automating FedRAMP ConMon reports?&lt;/h3&gt;&lt;p&gt;Has anyone had success automating the creation of monthly continuous monitoring reports (i.e., inventory reports) using the FedRAMP report templates? If so, did you acquire a tool to do that? What has worked for your team? We are struggling with this time-consuming, manual process and would love some advice. submitted by /u/lieses2980 [link] [comments]&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Reddit Cybersecurity&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.reddit.com/r/cybersecurity/comments/1qepcpq/experience_automating_fedramp_conmon_reports/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
     <item>
       <title>SEC Appoints Russell McGranahan as General Counsel</title>
@@ -130,16 +140,6 @@
       <content:encoded>&lt;h3&gt;M365 G5 Intune optional Windows Update for Business Features?&lt;/h3&gt;&lt;p&gt;I see a Microsoft blog stating that autopatch is available for M365 GCC tenants. Apparently, it needs to enabled manually by adding a special zero dollar license. https://techcommunity.microsoft.com/blog/windows-itpro-blog/windows-autopatch-for-the-us-government-how-to-get-started/4467570 Has anyone gone through the process of getting the license, enabling this and verified that other missing features mentioned like Windows Driver Update Policies and Feature Updates Policies will work with GCC t&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Reddit Cmmc&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.reddit.com/r/CMMC/comments/1qcwprd/m365_g5_intune_optional_windows_update_for/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
     <item>
-      <title>1099/subcontractor roles for CCAs</title>
-      <link>https://www.reddit.com/r/CMMC/comments/1qclrei/1099subcontractor_roles_for_ccas/</link>
-      <description>What’s the best way to get a 1099/subcontractor role supporting C3PAOs and consulting firms ASAP? I was thinking just DMs/cold calls but wanted to check if there’s a better way to submitted by /u/ba1ian [link] [comments]</description>
-      <category>cmmc_reddit_cmmc</category>
-      <guid isPermaLink="true">https://www.reddit.com/r/CMMC/comments/1qclrei/1099subcontractor_roles_for_ccas/</guid>
-      <pubDate>Wed, 14 Jan 2026 12:15:26  +0000</pubDate>
-      <dc:creator>CMMC Watch</dc:creator>
-      <content:encoded>&lt;h3&gt;1099/subcontractor roles for CCAs&lt;/h3&gt;&lt;p&gt;What’s the best way to get a 1099/subcontractor role supporting C3PAOs and consulting firms ASAP? I was thinking just DMs/cold calls but wanted to check if there’s a better way to submitted by /u/ba1ian [link] [comments]&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Reddit Cmmc&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.reddit.com/r/CMMC/comments/1qclrei/1099subcontractor_roles_for_ccas/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
-    </item>
-    <item>
       <title>Former CISA Director Jen Easterly Appointed CEO of RSAC</title>
       <link>https://www.securityweek.com/former-cisa-director-jen-easterly-appointed-ceo-of-rsac/</link>
       <description>Easterly will be leading the world-renowned cybersecurity conference and other RSAC programs. The post Former CISA Director Jen Easterly Appointed CEO of RSAC appeared first on SecurityWeek .</description>
@@ -248,6 +248,16 @@
       <pubDate>Fri, 14 Nov 2025 14:42:57  +0000</pubDate>
       <dc:creator>CMMC Watch</dc:creator>
       <content:encoded>&lt;h3&gt;&quot;We Passed Our CMMC Assessment and Here's What We Learned&quot; MEGATHREAD&lt;/h3&gt;&lt;p&gt;Hello /r/CMMC - As we wind down 2025, the CMMC ecosystem has seen several hundred organizations successfully passing their CMMC Level 2 C3PAO certification assessments! We love to see it! This community and our discord community have always been about open sharing of information amongst fellow practitioners and straight up people who just need some help. We love seeing how everyone shares what's working for them and what's not. Recently, we've seen a handful of threads start with people wanting &lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Reddit Cmmc&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.reddit.com/r/CMMC/comments/1owyb9a/we_passed_our_cmmc_assessment_and_heres_what_we/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
+    </item>
+    <item>
+      <title>1099/subcontractor roles for CCAs</title>
+      <link>https://www.reddit.com/r/CMMC/comments/1qclrei/1099subcontractor_roles_for_ccas/</link>
+      <description>What’s the best way to get a 1099/subcontractor role supporting C3PAOs and consulting firms ASAP? I was thinking just DMs/cold calls but wanted to check if there’s a better way to submitted by /u/ba1ian [link] [comments]</description>
+      <category>cmmc_reddit_cmmc</category>
+      <guid isPermaLink="true">https://www.reddit.com/r/CMMC/comments/1qclrei/1099subcontractor_roles_for_ccas/</guid>
+      <pubDate>Wed, 14 Jan 2026 12:15:26  +0000</pubDate>
+      <dc:creator>CMMC Watch</dc:creator>
+      <content:encoded>&lt;h3&gt;1099/subcontractor roles for CCAs&lt;/h3&gt;&lt;p&gt;What’s the best way to get a 1099/subcontractor role supporting C3PAOs and consulting firms ASAP? I was thinking just DMs/cold calls but wanted to check if there’s a better way to submitted by /u/ba1ian [link] [comments]&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Reddit Cmmc&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.reddit.com/r/CMMC/comments/1qclrei/1099subcontractor_roles_for_ccas/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
     <item>
       <title>Seeking guidance!</title>
@@ -498,16 +508,6 @@
       <pubDate>Tue, 13 Jan 2026 16:45:57  +0000</pubDate>
       <dc:creator>CMMC Watch</dc:creator>
       <content:encoded>&lt;h3&gt;Executive branch budget pact includes IT investments, less for DOGE&lt;/h3&gt;&lt;p&gt;Congressional appropriators also directed OMB to produce guidance on AI-ready datasets at agencies and cloud infrastructure adoption. The post Executive branch budget pact includes IT investments, less for DOGE appeared first on FedScoop .&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Fedscoop&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://fedscoop.com/white-house-tech-budget-doge-ai-it-cloud/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
-    </item>
-    <item>
-      <title>The hidden vulnerability: Why legacy government web forms demand urgent attention</title>
-      <link>https://federalnewsnetwork.com/commentary/2026/01/the-hidden-vulnerability-why-legacy-government-web-forms-demand-urgent-attention/</link>
-      <description>The cost of action is significant, but the cost of inaction — breached data, compromised systems, regulatory penalties and lost public trust — is far higher. The post The hidden vulnerability: Why legacy government web forms demand urgent attention first appeared on Federal News Network .</description>
-      <category>cmmc_rss_federal_news_network</category>
-      <guid isPermaLink="true">https://federalnewsnetwork.com/commentary/2026/01/the-hidden-vulnerability-why-legacy-government-web-forms-demand-urgent-attention/</guid>
-      <pubDate>Fri, 02 Jan 2026 20:00:12  +0000</pubDate>
-      <dc:creator>CMMC Watch</dc:creator>
-      <content:encoded>&lt;h3&gt;The hidden vulnerability: Why legacy government web forms demand urgent attention&lt;/h3&gt;&lt;p&gt;The cost of action is significant, but the cost of inaction — breached data, compromised systems, regulatory penalties and lost public trust — is far higher. The post The hidden vulnerability: Why legacy government web forms demand urgent attention first appeared on Federal News Network .&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Federal News Network&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://federalnewsnetwork.com/commentary/2026/01/the-hidden-vulnerability-why-legacy-government-web-forms-demand-urgent-attention/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
   </channel>
 </rss>

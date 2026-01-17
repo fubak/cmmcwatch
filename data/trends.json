@@ -11,6 +11,17 @@
     "image_url": null
   },
   {
+    "title": "Experience automating FedRAMP ConMon reports?",
+    "source": "cmmc_reddit_cybersecurity",
+    "url": "https://www.reddit.com/r/cybersecurity/comments/1qepcpq/experience_automating_fedramp_conmon_reports/",
+    "description": "Has anyone had success automating the creation of monthly continuous monitoring reports (i.e., inventory reports) using the FedRAMP report templates? If so, did you acquire a tool to do that? What has worked for your team? We are struggling with this time-consuming, manual process and would love some advice. submitted by /u/lieses2980 [link] [comments]",
+    "category": "nist_compliance",
+    "score": 2.4,
+    "keywords": [],
+    "timestamp": "2026-01-16 19:17:15",
+    "image_url": null
+  },
+  {
     "title": "SEC Appoints Russell McGranahan as General Counsel",
     "source": "cmmc_rss_executivegov",
     "url": "https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment",
@@ -132,17 +143,6 @@
     "image_url": null
   },
   {
-    "title": "1099/subcontractor roles for CCAs",
-    "source": "cmmc_reddit_cmmc",
-    "url": "https://www.reddit.com/r/CMMC/comments/1qclrei/1099subcontractor_roles_for_ccas/",
-    "description": "What\u2019s the best way to get a 1099/subcontractor role supporting C3PAOs and consulting firms ASAP? I was thinking just DMs/cold calls but wanted to check if there\u2019s a better way to submitted by /u/ba1ian [link] [comments]",
-    "category": "cmmc_program",
-    "score": 1.5999999999999999,
-    "keywords": [],
-    "timestamp": "2026-01-14 12:15:26",
-    "image_url": null
-  },
-  {
     "title": "Former CISA Director Jen Easterly Appointed CEO of RSAC",
     "source": "cmmc_rss_securityweek",
     "url": "https://www.securityweek.com/former-cisa-director-jen-easterly-appointed-ceo-of-rsac/",
@@ -261,6 +261,17 @@
     "score": 1.4,
     "keywords": [],
     "timestamp": "2025-11-14 14:42:57",
+    "image_url": null
+  },
+  {
+    "title": "1099/subcontractor roles for CCAs",
+    "source": "cmmc_reddit_cmmc",
+    "url": "https://www.reddit.com/r/CMMC/comments/1qclrei/1099subcontractor_roles_for_ccas/",
+    "description": "What\u2019s the best way to get a 1099/subcontractor role supporting C3PAOs and consulting firms ASAP? I was thinking just DMs/cold calls but wanted to check if there\u2019s a better way to submitted by /u/ba1ian [link] [comments]",
+    "category": "cmmc_program",
+    "score": 1.4,
+    "keywords": [],
+    "timestamp": "2026-01-14 12:15:26",
     "image_url": null
   },
   {
