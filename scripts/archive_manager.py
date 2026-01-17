@@ -60,7 +60,7 @@ class ArchiveManager:
             html_content = f.read()
 
         # Add canonical URL for the archive page
-        canonical_url = f"https://cmmcwatch.info/archive/{today}/"
+        canonical_url = f"https://cmmcwatch.com/archive/{today}/"
         canonical_tag = f'<link rel="canonical" href="{canonical_url}">'
 
         # Replace existing canonical or add new one
@@ -197,11 +197,11 @@ class ArchiveManager:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archive | CMMC Watch</title>
     <meta name="description" content="Browse the archive of daily trending topic designs. Each day features a unique layout, color scheme, and curated content.">
-    <link rel="canonical" href="https://cmmcwatch.info/archive/">
+    <link rel="canonical" href="https://cmmcwatch.com/archive/">
     <meta property="og:title" content="Archive | CMMC Watch">
     <meta property="og:description" content="Browse previous daily trend snapshots with unique designs and curated content.">
-    <meta property="og:image" content="https://cmmcwatch.info/og-image.png">
-    <meta property="og:url" content="https://cmmcwatch.info/archive/">
+    <meta property="og:image" content="https://cmmcwatch.com/og-image.png">
+    <meta property="og:url" content="https://cmmcwatch.com/archive/">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

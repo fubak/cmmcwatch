@@ -139,7 +139,7 @@ class CMMCWatchPipeline:
 
             # Step 9: Sitemap
             logger.info("[9/10] Generating sitemap...")
-            save_sitemap(self.public_dir, base_url="https://cmmcwatch.info")
+            save_sitemap(self.public_dir, base_url="https://cmmcwatch.com")
 
             # Step 10: Cleanup
             logger.info("[10/10] Cleaning up old archives...")
@@ -288,7 +288,7 @@ class CMMCWatchPipeline:
             output_path=self.public_dir / "feed.xml",
             title="CMMC Watch",
             description="Daily CMMC & Compliance News Aggregator",
-            link="https://cmmcwatch.info",
+            link="https://cmmcwatch.com",
         )
         logger.info(f"RSS feed saved to {self.public_dir / 'feed.xml'}")
 

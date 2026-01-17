@@ -14,7 +14,7 @@ from pathlib import Path
 # ============================================================================
 
 SITE_NAME = "CMMC Watch"
-SITE_URL = "https://cmmcwatch.info"
+SITE_URL = "https://cmmcwatch.com"
 SITE_DESCRIPTION = "Daily CMMC & Compliance News Aggregator"
 
 # ============================================================================
@@ -367,7 +367,7 @@ RSS_FEED_TITLE = "CMMC Watch"
 RSS_FEED_DESCRIPTION = (
     "Daily CMMC, NIST 800-171, and federal cybersecurity compliance news aggregator"
 )
-RSS_FEED_LINK = "https://cmmcwatch.info"
+RSS_FEED_LINK = "https://cmmcwatch.com"
 RSS_FEED_MAX_ITEMS = 50
 
 # ============================================================================

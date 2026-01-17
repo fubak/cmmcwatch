@@ -61,7 +61,7 @@ class TrendCollector:
         self.session = requests.Session()
         self.session.headers.update(
             {
-                "User-Agent": "Mozilla/5.0 (compatible; CMMCWatch/1.0; +https://cmmcwatch.info)"
+                "User-Agent": "Mozilla/5.0 (compatible; CMMCWatch/1.0; +https://cmmcwatch.com)"
             }
         )
 

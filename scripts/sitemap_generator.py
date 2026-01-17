@@ -17,7 +17,7 @@ import xml.etree.ElementTree as ET
 
 
 def generate_sitemap(
-    base_url: str = "https://cmmcwatch.info",
+    base_url: str = "https://cmmcwatch.com",
     archive_dates: Optional[List[str]] = None,
     public_dir: Optional[Path] = None,
     extra_urls: Optional[List[str]] = None,
@@ -168,7 +168,7 @@ def generate_sitemap(
     return f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_string}'
 
 
-def generate_robots_txt(base_url: str = "https://cmmcwatch.info") -> str:
+def generate_robots_txt(base_url: str = "https://cmmcwatch.com") -> str:
     """
     Generate robots.txt with sitemap reference.
 
@@ -236,7 +236,7 @@ Sitemap: {base_url}/sitemap_main.xml
 """
 
 
-def generate_sitemap_index(base_url: str = "https://cmmcwatch.info") -> str:
+def generate_sitemap_index(base_url: str = "https://cmmcwatch.com") -> str:
     """
     Generate a sitemap index pointing to the main sitemap.
 
@@ -259,7 +259,7 @@ def generate_sitemap_index(base_url: str = "https://cmmcwatch.info") -> str:
 
 def save_sitemap(
     public_dir: Path,
-    base_url: str = "https://cmmcwatch.info",
+    base_url: str = "https://cmmcwatch.com",
     extra_urls: Optional[List[str]] = None,
 ):
     """

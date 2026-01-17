@@ -2,7 +2,7 @@
 
 Claude Code guidance for CMMC Watch - Daily CMMC/NIST compliance news aggregator.
 
-**Live:** https://cmmcwatch.info
+**Live:** https://cmmcwatch.com
 
 ## Commands
 
