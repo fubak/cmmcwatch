@@ -10,6 +10,14 @@ import logging
 from pathlib import Path
 
 # ============================================================================
+# SITE CONFIGURATION
+# ============================================================================
+
+SITE_NAME = "CMMC Watch"
+SITE_URL = "https://cmmcwatch.info"
+SITE_DESCRIPTION = "Daily CMMC & Compliance News Aggregator"
+
+# ============================================================================
 # ENVIRONMENT
 # ============================================================================
 

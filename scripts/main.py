@@ -225,6 +225,9 @@ class CMMCWatchPipeline:
                 design=self.design,
             )
             logger.info("Editorial article generated")
+
+            # Generate articles index page
+            self.editorial_generator.generate_articles_index(design=self.design)
         except Exception as e:
             logger.warning(f"Editorial generation failed: {e}")
             self.editorial_article = None

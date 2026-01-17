@@ -23,6 +23,11 @@ from config import (
 # Setup logging
 logger = setup_logging("rss")
 
+# Register namespaces to avoid duplicate/auto-generated prefixes
+ET.register_namespace("atom", "http://www.w3.org/2005/Atom")
+ET.register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
+ET.register_namespace("dc", "http://purl.org/dc/elements/1.1/")
+
 
 def _build_content_html(
     title: str, description: str, source: str, url: str, why_matters: str = ""
@@ -82,16 +87,8 @@ def generate_rss_feed(
     Returns:
         The RSS XML as a string
     """
-    # Create root element with content namespace for full text
-    rss = ET.Element(
-        "rss",
-        {
-            "version": "2.0",
-            "xmlns:atom": "http://www.w3.org/2005/Atom",
-            "xmlns:content": "http://purl.org/rss/1.0/modules/content/",
-            "xmlns:dc": "http://purl.org/dc/elements/1.1/",
-        },
-    )
+    # Create root element - namespaces are auto-added from registered prefixes
+    rss = ET.Element("rss", {"version": "2.0"})
 
     # Create channel
     channel = ET.SubElement(rss, "channel")
@@ -109,7 +106,7 @@ def generate_rss_feed(
     ET.SubElement(channel, "pubDate").text = build_date
 
     # Generator
-    ET.SubElement(channel, "generator").text = "DailyTrending.info Pipeline"
+    ET.SubElement(channel, "generator").text = "CMMC Watch Pipeline"
 
     # Atom self-link for feed validation
     atom_link = ET.SubElement(channel, "{http://www.w3.org/2005/Atom}link")
@@ -189,7 +186,7 @@ def generate_rss_feed(
 
         # Dublin Core creator
         ET.SubElement(item, "{http://purl.org/dc/elements/1.1/}creator").text = (
-            "DailyTrending.info"
+            "CMMC Watch"
         )
 
         # Full content (content:encoded) with rich HTML
