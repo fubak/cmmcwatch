@@ -47,7 +47,7 @@
     <!-- Additional SEO -->
     <meta name="generator" content="CMMC Watch Autonomous Generator">
     <meta name="date" content="2026-01-17">
-    <meta name="last-modified" content="2026-01-17T08:56:22.208325">
+    <meta name="last-modified" content="2026-01-17T09:07:20.681147">
 
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -82,7 +82,7 @@
       "name": "CMMC & Compliance News - January 17, 2026",
       "description": "Daily aggregation of CMMC, NIST 800-171, and federal cybersecurity compliance news. Automated collection from government, defense industry, and compliance sources. Updated January 17, 2026 with 61 stories.",
       "url": "https://cmmcwatch.com/",
-      "datePublished": "2026-01-17T08:56:22.208495",
+      "datePublished": "2026-01-17T09:07:20.681299",
       "mainEntity": {
         "@type": "ItemList",
         "numberOfItems": 9,
@@ -108,22 +108,6 @@
             "position": 2,
             "item": {
               "@type": "NewsArticle",
-              "headline": "New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video",
-              "url": "https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video",
-              "datePublished": "2026-01-16T20:57:21",
-              "publisher": {
-                "@type": "Organization",
-                "name": "ExecutiveGov"
-              },
-              "image": "https://www.executivegov.com/wp-content/uploads/2026/01/cameron-stanley-ai-strategy-pentagon-cdao.jpg",
-              "description": "Cameron Stanley, who assumed the role of chief digital and artificial intelligence officer at the Department of War on Monday, is urging industry partners to respond more aggressively as the Pentagon moves into the next phase of its artificial intelligence strategy. The Potomac Officers Club\u2019s 2026 Artificial Intelligence Summit on March 18 brings together federal, defense and GovCon leaders to examine how AI is moving from experimentation to mission use. Through keynotes and practitioner-led pa"
-            }
-          },
-          {
-            "@type": "ListItem",
-            "position": 3,
-            "item": {
-              "@type": "NewsArticle",
               "headline": "NIST SP 800-171 Rev. 3 Audit & Accountability - DoD ODP",
               "url": "https://www.reddit.com/r/CMMC/comments/1qegxhh/nist_sp_800171_rev_3_audit_accountability_dod_odp/",
               "datePublished": "2026-01-16T14:09:23",
@@ -137,7 +121,7 @@
           },
           {
             "@type": "ListItem",
-            "position": 4,
+            "position": 3,
             "item": {
               "@type": "NewsArticle",
               "headline": "EU mandates buy-European preference in new Ukraine assistance package",
@@ -149,6 +133,22 @@
               },
               "image": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/F6EP3F6D45DC7JVCV62NFLDPJY.jpg",
               "description": "The language represents Brussels\u2019 most explicit attempt yet in leveraging aid to bolster Europe\u2019s defense industrial base, though not all members agree."
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "item": {
+              "@type": "NewsArticle",
+              "headline": "New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video",
+              "url": "https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video",
+              "datePublished": "2026-01-16T20:57:21",
+              "publisher": {
+                "@type": "Organization",
+                "name": "ExecutiveGov"
+              },
+              "image": "https://www.executivegov.com/wp-content/uploads/2026/01/cameron-stanley-ai-strategy-pentagon-cdao.jpg",
+              "description": "Cameron Stanley, who assumed the role of chief digital and artificial intelligence officer at the Department of War on Monday, is urging industry partners to respond more aggressively as the Pentagon moves into the next phase of its artificial intelligence strategy. The Potomac Officers Club\u2019s 2026 Artificial Intelligence Summit on March 18 brings together federal, defense and GovCon leaders to examine how AI is moving from experimentation to mission use. Through keynotes and practitioner-led pa"
             }
           },
           {
@@ -470,7 +470,7 @@ body.density-spacious {
     align-items: center;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 2px solid var(--color-border);
+    border-bottom: 2px solid var(--color-accent);
 }
 
 .section-title {
@@ -604,7 +604,58 @@ body.layout-split .top-stories {
     inset: 0;
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.25));
     pointer-events: none;
+    z-index: 1;
 }
+
+/* ===== IMAGE OVERLAY BADGES ===== */
+.image-source-badge {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 2;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 4px;
+    color: white;
+    background: rgba(239, 68, 68, 0.95);
+    backdrop-filter: blur(4px);
+    white-space: nowrap;
+}
+
+.image-date-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 2;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    border-radius: 4px;
+    color: white;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+/* Source badge color coding by publication */
+.image-source-badge.reddit-cmmc,
+.image-source-badge.reddit-nistcontrols,
+.image-source-badge.r-cmmc,
+.image-source-badge.r-nistcontrols { background: rgba(239, 68, 68, 0.95); }
+
+.image-source-badge.cyberscoop { background: rgba(139, 92, 246, 0.95); }
+.image-source-badge.fedscoop { background: rgba(249, 115, 22, 0.95); }
+.image-source-badge.breaking-defense { background: rgba(20, 184, 166, 0.95); }
+.image-source-badge.defense-news { background: rgba(59, 130, 246, 0.95); }
+.image-source-badge.defense-one { background: rgba(99, 102, 241, 0.95); }
+.image-source-badge.nextgov,
+.image-source-badge.nextgov-cybersecurity { background: rgba(16, 185, 129, 0.95); }
+.image-source-badge.executivegov { background: rgba(168, 85, 247, 0.95); }
+.image-source-badge.govcon-wire { background: rgba(236, 72, 153, 0.95); }
+.image-source-badge.securityweek { background: rgba(220, 38, 38, 0.95); }
+.image-source-badge.federal-news-network { background: rgba(37, 99, 235, 0.95); }
 
 /* Top Stories: Compact Vertical Card Layout */
 .top-stories article.story-card {
@@ -2601,104 +2652,61 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
 }
         .footer {
     margin-top: 4rem;
-    padding: 3rem 2rem;
+    padding: 1.5rem 2rem;
     background: var(--color-card-bg);
     border-top: 1px solid var(--color-border);
 }
 
 .footer-content {
-    max-width: 1200px;
+    max-width: var(--max-width, 1200px);
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    gap: 3rem;
-}
-
-@media (max-width: 768px) {
-    .footer-content {
-        grid-template-columns: 1fr;
-    }
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .footer-brand {
-    font-family: var(--font-primary);
-    font-weight: 700;
-    font-size: 1.5rem;
-    color: var(--color-text);
-    margin-bottom: 1rem;
-}
-
-.footer-description {
-    color: var(--color-muted);
     font-size: 0.9rem;
-    line-height: 1.6;
-    margin-bottom: 1rem;
-}
-
-.footer-links-section h4 {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    color: var(--color-text);
-    margin-bottom: 1rem;
-}
-
-.footer-links {
-    list-style: none;
-    padding: 0;
-}
-
-.footer-links a {
     color: var(--color-muted);
-    display: block;
-    margin-bottom: 0.5rem;
-    transition: color 0.2s;
 }
 
-.footer-links a:hover {
+.footer-brand a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-brand a:hover {
+    color: var(--color-text);
+}
+
+.footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-link:hover {
     color: var(--color-accent);
 }
 
-.footer-author-section h4 {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    color: var(--color-text);
-    margin-bottom: 1rem;
-}
-
-.footer-author-bio {
-    color: var(--color-muted);
-    font-size: 0.9rem;
-    line-height: 1.6;
-    margin-bottom: 1rem;
-}
-
-.footer-linkedin {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--color-muted);
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: color 0.2s ease;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.footer-linkedin:hover {
-    color: #0077b5;
-    background: rgba(0, 119, 181, 0.1);
-}
-
-.footer-bottom {
-    max-width: 1200px;
-    margin: 2rem auto 0;
-    padding-top: 2rem;
-    border-top: 1px solid var(--color-border);
-    display: flex;
-    justify-content: space-between;
+.footer-date {
     font-size: 0.85rem;
     color: var(--color-muted);
+}
+
+@media (max-width: 600px) {
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
 }
         
         /* Custom Design Styles */
@@ -2801,14 +2809,6 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             
             
-            <span class="ticker-source">Cmmc Rss Executivegov</span>
-            <strong><a href="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" target="_blank" rel="noopener">New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video</a></strong>
-        </div>
-        
-        <div class="ticker-item">
-            
-            
-            
             <span class="ticker-source">Cmmc Reddit Cmmc</span>
             <strong><a href="https://www.reddit.com/r/CMMC/comments/1qegxhh/nist_sp_800171_rev_3_audit_accountability_dod_odp/" target="_blank" rel="noopener">NIST SP 800-171 Rev. 3 Audit &amp; Accountability - DoD ODP</a></strong>
         </div>
@@ -2819,6 +2819,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <span class="ticker-source">Cmmc Rss Defense News</span>
             <strong><a href="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" target="_blank" rel="noopener">EU mandates buy-European preference in new Ukraine assistance package</a></strong>
+        </div>
+        
+        <div class="ticker-item">
+            
+            
+            
+            <span class="ticker-source">Cmmc Rss Executivegov</span>
+            <strong><a href="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" target="_blank" rel="noopener">New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video</a></strong>
         </div>
         
         <div class="ticker-item">
@@ -2962,15 +2970,15 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <span class="word-cloud-item size-2" role="img" aria-label="cybersecurity">cybersecurity</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="strategy">strategy</span>
-            
             <span class="word-cloud-item size-1" role="img" aria-label="working">working</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="strategy">strategy</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="windows">windows</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="intelligence">intelligence</span>
-            
             <span class="word-cloud-item size-1" role="img" aria-label="defense">defense</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="intelligence">intelligence</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="easterly">easterly</span>
             
@@ -2982,6 +2990,10 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <span class="word-cloud-item size-1" role="img" aria-label="agency">agency</span>
             
+            <span class="word-cloud-item size-1" role="img" aria-label="environment">environment</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="people">people</span>
+            
             <span class="word-cloud-item size-1" role="img" aria-label="industry">industry</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="artificial">artificial</span>
@@ -2989,10 +3001,6 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             <span class="word-cloud-item size-1" role="img" aria-label="federal">federal</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="through">through</span>
-            
-            <span class="word-cloud-item size-1" role="img" aria-label="environment">environment</span>
-            
-            <span class="word-cloud-item size-1" role="img" aria-label="people">people</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="government">government</span>
             
@@ -3067,76 +3075,26 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="800"
                              height="450">
-                    </figure>
-                    
-                    <div class="story-content">
-                        <header>
-                            
-                            
-                            
-                            <span class="source-badge nist_compliance">📋 NIST &amp; Compliance</span>
-                            
-                            <h3 class="story-title">
-                                <a href="https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment" target="_blank" rel="noopener" tabindex="-1">SEC Appoints Russell McGranahan as General Counsel</a>
-                            </h3>
-                        </header>
                         
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-executivegov">ExecutiveGov</span>
+                        <span class="image-date-badge">11h ago</span>
+                    </figure>
+
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment" target="_blank" rel="noopener" tabindex="-1">SEC Appoints Russell McGranahan as General Counsel</a>
+                        </h3>
+
                         
                         <p class="story-summary">The Securities and Exchange Commission has named Russell McGranahan as its new general counsel, succeeding Jeffrey Finne...</p>
                         
-                        
+
                         <footer class="story-meta">
                             <span>ExecutiveGov</span>
                             <span aria-hidden="true">•</span>
                             <time datetime="2026-01-16T21:26:07">11h ago</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            
-            <article class="story-card ">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" data-title="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video" data-source="ExecutiveGov" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" data-title="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper clickable-card" data-href="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" role="link" tabindex="0" aria-label="Read story: New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video">
-                    <figure class="story-media">
-                        
-                        
-                        <img src="https://www.executivegov.com/wp-content/uploads/2026/01/cameron-stanley-ai-strategy-pentagon-cdao.jpg"
-                             alt="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video"
-                             class="story-image"
-                             loading="eager"
-                             referrerpolicy="no-referrer"
-                             width="800"
-                             height="450">
-                    </figure>
-                    
-                    <div class="story-content">
-                        <header>
-                            
-                            
-                            
-                            <span class="source-badge defense_industrial_base">🛡️ Defense Industrial Base</span>
-                            
-                            <h3 class="story-title">
-                                <a href="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" target="_blank" rel="noopener" tabindex="-1">New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video</a>
-                            </h3>
-                        </header>
-                        
-                        
-                        <p class="story-summary">Cameron Stanley, who assumed the role of chief digital and artificial intelligence officer at the Department of War on M...</p>
-                        
-                        
-                        <footer class="story-meta">
-                            <span>ExecutiveGov</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-16T20:57:21">11h ago</time>
                         </footer>
                     </div>
                 </div>
@@ -3163,24 +3121,22 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="800"
                              height="450">
-                    </figure>
-                    
-                    <div class="story-content">
-                        <header>
-                            
-                            
-                            
-                            <span class="source-badge cmmc_program">🎯 CMMC Program News</span>
-                            
-                            <h3 class="story-title">
-                                <a href="https://www.reddit.com/r/CMMC/comments/1qegxhh/nist_sp_800171_rev_3_audit_accountability_dod_odp/" target="_blank" rel="noopener" tabindex="-1">NIST SP 800-171 Rev. 3 Audit &amp; Accountability - DoD ODP</a>
-                            </h3>
-                        </header>
                         
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-cmmc">r/CMMC</span>
+                        <span class="image-date-badge">18h ago</span>
+                    </figure>
+
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="https://www.reddit.com/r/CMMC/comments/1qegxhh/nist_sp_800171_rev_3_audit_accountability_dod_odp/" target="_blank" rel="noopener" tabindex="-1">NIST SP 800-171 Rev. 3 Audit &amp; Accountability - DoD ODP</a>
+                        </h3>
+
                         
                         <p class="story-summary">I’m currently working on implementing NIST SP 800-171 rev.3 ( Audit &amp; Accountability - AU controls) in an on-prem Active...</p>
                         
-                        
+
                         <footer class="story-meta">
                             <span>r/CMMC</span>
                             <span aria-hidden="true">•</span>
@@ -3211,28 +3167,72 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="800"
                              height="450">
-                    </figure>
-                    
-                    <div class="story-content">
-                        <header>
-                            
-                            
-                            
-                            <span class="source-badge defense_industrial_base">🛡️ Defense Industrial Base</span>
-                            
-                            <h3 class="story-title">
-                                <a href="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" target="_blank" rel="noopener" tabindex="-1">EU mandates buy-European preference in new Ukraine assistance package</a>
-                            </h3>
-                        </header>
                         
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-defense-news">Defense News</span>
+                        <span class="image-date-badge">21h ago</span>
+                    </figure>
+
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" target="_blank" rel="noopener" tabindex="-1">EU mandates buy-European preference in new Ukraine assistance package</a>
+                        </h3>
+
                         
                         <p class="story-summary">The language represents Brussels’ most explicit attempt yet in leveraging aid to bolster Europe’s defense industrial bas...</p>
                         
-                        
+
                         <footer class="story-meta">
                             <span>Defense News</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-16T12:04:59">20h ago</time>
+                            <time datetime="2026-01-16T12:04:59">21h ago</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            
+            <article class="story-card ">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" data-title="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video" data-source="ExecutiveGov" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" data-title="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper clickable-card" data-href="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" role="link" tabindex="0" aria-label="Read story: New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video">
+                    <figure class="story-media">
+                        
+                        
+                        <img src="https://www.executivegov.com/wp-content/uploads/2026/01/cameron-stanley-ai-strategy-pentagon-cdao.jpg"
+                             alt="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video"
+                             class="story-image"
+                             loading="eager"
+                             referrerpolicy="no-referrer"
+                             width="800"
+                             height="450">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-executivegov">ExecutiveGov</span>
+                        <span class="image-date-badge">12h ago</span>
+                    </figure>
+
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" target="_blank" rel="noopener" tabindex="-1">New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video</a>
+                        </h3>
+
+                        
+                        <p class="story-summary">Cameron Stanley, who assumed the role of chief digital and artificial intelligence officer at the Department of War on M...</p>
+                        
+
+                        <footer class="story-meta">
+                            <span>ExecutiveGov</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-16T20:57:21">12h ago</time>
                         </footer>
                     </div>
                 </div>
@@ -3259,24 +3259,22 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="800"
                              height="450">
-                    </figure>
-                    
-                    <div class="story-content">
-                        <header>
-                            
-                            
-                            
-                            <span class="source-badge cmmc_program">🎯 CMMC Program News</span>
-                            
-                            <h3 class="story-title">
-                                <a href="https://www.reddit.com/r/CMMC/comments/1qe1x6z/cmmc_level_2_selfattestation_requests/" target="_blank" rel="noopener" tabindex="-1">CMMC Level 2 self-attestation requests</a>
-                            </h3>
-                        </header>
                         
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-cmmc">r/CMMC</span>
+                        <span class="image-date-badge">Yesterday</span>
+                    </figure>
+
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="https://www.reddit.com/r/CMMC/comments/1qe1x6z/cmmc_level_2_selfattestation_requests/" target="_blank" rel="noopener" tabindex="-1">CMMC Level 2 self-attestation requests</a>
+                        </h3>
+
                         
                         <p class="story-summary">We’ve completed a NIST SP 800-171 self-assessment and, up until now, have typically only been asked to provide an SPRS s...</p>
                         
-                        
+
                         <footer class="story-meta">
                             <span>r/CMMC</span>
                             <span aria-hidden="true">•</span>
@@ -3307,24 +3305,22 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="800"
                              height="450">
-                    </figure>
-                    
-                    <div class="story-content">
-                        <header>
-                            
-                            
-                            
-                            <span class="source-badge nist_compliance">📋 NIST &amp; Compliance</span>
-                            
-                            <h3 class="story-title">
-                                <a href="https://breakingdefense.com/2026/01/nominees-to-take-over-southcom-and-cybercom-remain-tight-lipped-before-senators/" target="_blank" rel="noopener" tabindex="-1">Nominees to take over SOUTHCOM and CYBERCOM remain tight-lipped before senators</a>
-                            </h3>
-                        </header>
                         
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-breaking-defense">Breaking Defense</span>
+                        <span class="image-date-badge">Yesterday</span>
+                    </figure>
+
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="https://breakingdefense.com/2026/01/nominees-to-take-over-southcom-and-cybercom-remain-tight-lipped-before-senators/" target="_blank" rel="noopener" tabindex="-1">Nominees to take over SOUTHCOM and CYBERCOM remain tight-lipped before senators</a>
+                        </h3>
+
                         
                         <p class="story-summary">“We really haven’t received any answers about how you feel about the responsibilities you’re about to take on. It’s okay...</p>
                         
-                        
+
                         <footer class="story-meta">
                             <span>Breaking Defense</span>
                             <span aria-hidden="true">•</span>
@@ -3355,24 +3351,22 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="800"
                              height="450">
-                    </figure>
-                    
-                    <div class="story-content">
-                        <header>
-                            
-                            
-                            
-                            <span class="source-badge nist_compliance">📋 NIST &amp; Compliance</span>
-                            
-                            <h3 class="story-title">
-                                <a href="https://breakingdefense.com/2026/01/diu-offers-100m-in-prizes-for-voice-controlled-ai-enabled-drone-swarm-orchestrator/" target="_blank" rel="noopener" tabindex="-1">DIU offers $100M in prizes for voice-controlled AI-enabled drone swarm ‘orchestrator’</a>
-                            </h3>
-                        </header>
                         
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-breaking-defense">Breaking Defense</span>
+                        <span class="image-date-badge">Yesterday</span>
+                    </figure>
+
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="https://breakingdefense.com/2026/01/diu-offers-100m-in-prizes-for-voice-controlled-ai-enabled-drone-swarm-orchestrator/" target="_blank" rel="noopener" tabindex="-1">DIU offers $100M in prizes for voice-controlled AI-enabled drone swarm ‘orchestrator’</a>
+                        </h3>
+
                         
                         <p class="story-summary">Instead of needing a specially trained human to remote pilot each drone or robot-boat, the Pentagon wants any servicemem...</p>
                         
-                        
+
                         <footer class="story-meta">
                             <span>Breaking Defense</span>
                             <span aria-hidden="true">•</span>
@@ -3403,24 +3397,22 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="800"
                              height="450">
-                    </figure>
-                    
-                    <div class="story-content">
-                        <header>
-                            
-                            
-                            
-                            <span class="source-badge nist_compliance">📋 NIST &amp; Compliance</span>
-                            
-                            <h3 class="story-title">
-                                <a href="https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/" target="_blank" rel="noopener" tabindex="-1">NATO nations send scouting teams to Greenland amid US annexation talk</a>
-                            </h3>
-                        </header>
                         
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-defense-news">Defense News</span>
+                        <span class="image-date-badge">Yesterday</span>
+                    </figure>
+
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/" target="_blank" rel="noopener" tabindex="-1">NATO nations send scouting teams to Greenland amid US annexation talk</a>
+                        </h3>
+
                         
                         <p class="story-summary">European governments are still coming to grips with the unprecedented situation of a NATO ally threatening one of their ...</p>
                         
-                        
+
                         <footer class="story-meta">
                             <span>Defense News</span>
                             <span aria-hidden="true">•</span>
@@ -3451,24 +3443,22 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="800"
                              height="450">
-                    </figure>
-                    
-                    <div class="story-content">
-                        <header>
-                            
-                            
-                            
-                            <span class="source-badge defense_industrial_base">🛡️ Defense Industrial Base</span>
-                            
-                            <h3 class="story-title">
-                                <a href="https://www.govconwire.com/articles/cdao-cameron-stanley-pentagon-ai-industry" target="_blank" rel="noopener" tabindex="-1">Exclusive: New CDAO Cameron Stanley Shares What Pentagon Needs From Industry</a>
-                            </h3>
-                        </header>
                         
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-govcon-wire">GovCon Wire</span>
+                        <span class="image-date-badge">Yesterday</span>
+                    </figure>
+
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="https://www.govconwire.com/articles/cdao-cameron-stanley-pentagon-ai-industry" target="_blank" rel="noopener" tabindex="-1">Exclusive: New CDAO Cameron Stanley Shares What Pentagon Needs From Industry</a>
+                        </h3>
+
                         
                         <p class="story-summary">Cameron Stanley, the Department of War’s newly appointed chief digital and artificial intelligence officer, is calling o...</p>
                         
-                        
+
                         <footer class="story-meta">
                             <span>GovCon Wire</span>
                             <span aria-hidden="true">•</span>
@@ -3511,9 +3501,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-cmmc">r/CMMC</span>
+                        <span class="image-date-badge">18h ago</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/CMMC/comments/1qegxhh/nist_sp_800171_rev_3_audit_accountability_dod_odp/" target="_blank" rel="noopener" tabindex="-1">NIST SP 800-171 Rev. 3 Audit &amp; Accountability - DoD ODP</a>
                         </h3>
                         <footer class="story-meta">
@@ -3545,9 +3540,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-cmmc">r/CMMC</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/CMMC/comments/1qe1x6z/cmmc_level_2_selfattestation_requests/" target="_blank" rel="noopener" tabindex="-1">CMMC Level 2 self-attestation requests</a>
                         </h3>
                         <footer class="story-meta">
@@ -3579,9 +3579,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-cmmc">r/CMMC</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/CMMC/comments/1qdtszy/transition_from_rmf_to_cmmc/" target="_blank" rel="noopener" tabindex="-1">Transition from RMF to CMMC</a>
                         </h3>
                         <footer class="story-meta">
@@ -3613,9 +3618,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-cmmc">r/CMMC</span>
+                        <span class="image-date-badge">2d ago</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/CMMC/comments/1qd79o6/for_those_going_through_cmmc_level_2_readiness/" target="_blank" rel="noopener" tabindex="-1">For those going through CMMC Level 2 readiness right now — what’s been the most painful or confusing part?</a>
                         </h3>
                         <footer class="story-meta">
@@ -3647,9 +3657,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-cmmc">r/CMMC</span>
+                        <span class="image-date-badge">2d ago</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/CMMC/comments/1qcwprd/m365_g5_intune_optional_windows_update_for/" target="_blank" rel="noopener" tabindex="-1">M365 G5 Intune optional Windows Update for Business Features?</a>
                         </h3>
                         <footer class="story-meta">
@@ -3681,9 +3696,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-cmmc">r/CMMC</span>
+                        <span class="image-date-badge">2d ago</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/CMMC/comments/1qclrei/1099subcontractor_roles_for_ccas/" target="_blank" rel="noopener" tabindex="-1">1099/subcontractor roles for CCAs</a>
                         </h3>
                         <footer class="story-meta">
@@ -3715,9 +3735,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-cmmc">r/CMMC</span>
+                        <span class="image-date-badge">Nov 14</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/CMMC/comments/1owyb9a/we_passed_our_cmmc_assessment_and_heres_what_we/" target="_blank" rel="noopener" tabindex="-1">&#34;We Passed Our CMMC Assessment and Here&#39;s What We Learned&#34; MEGATHREAD</a>
                         </h3>
                         <footer class="story-meta">
@@ -3749,9 +3774,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-cmmc">r/CMMC</span>
+                        <span class="image-date-badge">3d ago</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/CMMC/comments/1qcc7ct/seeking_guidance/" target="_blank" rel="noopener" tabindex="-1">Seeking guidance!</a>
                         </h3>
                         <footer class="story-meta">
@@ -3794,9 +3824,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-executivegov">ExecutiveGov</span>
+                        <span class="image-date-badge">11h ago</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment" target="_blank" rel="noopener" tabindex="-1">SEC Appoints Russell McGranahan as General Counsel</a>
                         </h3>
                         <footer class="story-meta">
@@ -3828,9 +3863,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-breaking-defense">Breaking Defense</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://breakingdefense.com/2026/01/nominees-to-take-over-southcom-and-cybercom-remain-tight-lipped-before-senators/" target="_blank" rel="noopener" tabindex="-1">Nominees to take over SOUTHCOM and CYBERCOM remain tight-lipped before senators</a>
                         </h3>
                         <footer class="story-meta">
@@ -3862,9 +3902,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-breaking-defense">Breaking Defense</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://breakingdefense.com/2026/01/diu-offers-100m-in-prizes-for-voice-controlled-ai-enabled-drone-swarm-orchestrator/" target="_blank" rel="noopener" tabindex="-1">DIU offers $100M in prizes for voice-controlled AI-enabled drone swarm ‘orchestrator’</a>
                         </h3>
                         <footer class="story-meta">
@@ -3896,9 +3941,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-breaking-defense">Breaking Defense</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://breakingdefense.com/2026/01/why-manufacturing-critical-defense-technologies-in-the-us-is-the-linchpin-to-national-security/" target="_blank" rel="noopener" tabindex="-1">Why manufacturing critical defense technologies in the US is the linchpin to national security</a>
                         </h3>
                         <footer class="story-meta">
@@ -3930,9 +3980,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-defense-news">Defense News</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/" target="_blank" rel="noopener" tabindex="-1">NATO nations send scouting teams to Greenland amid US annexation talk</a>
                         </h3>
                         <footer class="story-meta">
@@ -3964,9 +4019,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-executivegov">ExecutiveGov</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.executivegov.com/articles/sba-sbic-program-final-rule" target="_blank" rel="noopener" tabindex="-1">SBA Modernizes SBIC Program With Final Rule</a>
                         </h3>
                         <footer class="story-meta">
@@ -3998,9 +4058,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-cyberscoop">Cyberscoop</span>
+                        <span class="image-date-badge">2d ago</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://cyberscoop.com/california-ag-investigates-xai-grok-nonconsensual-deepfakes-defiance-act/" target="_blank" rel="noopener" tabindex="-1">California AG launches investigation into X’s sexualized deepfakes</a>
                         </h3>
                         <footer class="story-meta">
@@ -4032,9 +4097,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-cyberscoop">Cyberscoop</span>
+                        <span class="image-date-badge">2d ago</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://cyberscoop.com/predator-spyware-demonstrates-troubleshooting-researcher-dodging-capabilities/" target="_blank" rel="noopener" tabindex="-1">Predator spyware demonstrates troubleshooting, researcher-dodging capabilities</a>
                         </h3>
                         <footer class="story-meta">
@@ -4077,9 +4147,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-executivegov">ExecutiveGov</span>
+                        <span class="image-date-badge">12h ago</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.executivegov.com/articles/jen-easterly-appointed-rsa-conference-ceo" target="_blank" rel="noopener" tabindex="-1">Former CISA Director Jen Easterly Joins RSA Conference as CEO</a>
                         </h3>
                         <footer class="story-meta">
@@ -4111,9 +4186,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-securityweek">SecurityWeek</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.securityweek.com/former-cisa-director-jen-easterly-appointed-ceo-of-rsac/" target="_blank" rel="noopener" tabindex="-1">Former CISA Director Jen Easterly Appointed CEO of RSAC</a>
                         </h3>
                         <footer class="story-meta">
@@ -4145,9 +4225,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-cyberscoop">Cyberscoop</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://cyberscoop.com/cisa-secure-software-buying-tool-had-a-simple-xss-vulnerability-of-its-own/" target="_blank" rel="noopener" tabindex="-1">CISA’s secure-software buying tool had a simple XSS vulnerability of its own</a>
                         </h3>
                         <footer class="story-meta">
@@ -4179,9 +4264,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-nistcontrols">r/NISTControls</span>
+                        <span class="image-date-badge">Jan 08</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/NISTControls/comments/1q7ilw7/nist_standards_regarding_outside_plant/" target="_blank" rel="noopener" tabindex="-1">NIST standards regarding outside plant hardware/software</a>
                         </h3>
                         <footer class="story-meta">
@@ -4213,9 +4303,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-nistcontrols">r/NISTControls</span>
+                        <span class="image-date-badge">Jan 07</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/NISTControls/comments/1q6h66l/stig_question_259413_windows_dns_server/" target="_blank" rel="noopener" tabindex="-1">STIG question: 259413: Windows DNS Server</a>
                         </h3>
                         <footer class="story-meta">
@@ -4247,9 +4342,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-nistcontrols">r/NISTControls</span>
+                        <span class="image-date-badge">Dec 25</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/NISTControls/comments/1pvbojw/nist_and_mitre_partner_to_test_ai_defense/" target="_blank" rel="noopener" tabindex="-1">NIST and MITRE partner to test AI defense technology for critical infrastructure</a>
                         </h3>
                         <footer class="story-meta">
@@ -4281,9 +4381,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-nistcontrols">r/NISTControls</span>
+                        <span class="image-date-badge">Dec 19</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/NISTControls/comments/1pqi5w8/nist_adds_to_ai_security_guidance_with/" target="_blank" rel="noopener" tabindex="-1">NIST adds to AI security guidance with Cybersecurity Framework profile</a>
                         </h3>
                         <footer class="story-meta">
@@ -4315,9 +4420,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-reddit-nistcontrols">r/NISTControls</span>
+                        <span class="image-date-badge">Dec 18</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.reddit.com/r/NISTControls/comments/1pq2a3q/handling_service_desk_identity_verification/" target="_blank" rel="noopener" tabindex="-1">Handling service desk identity verification?</a>
                         </h3>
                         <footer class="story-meta">
@@ -4342,40 +4452,6 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <article class="story-card no-summary">
                 <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" data-title="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video" data-source="ExecutiveGov" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" data-title="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper clickable-card" data-href="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" role="link" tabindex="0" aria-label="Read story: New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video">
-                    <figure class="story-media">
-                        
-                        
-                        <img src="https://www.executivegov.com/wp-content/uploads/2026/01/cameron-stanley-ai-strategy-pentagon-cdao.jpg"
-                             alt="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video"
-                             class="story-image"
-                             loading="lazy"
-                             referrerpolicy="no-referrer"
-                             width="400"
-                             height="225">
-                    </figure>
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" target="_blank" rel="noopener" tabindex="-1">New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>ExecutiveGov</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-16T20:57:21">11h ago</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
                     <button class="save-btn" type="button" data-url="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" data-title="EU mandates buy-European preference in new Ukraine assistance package" data-source="Defense News" aria-label="Save story" aria-pressed="false" title="Save for later">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     </button>
@@ -4394,15 +4470,59 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-defense-news">Defense News</span>
+                        <span class="image-date-badge">21h ago</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" target="_blank" rel="noopener" tabindex="-1">EU mandates buy-European preference in new Ukraine assistance package</a>
                         </h3>
                         <footer class="story-meta">
                             <span>Defense News</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-16T12:04:59">20h ago</time>
+                            <time datetime="2026-01-16T12:04:59">21h ago</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" data-title="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video" data-source="ExecutiveGov" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" data-title="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper clickable-card" data-href="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" role="link" tabindex="0" aria-label="Read story: New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video">
+                    <figure class="story-media">
+                        
+                        
+                        <img src="https://www.executivegov.com/wp-content/uploads/2026/01/cameron-stanley-ai-strategy-pentagon-cdao.jpg"
+                             alt="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video"
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="400"
+                             height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-executivegov">ExecutiveGov</span>
+                        <span class="image-date-badge">12h ago</span>
+                    </figure>
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" target="_blank" rel="noopener" tabindex="-1">New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>ExecutiveGov</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-16T20:57:21">12h ago</time>
                         </footer>
                     </div>
                 </div>
@@ -4428,9 +4548,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-govcon-wire">GovCon Wire</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.govconwire.com/articles/cdao-cameron-stanley-pentagon-ai-industry" target="_blank" rel="noopener" tabindex="-1">Exclusive: New CDAO Cameron Stanley Shares What Pentagon Needs From Industry</a>
                         </h3>
                         <footer class="story-meta">
@@ -4462,9 +4587,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-cyberscoop">Cyberscoop</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://cyberscoop.com/the-quiet-way-ai-normalizes-foreign-influence/" target="_blank" rel="noopener" tabindex="-1">The quiet way AI normalizes foreign influence</a>
                         </h3>
                         <footer class="story-meta">
@@ -4496,9 +4626,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-defense-one">Defense One</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.defenseone.com/technology/2026/01/pentagon-leans-drone-swarms-100m-challenge/410742/" target="_blank" rel="noopener" tabindex="-1">The Pentagon leans into drone swarms with a $100M challenge</a>
                         </h3>
                         <footer class="story-meta">
@@ -4530,9 +4665,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-executivegov">ExecutiveGov</span>
+                        <span class="image-date-badge">Yesterday</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://www.executivegov.com/articles/senate-bill-pentagon-cyber-workforce-strategy" target="_blank" rel="noopener" tabindex="-1">Bipartisan Senate Bill to Direct Pentagon to Develop Cyber Workforce Strategy</a>
                         </h3>
                         <footer class="story-meta">
@@ -4564,9 +4704,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-fedscoop">FedScoop</span>
+                        <span class="image-date-badge">2d ago</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://fedscoop.com/trump-ai-action-plan-michael-kratsios-tech-force/" target="_blank" rel="noopener" tabindex="-1">OSTP’s Kratsios touts ‘incredible’ interest in Tech Force, defends Trump science and tech cuts</a>
                         </h3>
                         <footer class="story-meta">
@@ -4598,9 +4743,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-federal-news-network">Federal News Network</span>
+                        <span class="image-date-badge">Jan 02</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="https://federalnewsnetwork.com/cybersecurity/2026/01/the-pentagons-short-more-than-20000-cyber-pros-veterans-could-help-fill-the-gap/" target="_blank" rel="noopener" tabindex="-1">The Pentagon’s short more than 20,000 cyber pros. Veterans could help fill the gap.</a>
                         </h3>
                         <footer class="story-meta">
@@ -4622,40 +4772,16 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
 
     <footer class="footer" role="contentinfo">
     <div class="footer-content">
-        <div class="footer-main">
-            <div class="footer-brand">CMMC Watch</div>
-            <p class="footer-description">
-                Daily CMMC & NIST compliance news aggregator.
-                Automated collection from government, industry, and compliance sources.
-            </p>
-        </div>
-        <div class="footer-links-section">
-            <h4 class="footer-section-title">Navigate</h4>
-            <ul class="footer-links">
-                <li><a href="/">Home</a></li>
-                <li><a href="/feed.xml" target="_blank">RSS Feed</a></li>
-                <li><a href="/archive/">Archive</a></li>
-            </ul>
-        </div>
-        <div class="footer-author-section">
-            <h4 class="footer-section-title">About the Author</h4>
-            <p class="footer-author-bio">
-                Brad Shannon is a technology entrepreneur and cybersecurity professional
-                focused on helping organizations navigate CMMC compliance.
-            </p>
-            <a href="https://www.linkedin.com/in/bradmshannon/" class="footer-linkedin" target="_blank" rel="noopener noreferrer">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                </svg>
-                Connect on LinkedIn
-            </a>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        <span>Generated on January 17, 2026</span>
-        <div class="footer-actions">
-            <a href="/archive/" class="archive-btn">View Archive</a>
-        </div>
+        <span class="footer-brand">
+            A product of <a href="https://www.linkedin.com/in/bradmshannon/" target="_blank" rel="noopener noreferrer">Brad Shannon</a>
+        </span>
+        <a href="/feed.xml" class="footer-link" target="_blank" rel="noopener">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/>
+            </svg>
+            RSS Feed
+        </a>
+        <span class="footer-date">Updated: January 17, 2026</span>
     </div>
 </footer>
 

@@ -41,7 +41,58 @@ body.layout-split .top-stories {
     inset: 0;
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.25));
     pointer-events: none;
+    z-index: 1;
 }
+
+/* ===== IMAGE OVERLAY BADGES ===== */
+.image-source-badge {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 2;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 4px;
+    color: white;
+    background: rgba(239, 68, 68, 0.95);
+    backdrop-filter: blur(4px);
+    white-space: nowrap;
+}
+
+.image-date-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 2;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    border-radius: 4px;
+    color: white;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+/* Source badge color coding by publication */
+.image-source-badge.reddit-cmmc,
+.image-source-badge.reddit-nistcontrols,
+.image-source-badge.r-cmmc,
+.image-source-badge.r-nistcontrols { background: rgba(239, 68, 68, 0.95); }
+
+.image-source-badge.cyberscoop { background: rgba(139, 92, 246, 0.95); }
+.image-source-badge.fedscoop { background: rgba(249, 115, 22, 0.95); }
+.image-source-badge.breaking-defense { background: rgba(20, 184, 166, 0.95); }
+.image-source-badge.defense-news { background: rgba(59, 130, 246, 0.95); }
+.image-source-badge.defense-one { background: rgba(99, 102, 241, 0.95); }
+.image-source-badge.nextgov,
+.image-source-badge.nextgov-cybersecurity { background: rgba(16, 185, 129, 0.95); }
+.image-source-badge.executivegov { background: rgba(168, 85, 247, 0.95); }
+.image-source-badge.govcon-wire { background: rgba(236, 72, 153, 0.95); }
+.image-source-badge.securityweek { background: rgba(220, 38, 38, 0.95); }
+.image-source-badge.federal-news-network { background: rgba(37, 99, 235, 0.95); }
 
 /* Top Stories: Compact Vertical Card Layout */
 .top-stories article.story-card {

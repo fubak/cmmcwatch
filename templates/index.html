@@ -105,24 +105,22 @@
                              referrerpolicy="no-referrer"
                              width="800"
                              height="450">
+                        {# Overlay badges on image #}
+                        {% set source_name = story.source_display or (story.source | replace('_', ' ') | title) %}
+                        {% set source_class = story.source | lower | replace(' ', '-') | replace('_', '-') %}
+                        <span class="image-source-badge {{ source_class }}">{{ source_name }}</span>
+                        <span class="image-date-badge">{{ story.time_ago }}</span>
                     </figure>
-                    
+
                     <div class="story-content">
-                        <header>
-                            {# Use pre-computed category_display for badge with emoji #}
-                            {% set badge_text = story.category_display if story.category_display else (story.category | replace('_', ' ') | title if story.category else story.source | replace('_', ' ') | title) %}
-                            {% set category_class = story.category | lower | replace(' ', '-') if story.category else 'other' %}
-                            <span class="source-badge {{ category_class }}">{{ badge_text }}</span>
-                            
-                            <h3 class="story-title">
-                                <a href="{{ story.url }}" target="_blank" rel="noopener" tabindex="-1">{{ story.title }}</a>
-                            </h3>
-                        </header>
-                        
+                        <h3 class="story-title">
+                            <a href="{{ story.url }}" target="_blank" rel="noopener" tabindex="-1">{{ story.title }}</a>
+                        </h3>
+
                         {% if summary %}
                         <p class="story-summary">{{ summary[:120] }}{% if summary|length > 120 %}...{% endif %}</p>
                         {% endif %}
-                        
+
                         <footer class="story-meta">
                             <span>{{ story.source_display or (story.source | replace('_', ' ') | title) }}</span>
                             <span aria-hidden="true">•</span>
@@ -165,9 +163,14 @@
                              referrerpolicy="no-referrer"
                              width="400"
                              height="225">
+                        {# Overlay badges on image #}
+                        {% set source_name = story.source_display or (story.source | replace('_', ' ') | title) %}
+                        {% set source_class = story.source | lower | replace(' ', '-') | replace('_', '-') %}
+                        <span class="image-source-badge {{ source_class }}">{{ source_name }}</span>
+                        <span class="image-date-badge">{{ story.time_ago }}</span>
                     </figure>
                     <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
+                        <h3 class="story-title">
                             <a href="{{ story.url }}" target="_blank" rel="noopener" tabindex="-1">{{ story.title }}</a>
                         </h3>
                         <footer class="story-meta">
