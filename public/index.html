@@ -47,7 +47,7 @@
     <!-- Additional SEO -->
     <meta name="generator" content="CMMC Watch Autonomous Generator">
     <meta name="date" content="2026-01-17">
-    <meta name="last-modified" content="2026-01-17T11:50:10.513177">
+    <meta name="last-modified" content="2026-01-17T12:06:34.034513">
 
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -82,7 +82,7 @@
       "name": "CMMC & Compliance News - January 17, 2026",
       "description": "Daily aggregation of CMMC, NIST 800-171, and federal cybersecurity compliance news. Automated collection from government, defense industry, and compliance sources. Updated January 17, 2026 with 61 stories.",
       "url": "https://cmmcwatch.com/",
-      "datePublished": "2026-01-17T11:50:10.513333",
+      "datePublished": "2026-01-17T12:06:34.034700",
       "mainEntity": {
         "@type": "ItemList",
         "numberOfItems": 9,
@@ -124,22 +124,6 @@
             "position": 3,
             "item": {
               "@type": "NewsArticle",
-              "headline": "EU mandates buy-European preference in new Ukraine assistance package",
-              "url": "https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/",
-              "datePublished": "2026-01-16T12:04:59",
-              "publisher": {
-                "@type": "Organization",
-                "name": "Defense News"
-              },
-              "image": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/F6EP3F6D45DC7JVCV62NFLDPJY.jpg",
-              "description": "The language represents Brussels\u2019 most explicit attempt yet in leveraging aid to bolster Europe\u2019s defense industrial base, though not all members agree."
-            }
-          },
-          {
-            "@type": "ListItem",
-            "position": 4,
-            "item": {
-              "@type": "NewsArticle",
               "headline": "New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video",
               "url": "https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video",
               "datePublished": "2026-01-16T20:57:21",
@@ -153,7 +137,7 @@
           },
           {
             "@type": "ListItem",
-            "position": 5,
+            "position": 4,
             "item": {
               "@type": "NewsArticle",
               "headline": "CMMC Level 2 self-attestation requests",
@@ -169,7 +153,7 @@
           },
           {
             "@type": "ListItem",
-            "position": 6,
+            "position": 5,
             "item": {
               "@type": "NewsArticle",
               "headline": "Nominees to take over SOUTHCOM and CYBERCOM remain tight-lipped before senators",
@@ -185,7 +169,7 @@
           },
           {
             "@type": "ListItem",
-            "position": 7,
+            "position": 6,
             "item": {
               "@type": "NewsArticle",
               "headline": "DIU offers $100M in prizes for voice-controlled AI-enabled drone swarm \u2018orchestrator\u2019",
@@ -201,7 +185,7 @@
           },
           {
             "@type": "ListItem",
-            "position": 8,
+            "position": 7,
             "item": {
               "@type": "NewsArticle",
               "headline": "Former CISA Director Jen Easterly Appointed CEO of RSAC",
@@ -217,7 +201,7 @@
           },
           {
             "@type": "ListItem",
-            "position": 9,
+            "position": 8,
             "item": {
               "@type": "NewsArticle",
               "headline": "CISA\u2019s secure-software buying tool had a simple XSS vulnerability of its own",
@@ -229,6 +213,22 @@
               },
               "image": "https://cyberscoop.com/wp-content/uploads/sites/3/2018/11/alert-patch.png",
               "description": "A researcher who discovered the vulnerability said it was fixed in December, after he first reported it to the agency in September. The post CISA\u2019s secure-software buying tool had a simple XSS vulnerability of its own appeared first on CyberScoop ."
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 9,
+            "item": {
+              "@type": "NewsArticle",
+              "headline": "The quiet way AI normalizes foreign influence",
+              "url": "https://cyberscoop.com/the-quiet-way-ai-normalizes-foreign-influence/",
+              "datePublished": "2026-01-15T14:30:55",
+              "publisher": {
+                "@type": "Organization",
+                "name": "Cyberscoop"
+              },
+              "image": "https://cyberscoop.com/wp-content/uploads/sites/3/2026/01/GettyImages-2217834360-1.jpg",
+              "description": "Americans are learning to \u201ctrust the citations\u201d in AI-generated answers\u2014but AI doesn\u2019t reward credibility, it rewards access. The post The quiet way AI normalizes foreign influence appeared first on CyberScoop ."
             }
           }
         ]
@@ -1569,22 +1569,140 @@ body.layout-stacked .top-stories article.story-card {
 }
 
 @media (max-width: 768px) {
+    /* Mobile: 2-column grid with square cards */
     .top-stories {
-        grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        padding: 0.5rem;
     }
+
     .top-stories article.story-card {
-        grid-column: span 6;
+        grid-column: span 1;
+        aspect-ratio: 1;
+        min-height: 0;
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
     }
+
     .top-stories article.story-card.featured {
-        grid-column: span 12;
+        grid-column: span 2;
+        aspect-ratio: 2/1;
         grid-row: span 1;
     }
-    .stories-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+
+    /* Square image fill */
+    .top-stories .story-media {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
     }
+
+    .top-stories .story-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Text overlay on mobile */
+    .top-stories .story-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0.75rem;
+        background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.9) 0%,
+            rgba(0, 0, 0, 0.7) 40%,
+            rgba(0, 0, 0, 0.3) 70%,
+            transparent 100%
+        );
+        z-index: 3;
+    }
+
+    .top-stories .story-title {
+        font-size: 0.85rem;
+        line-height: 1.3;
+        color: #fff;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .top-stories article.story-card.featured .story-title {
+        font-size: 1.1rem;
+        -webkit-line-clamp: 3;
+    }
+
+    /* Hide summary and meta on mobile cards */
+    .top-stories .story-summary {
+        display: none;
+    }
+
+    .top-stories .story-meta {
+        margin-top: 0.25rem;
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.8);
+    }
+
+    .stories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
     .stories-grid article.story-card {
         grid-column: span 1;
+        aspect-ratio: 1;
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
     }
+
+    /* Category cards also get image overlay style */
+    .stories-grid .story-media {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .stories-grid .story-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .stories-grid .story-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0.75rem;
+        background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.9) 0%,
+            rgba(0, 0, 0, 0.6) 50%,
+            transparent 100%
+        );
+    }
+
+    .stories-grid .story-title {
+        font-size: 0.8rem;
+        color: #fff;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .stories-grid .story-summary {
+        display: none;
+    }
+
     .headline-xl {
         font-size: 2.5rem;
     }
@@ -2824,6 +2942,26 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
     color: var(--color-text);
 }
 
+.footer-separator {
+    color: var(--color-border);
+    margin: 0 0.25rem;
+}
+
+.footer-attribution {
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
+.footer-attribution a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-attribution a:hover {
+    color: var(--color-text);
+}
+
 .footer-link {
     display: inline-flex;
     align-items: center;
@@ -2848,6 +2986,10 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
         flex-direction: column;
         text-align: center;
         gap: 0.75rem;
+    }
+
+    .footer-separator {
+        display: none;
     }
 }
         
@@ -2959,14 +3101,6 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             
             
-            <span class="ticker-source">Cmmc Rss Defense News</span>
-            <strong><a href="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" target="_blank" rel="noopener">EU mandates buy-European preference in new Ukraine assistance package</a></strong>
-        </div>
-        
-        <div class="ticker-item">
-            
-            
-            
             <span class="ticker-source">Cmmc Rss Executivegov</span>
             <strong><a href="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" target="_blank" rel="noopener">New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video</a></strong>
         </div>
@@ -3059,6 +3193,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             <strong><a href="https://www.securityweek.com/former-cisa-director-jen-easterly-appointed-ceo-of-rsac/" target="_blank" rel="noopener">Former CISA Director Jen Easterly Appointed CEO of RSAC</a></strong>
         </div>
         
+        <div class="ticker-item">
+            
+            
+            
+            <span class="ticker-source">Cmmc Rss Cyberscoop</span>
+            <strong><a href="https://cyberscoop.com/cisa-secure-software-buying-tool-had-a-simple-xss-vulnerability-of-its-own/" target="_blank" rel="noopener">CISA’s secure-software buying tool had a simple XSS vulnerability of its own</a></strong>
+        </div>
+        
     </div>
 </div>
 
@@ -3118,9 +3260,9 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <span class="word-cloud-item size-1" role="img" aria-label="windows">windows</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="defense">defense</span>
-            
             <span class="word-cloud-item size-1" role="img" aria-label="intelligence">intelligence</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="defense">defense</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="easterly">easterly</span>
             
@@ -3291,52 +3433,6 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <article class="story-card ">
                 <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" data-title="EU mandates buy-European preference in new Ukraine assistance package" data-source="Defense News" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" data-title="EU mandates buy-European preference in new Ukraine assistance package" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper clickable-card" data-href="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" role="link" tabindex="0" aria-label="Read story: EU mandates buy-European preference in new Ukraine assistance package">
-                    <figure class="story-media">
-                        
-                        
-                        <img src="https://cloudfront-us-east-1.images.arcpublishing.com/archetype/F6EP3F6D45DC7JVCV62NFLDPJY.jpg"
-                             alt="EU mandates buy-European preference in new Ukraine assistance package"
-                             class="story-image"
-                             loading="eager"
-                             referrerpolicy="no-referrer"
-                             width="800"
-                             height="450">
-                        
-                        
-                        
-                        <span class="image-source-badge cmmc-rss-defense-news">Defense News</span>
-                        <span class="image-date-badge">23h ago</span>
-                    </figure>
-
-                    <div class="story-content">
-                        <h3 class="story-title">
-                            <a href="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" target="_blank" rel="noopener" tabindex="-1">EU mandates buy-European preference in new Ukraine assistance package</a>
-                        </h3>
-
-                        
-                        <p class="story-summary">The language represents Brussels’ most explicit attempt yet in leveraging aid to bolster Europe’s defense industrial bas...</p>
-                        
-
-                        <footer class="story-meta">
-                            <span>Defense News</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-16T12:04:59">23h ago</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            
-            <article class="story-card ">
-                <div class="story-actions">
                     <button class="save-btn" type="button" data-url="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" data-title="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video" data-source="ExecutiveGov" aria-label="Save story" aria-pressed="false" title="Save for later">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     </button>
@@ -3359,7 +3455,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         
                         
                         <span class="image-source-badge cmmc-rss-executivegov">ExecutiveGov</span>
-                        <span class="image-date-badge">14h ago</span>
+                        <span class="image-date-badge">15h ago</span>
                     </figure>
 
                     <div class="story-content">
@@ -3374,7 +3470,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>ExecutiveGov</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-16T20:57:21">14h ago</time>
+                            <time datetime="2026-01-16T20:57:21">15h ago</time>
                         </footer>
                     </div>
                 </div>
@@ -3605,6 +3701,52 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                             <span>Cyberscoop</span>
                             <span aria-hidden="true">•</span>
                             <time datetime="2026-01-15T22:47:42">Yesterday</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            
+            <article class="story-card ">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://cyberscoop.com/the-quiet-way-ai-normalizes-foreign-influence/" data-title="The quiet way AI normalizes foreign influence" data-source="Cyberscoop" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://cyberscoop.com/the-quiet-way-ai-normalizes-foreign-influence/" data-title="The quiet way AI normalizes foreign influence" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper clickable-card" data-href="https://cyberscoop.com/the-quiet-way-ai-normalizes-foreign-influence/" role="link" tabindex="0" aria-label="Read story: The quiet way AI normalizes foreign influence">
+                    <figure class="story-media">
+                        
+                        
+                        <img src="https://cyberscoop.com/wp-content/uploads/sites/3/2026/01/GettyImages-2217834360-1.jpg"
+                             alt="The quiet way AI normalizes foreign influence"
+                             class="story-image"
+                             loading="eager"
+                             referrerpolicy="no-referrer"
+                             width="800"
+                             height="450">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-cyberscoop">Cyberscoop</span>
+                        <span class="image-date-badge">Yesterday</span>
+                    </figure>
+
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="https://cyberscoop.com/the-quiet-way-ai-normalizes-foreign-influence/" target="_blank" rel="noopener" tabindex="-1">The quiet way AI normalizes foreign influence</a>
+                        </h3>
+
+                        
+                        <p class="story-summary">Americans are learning to “trust the citations” in AI-generated answers—but AI doesn’t reward credibility, it rewards ac...</p>
+                        
+
+                        <footer class="story-meta">
+                            <span>Cyberscoop</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-15T14:30:55">Yesterday</time>
                         </footer>
                     </div>
                 </div>
@@ -4594,45 +4736,6 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <article class="story-card no-summary">
                 <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" data-title="EU mandates buy-European preference in new Ukraine assistance package" data-source="Defense News" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" data-title="EU mandates buy-European preference in new Ukraine assistance package" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper clickable-card" data-href="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" role="link" tabindex="0" aria-label="Read story: EU mandates buy-European preference in new Ukraine assistance package">
-                    <figure class="story-media">
-                        
-                        
-                        <img src="https://cloudfront-us-east-1.images.arcpublishing.com/archetype/F6EP3F6D45DC7JVCV62NFLDPJY.jpg"
-                             alt="EU mandates buy-European preference in new Ukraine assistance package"
-                             class="story-image"
-                             loading="lazy"
-                             referrerpolicy="no-referrer"
-                             width="400"
-                             height="225">
-                        
-                        
-                        
-                        <span class="image-source-badge cmmc-rss-defense-news">Defense News</span>
-                        <span class="image-date-badge">23h ago</span>
-                    </figure>
-                    <div class="story-content">
-                        <h3 class="story-title">
-                            <a href="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" target="_blank" rel="noopener" tabindex="-1">EU mandates buy-European preference in new Ukraine assistance package</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Defense News</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-16T12:04:59">23h ago</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
                     <button class="save-btn" type="button" data-url="https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video" data-title="New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video" data-source="ExecutiveGov" aria-label="Save story" aria-pressed="false" title="Save for later">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     </button>
@@ -4655,7 +4758,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         
                         
                         <span class="image-source-badge cmmc-rss-executivegov">ExecutiveGov</span>
-                        <span class="image-date-badge">14h ago</span>
+                        <span class="image-date-badge">15h ago</span>
                     </figure>
                     <div class="story-content">
                         <h3 class="story-title">
@@ -4664,7 +4767,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>ExecutiveGov</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-16T20:57:21">14h ago</time>
+                            <time datetime="2026-01-16T20:57:21">15h ago</time>
                         </footer>
                     </div>
                 </div>
@@ -4743,6 +4846,45 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                             <span>Defense One</span>
                             <span aria-hidden="true">•</span>
                             <time datetime="2026-01-16T01:12:55">Yesterday</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" data-title="EU mandates buy-European preference in new Ukraine assistance package" data-source="Defense News" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" data-title="EU mandates buy-European preference in new Ukraine assistance package" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper clickable-card" data-href="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" role="link" tabindex="0" aria-label="Read story: EU mandates buy-European preference in new Ukraine assistance package">
+                    <figure class="story-media">
+                        
+                        
+                        <img src="https://cloudfront-us-east-1.images.arcpublishing.com/archetype/F6EP3F6D45DC7JVCV62NFLDPJY.jpg"
+                             alt="EU mandates buy-European preference in new Ukraine assistance package"
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="400"
+                             height="225">
+                        
+                        
+                        
+                        <span class="image-source-badge cmmc-rss-defense-news">Defense News</span>
+                        <span class="image-date-badge">Yesterday</span>
+                    </figure>
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/" target="_blank" rel="noopener" tabindex="-1">EU mandates buy-European preference in new Ukraine assistance package</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Defense News</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-16T12:04:59">Yesterday</time>
                         </footer>
                     </div>
                 </div>
@@ -4916,6 +5058,10 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
     <div class="footer-content">
         <span class="footer-brand">
             A product of <a href="https://www.linkedin.com/in/bradmshannon/" target="_blank" rel="noopener noreferrer">Brad Shannon</a>
+        </span>
+        <span class="footer-separator">|</span>
+        <span class="footer-attribution">
+            Built on <a href="https://dailytrending.info" target="_blank" rel="noopener noreferrer">Daily Trending</a>
         </span>
         <a href="/feed.xml" class="footer-link" target="_blank" rel="noopener">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

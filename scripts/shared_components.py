@@ -124,6 +124,8 @@ def build_footer(date_str: str = None, style_info: str = "") -> str:
         </div>
         <div class="footer-bottom">
             <span>Generated on {date_str}</span>
+            <span class="footer-separator">|</span>
+            <span>Built on <a href="https://dailytrending.info" target="_blank" rel="noopener noreferrer">Daily Trending</a></span>
             <div class="footer-actions">
                 <a href="/archive/" class="archive-btn">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -420,6 +422,22 @@ def get_footer_styles() -> str:
             gap: 1rem;
             font-size: 0.85rem;
             color: var(--color-muted);
+        }
+
+        .footer-separator {
+            color: var(--color-border);
+            margin: 0 0.25rem;
+        }
+
+        .footer-bottom a {
+            color: var(--color-accent);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-bottom a:hover {
+            color: var(--color-text);
+            text-decoration: underline;
         }
 
         .footer-actions {

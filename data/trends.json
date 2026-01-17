@@ -1,16 +1,5 @@
 [
   {
-    "title": "SEC Appoints Russell McGranahan as General Counsel",
-    "source": "cmmc_rss_executivegov",
-    "url": "https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment",
-    "description": "The Securities and Exchange Commission has named Russell McGranahan as its new general counsel, succeeding Jeffrey Finnell, who served as acting general counsel. McGranahan will direct legal counsel and provide guidance to the SEC chairman, commissioners and staff across the commission\u2019s regulatory and enforcement activities, the agency said Thursday. Who Is Russell McGranahan? McGranahan most recently served as senior adviser to the SEC chairman, providing strategic and legal counsel. Before jo",
-    "category": "nist_compliance",
-    "score": 2.7,
-    "keywords": [],
-    "timestamp": "2026-01-16 21:26:07",
-    "image_url": "https://www.executivegov.com/wp-content/uploads/2026/01/russell-mcgranahan-sec-general-counsel-promotion.jpg"
-  },
-  {
     "title": "NIST SP 800-171 Rev. 3 Audit & Accountability - DoD ODP",
     "source": "cmmc_reddit_cmmc",
     "url": "https://www.reddit.com/r/CMMC/comments/1qegxhh/nist_sp_800171_rev_3_audit_accountability_dod_odp/",
@@ -22,15 +11,15 @@
     "image_url": null
   },
   {
-    "title": "EU mandates buy-European preference in new Ukraine assistance package",
-    "source": "cmmc_rss_defense_news",
-    "url": "https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/",
-    "description": "The language represents Brussels\u2019 most explicit attempt yet in leveraging aid to bolster Europe\u2019s defense industrial base, though not all members agree.",
-    "category": "defense_industrial_base",
-    "score": 2.0,
+    "title": "SEC Appoints Russell McGranahan as General Counsel",
+    "source": "cmmc_rss_executivegov",
+    "url": "https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment",
+    "description": "The Securities and Exchange Commission has named Russell McGranahan as its new general counsel, succeeding Jeffrey Finnell, who served as acting general counsel. McGranahan will direct legal counsel and provide guidance to the SEC chairman, commissioners and staff across the commission\u2019s regulatory and enforcement activities, the agency said Thursday. Who Is Russell McGranahan? McGranahan most recently served as senior adviser to the SEC chairman, providing strategic and legal counsel. Before jo",
+    "category": "nist_compliance",
+    "score": 2.2,
     "keywords": [],
-    "timestamp": "2026-01-16 12:04:59",
-    "image_url": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/F6EP3F6D45DC7JVCV62NFLDPJY.jpg"
+    "timestamp": "2026-01-16 21:26:07",
+    "image_url": "https://www.executivegov.com/wp-content/uploads/2026/01/russell-mcgranahan-sec-general-counsel-promotion.jpg"
   },
   {
     "title": "New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video",
@@ -110,17 +99,6 @@
     "image_url": "https://breakingdefense.com/wp-content/uploads/sites/13/2026/01/Thales-video-1024x576.jpg"
   },
   {
-    "title": "NATO nations send scouting teams to Greenland amid US annexation talk",
-    "source": "cmmc_rss_defense_news",
-    "url": "https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/",
-    "description": "European governments are still coming to grips with the unprecedented situation of a NATO ally threatening one of their own.",
-    "category": "nist_compliance",
-    "score": 1.7,
-    "keywords": [],
-    "timestamp": "2026-01-15 11:17:34",
-    "image_url": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/2CEZVDF7XBHX7J4TXAWJ5D7PCA.jpg"
-  },
-  {
     "title": "SBA Modernizes SBIC Program With Final Rule",
     "source": "cmmc_rss_executivegov",
     "url": "https://www.executivegov.com/articles/sba-sbic-program-final-rule",
@@ -163,17 +141,6 @@
     "keywords": [],
     "timestamp": "2026-01-14 12:15:26",
     "image_url": null
-  },
-  {
-    "title": "Exclusive: New CDAO Cameron Stanley Shares What Pentagon Needs From Industry",
-    "source": "cmmc_rss_govcon_wire",
-    "url": "https://www.govconwire.com/articles/cdao-cameron-stanley-pentagon-ai-industry",
-    "description": "Cameron Stanley, the Department of War\u2019s newly appointed chief digital and artificial intelligence officer, is calling on industry partners to play a more active role in delivering innovative technology platforms as the Pentagon advances its AI strategy. According to Stanley, DOW is looking for solutions that address a wide range of potential problems, including new",
-    "category": "defense_industrial_base",
-    "score": 1.5,
-    "keywords": [],
-    "timestamp": "2026-01-15 10:08:06",
-    "image_url": "https://www.govconwire.com/wp-content/uploads/2026/01/cdao-cameron-stanley-pentagon-industry-role.jpg"
   },
   {
     "title": "Former CISA Director Jen Easterly Appointed CEO of RSAC",
@@ -220,6 +187,17 @@
     "image_url": "https://cdn.defenseone.com/media/img/cd/2026/01/15/Target_drones_of_exh_2500/thumb.jpg"
   },
   {
+    "title": "EU mandates buy-European preference in new Ukraine assistance package",
+    "source": "cmmc_rss_defense_news",
+    "url": "https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/",
+    "description": "The language represents Brussels\u2019 most explicit attempt yet in leveraging aid to bolster Europe\u2019s defense industrial base, though not all members agree.",
+    "category": "defense_industrial_base",
+    "score": 1.5,
+    "keywords": [],
+    "timestamp": "2026-01-16 12:04:59",
+    "image_url": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/F6EP3F6D45DC7JVCV62NFLDPJY.jpg"
+  },
+  {
     "title": "Bipartisan Senate Bill to Direct Pentagon to Develop Cyber Workforce Strategy",
     "source": "cmmc_rss_executivegov",
     "url": "https://www.executivegov.com/articles/senate-bill-pentagon-cyber-workforce-strategy",
@@ -262,6 +240,17 @@
     "keywords": [],
     "timestamp": "2026-01-14 20:19:57",
     "image_url": "https://breakingdefense.com/wp-content/uploads/sites/13/2026/01/9366535-1024x683.jpg"
+  },
+  {
+    "title": "NATO nations send scouting teams to Greenland amid US annexation talk",
+    "source": "cmmc_rss_defense_news",
+    "url": "https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/",
+    "description": "European governments are still coming to grips with the unprecedented situation of a NATO ally threatening one of their own.",
+    "category": "nist_compliance",
+    "score": 1.4,
+    "keywords": [],
+    "timestamp": "2026-01-15 11:17:34",
+    "image_url": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/2CEZVDF7XBHX7J4TXAWJ5D7PCA.jpg"
   },
   {
     "title": "\"We Passed Our CMMC Assessment and Here's What We Learned\" MEGATHREAD",
@@ -570,6 +559,17 @@
     "keywords": [],
     "timestamp": "2025-12-08 17:05:00",
     "image_url": "https://cdn.nextgov.com/media/img/cd/2025/12/08/120825capitolNG/thumb.jpg"
+  },
+  {
+    "title": "Exclusive: New CDAO Cameron Stanley Shares What Pentagon Needs From Industry",
+    "source": "cmmc_rss_govcon_wire",
+    "url": "https://www.govconwire.com/articles/cdao-cameron-stanley-pentagon-ai-industry",
+    "description": "Cameron Stanley, the Department of War\u2019s newly appointed chief digital and artificial intelligence officer, is calling on industry partners to play a more active role in delivering innovative technology platforms as the Pentagon advances its AI strategy. According to Stanley, DOW is looking for solutions that address a wide range of potential problems, including new",
+    "category": "defense_industrial_base",
+    "score": 1.2,
+    "keywords": [],
+    "timestamp": "2026-01-15 10:08:06",
+    "image_url": "https://www.govconwire.com/wp-content/uploads/2026/01/cdao-cameron-stanley-pentagon-industry-role.jpg"
   },
   {
     "title": "CISA director void leaves cyber agency embroiled in uncertainty",

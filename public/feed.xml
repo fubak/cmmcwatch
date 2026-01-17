@@ -5,8 +5,8 @@
     <description>Daily CMMC &amp; Compliance News Aggregator</description>
     <link>https://cmmcwatch.com</link>
     <language>en-us</language>
-    <lastBuildDate>Sat, 17 Jan 2026 16:50:10 +0000</lastBuildDate>
-    <pubDate>Sat, 17 Jan 2026 16:50:10 +0000</pubDate>
+    <lastBuildDate>Sat, 17 Jan 2026 17:06:34 +0000</lastBuildDate>
+    <pubDate>Sat, 17 Jan 2026 17:06:34 +0000</pubDate>
     <generator>CMMC Watch Pipeline</generator>
     <atom:link href="https://cmmcwatch.com/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
@@ -28,16 +28,6 @@
       <pubDate>Fri, 16 Jan 2026 21:26:07  +0000</pubDate>
       <dc:creator>CMMC Watch</dc:creator>
       <content:encoded>&lt;h3&gt;SEC Appoints Russell McGranahan as General Counsel&lt;/h3&gt;&lt;p&gt;The Securities and Exchange Commission has named Russell McGranahan as its new general counsel, succeeding Jeffrey Finnell, who served as acting general counsel. McGranahan will direct legal counsel and provide guidance to the SEC chairman, commissioners and staff across the commission’s regulatory and enforcement activities, the agency said Thursday. Who Is Russell McGranahan? McGranahan most recently served as senior adviser to the SEC chairman, providing strategic and legal counsel. Before jo&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Executivegov&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
-    </item>
-    <item>
-      <title>EU mandates buy-European preference in new Ukraine assistance package</title>
-      <link>https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/</link>
-      <description>The language represents Brussels’ most explicit attempt yet in leveraging aid to bolster Europe’s defense industrial base, though not all members agree.</description>
-      <category>cmmc_rss_defense_news</category>
-      <guid isPermaLink="true">https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/</guid>
-      <pubDate>Fri, 16 Jan 2026 12:04:59  +0000</pubDate>
-      <dc:creator>CMMC Watch</dc:creator>
-      <content:encoded>&lt;h3&gt;EU mandates buy-European preference in new Ukraine assistance package&lt;/h3&gt;&lt;p&gt;The language represents Brussels’ most explicit attempt yet in leveraging aid to bolster Europe’s defense industrial base, though not all members agree.&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Defense News&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
     <item>
       <title>New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video</title>
@@ -188,6 +178,16 @@
       <pubDate>Fri, 16 Jan 2026 01:12:55  +0000</pubDate>
       <dc:creator>CMMC Watch</dc:creator>
       <content:encoded>&lt;h3&gt;The Pentagon leans into drone swarms with a $100M challenge&lt;/h3&gt;&lt;p&gt;An Ender’s Game challenge illustrates the U.S. military's evolving approach to AI.&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Defense One&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.defenseone.com/technology/2026/01/pentagon-leans-drone-swarms-100m-challenge/410742/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
+    </item>
+    <item>
+      <title>EU mandates buy-European preference in new Ukraine assistance package</title>
+      <link>https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/</link>
+      <description>The language represents Brussels’ most explicit attempt yet in leveraging aid to bolster Europe’s defense industrial base, though not all members agree.</description>
+      <category>cmmc_rss_defense_news</category>
+      <guid isPermaLink="true">https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/</guid>
+      <pubDate>Fri, 16 Jan 2026 12:04:59  +0000</pubDate>
+      <dc:creator>CMMC Watch</dc:creator>
+      <content:encoded>&lt;h3&gt;EU mandates buy-European preference in new Ukraine assistance package&lt;/h3&gt;&lt;p&gt;The language represents Brussels’ most explicit attempt yet in leveraging aid to bolster Europe’s defense industrial base, though not all members agree.&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Defense News&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
     <item>
       <title>Bipartisan Senate Bill to Direct Pentagon to Develop Cyber Workforce Strategy</title>

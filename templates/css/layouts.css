@@ -993,22 +993,140 @@ body.layout-stacked .top-stories article.story-card {
 }
 
 @media (max-width: 768px) {
+    /* Mobile: 2-column grid with square cards */
     .top-stories {
-        grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        padding: 0.5rem;
     }
+
     .top-stories article.story-card {
-        grid-column: span 6;
+        grid-column: span 1;
+        aspect-ratio: 1;
+        min-height: 0;
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
     }
+
     .top-stories article.story-card.featured {
-        grid-column: span 12;
+        grid-column: span 2;
+        aspect-ratio: 2/1;
         grid-row: span 1;
     }
-    .stories-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+
+    /* Square image fill */
+    .top-stories .story-media {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
     }
+
+    .top-stories .story-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Text overlay on mobile */
+    .top-stories .story-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0.75rem;
+        background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.9) 0%,
+            rgba(0, 0, 0, 0.7) 40%,
+            rgba(0, 0, 0, 0.3) 70%,
+            transparent 100%
+        );
+        z-index: 3;
+    }
+
+    .top-stories .story-title {
+        font-size: 0.85rem;
+        line-height: 1.3;
+        color: #fff;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .top-stories article.story-card.featured .story-title {
+        font-size: 1.1rem;
+        -webkit-line-clamp: 3;
+    }
+
+    /* Hide summary and meta on mobile cards */
+    .top-stories .story-summary {
+        display: none;
+    }
+
+    .top-stories .story-meta {
+        margin-top: 0.25rem;
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.8);
+    }
+
+    .stories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
     .stories-grid article.story-card {
         grid-column: span 1;
+        aspect-ratio: 1;
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
     }
+
+    /* Category cards also get image overlay style */
+    .stories-grid .story-media {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .stories-grid .story-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .stories-grid .story-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0.75rem;
+        background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.9) 0%,
+            rgba(0, 0, 0, 0.6) 50%,
+            transparent 100%
+        );
+    }
+
+    .stories-grid .story-title {
+        font-size: 0.8rem;
+        color: #fff;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .stories-grid .story-summary {
+        display: none;
+    }
+
     .headline-xl {
         font-size: 2.5rem;
     }
