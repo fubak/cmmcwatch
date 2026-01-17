@@ -61,6 +61,17 @@ jobs:
           restore-keys: |
             cmmcwatch-build-
 
+      - name: Clear today's archive to force fresh generation
+        run: |
+          TODAY=$(date +%Y-%m-%d)
+          if [ -d "public/archive/$TODAY" ]; then
+            echo "Removing existing archive for $TODAY"
+            rm -rf "public/archive/$TODAY"
+          fi
+          # Also clear cached data to force fresh content
+          rm -f data/*.json 2>/dev/null || true
+          echo "Cleared stale data files"
+
       - name: Run website generation pipeline
         env:
           GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
