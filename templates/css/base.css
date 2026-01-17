@@ -94,6 +94,19 @@ h1, h2, h3, h4, h5, h6 {
     padding: 3rem 2rem;
 }
 
+/* Mobile-optimized container spacing */
+@media (max-width: 640px) {
+    .container {
+        padding: 2rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 1.5rem 0.75rem;
+    }
+}
+
 .section {
     margin-bottom: var(--section-gap);
     scroll-margin-top: 6rem;

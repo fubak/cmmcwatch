@@ -5,20 +5,10 @@
     <description>Daily CMMC &amp; Compliance News Aggregator</description>
     <link>https://cmmcwatch.com</link>
     <language>en-us</language>
-    <lastBuildDate>Sat, 17 Jan 2026 14:07:20 +0000</lastBuildDate>
-    <pubDate>Sat, 17 Jan 2026 14:07:20 +0000</pubDate>
+    <lastBuildDate>Sat, 17 Jan 2026 16:50:10 +0000</lastBuildDate>
+    <pubDate>Sat, 17 Jan 2026 16:50:10 +0000</pubDate>
     <generator>CMMC Watch Pipeline</generator>
     <atom:link href="https://cmmcwatch.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <item>
-      <title>SEC Appoints Russell McGranahan as General Counsel</title>
-      <link>https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment</link>
-      <description>The Securities and Exchange Commission has named Russell McGranahan as its new general counsel, succeeding Jeffrey Finnell, who served as acting general counsel. McGranahan will direct legal counsel and provide guidance to the SEC chairman, commissioners and staff across the commission’s regulatory and enforcement activities, the agency said Thursday. Who Is Russell McGranahan? McGranahan most recently served as senior adviser to the SEC chairman, providing strategic and legal counsel. Before jo</description>
-      <category>cmmc_rss_executivegov</category>
-      <guid isPermaLink="true">https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment</guid>
-      <pubDate>Fri, 16 Jan 2026 21:26:07  +0000</pubDate>
-      <dc:creator>CMMC Watch</dc:creator>
-      <content:encoded>&lt;h3&gt;SEC Appoints Russell McGranahan as General Counsel&lt;/h3&gt;&lt;p&gt;The Securities and Exchange Commission has named Russell McGranahan as its new general counsel, succeeding Jeffrey Finnell, who served as acting general counsel. McGranahan will direct legal counsel and provide guidance to the SEC chairman, commissioners and staff across the commission’s regulatory and enforcement activities, the agency said Thursday. Who Is Russell McGranahan? McGranahan most recently served as senior adviser to the SEC chairman, providing strategic and legal counsel. Before jo&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Executivegov&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
-    </item>
     <item>
       <title>NIST SP 800-171 Rev. 3 Audit &amp; Accountability - DoD ODP</title>
       <link>https://www.reddit.com/r/CMMC/comments/1qegxhh/nist_sp_800171_rev_3_audit_accountability_dod_odp/</link>
@@ -28,6 +18,16 @@
       <pubDate>Fri, 16 Jan 2026 14:09:23  +0000</pubDate>
       <dc:creator>CMMC Watch</dc:creator>
       <content:encoded>&lt;h3&gt;NIST SP 800-171 Rev. 3 Audit &amp; Accountability - DoD ODP&lt;/h3&gt;&lt;p&gt;I’m currently working on implementing NIST SP 800-171 rev.3 ( Audit &amp; Accountability - AU controls) in an on-prem Active Directory environment and I’d like to get some real-world input from people who have done this in practice (Yes I know CMMC lvl2 is based on rev2 but we need to comply with rev3) One area that’s still somewhat unclear to me is how others interpret and implement logging for “Security Relevant Files and Objects events (Create / Access / Modify / Delete / Permission Modification &lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Reddit Cmmc&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.reddit.com/r/CMMC/comments/1qegxhh/nist_sp_800171_rev_3_audit_accountability_dod_odp/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
+    </item>
+    <item>
+      <title>SEC Appoints Russell McGranahan as General Counsel</title>
+      <link>https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment</link>
+      <description>The Securities and Exchange Commission has named Russell McGranahan as its new general counsel, succeeding Jeffrey Finnell, who served as acting general counsel. McGranahan will direct legal counsel and provide guidance to the SEC chairman, commissioners and staff across the commission’s regulatory and enforcement activities, the agency said Thursday. Who Is Russell McGranahan? McGranahan most recently served as senior adviser to the SEC chairman, providing strategic and legal counsel. Before jo</description>
+      <category>cmmc_rss_executivegov</category>
+      <guid isPermaLink="true">https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment</guid>
+      <pubDate>Fri, 16 Jan 2026 21:26:07  +0000</pubDate>
+      <dc:creator>CMMC Watch</dc:creator>
+      <content:encoded>&lt;h3&gt;SEC Appoints Russell McGranahan as General Counsel&lt;/h3&gt;&lt;p&gt;The Securities and Exchange Commission has named Russell McGranahan as its new general counsel, succeeding Jeffrey Finnell, who served as acting general counsel. McGranahan will direct legal counsel and provide guidance to the SEC chairman, commissioners and staff across the commission’s regulatory and enforcement activities, the agency said Thursday. Who Is Russell McGranahan? McGranahan most recently served as senior adviser to the SEC chairman, providing strategic and legal counsel. Before jo&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Executivegov&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
     <item>
       <title>EU mandates buy-European preference in new Ukraine assistance package</title>
@@ -110,16 +110,6 @@
       <content:encoded>&lt;h3&gt;Why manufacturing critical defense technologies in the US is the linchpin to national security&lt;/h3&gt;&lt;p&gt;[Sponsored] Breaking Defense visits production lines for made-in-America circuit boards, displays, and missile components.&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Breaking Defense&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://breakingdefense.com/2026/01/why-manufacturing-critical-defense-technologies-in-the-us-is-the-linchpin-to-national-security/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
     <item>
-      <title>NATO nations send scouting teams to Greenland amid US annexation talk</title>
-      <link>https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/</link>
-      <description>European governments are still coming to grips with the unprecedented situation of a NATO ally threatening one of their own.</description>
-      <category>cmmc_rss_defense_news</category>
-      <guid isPermaLink="true">https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/</guid>
-      <pubDate>Thu, 15 Jan 2026 11:17:34  +0000</pubDate>
-      <dc:creator>CMMC Watch</dc:creator>
-      <content:encoded>&lt;h3&gt;NATO nations send scouting teams to Greenland amid US annexation talk&lt;/h3&gt;&lt;p&gt;European governments are still coming to grips with the unprecedented situation of a NATO ally threatening one of their own.&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Defense News&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
-    </item>
-    <item>
       <title>SBA Modernizes SBIC Program With Final Rule</title>
       <link>https://www.executivegov.com/articles/sba-sbic-program-final-rule</link>
       <description>The Small Business Administration has published a final rule that seeks to modernize the Small Business Investment Company, or SBIC, program to drive private capital investment in critical industries. SBA said Wednesday the final rule, which will take effect Feb. 2, eliminates certain eligibility requirements for SBIC license applications seeking access to the Expedited Subsequent Fund Evaluation Process and reduces regulatory burdens by removing obsolete provisions and improving terms and condi</description>
@@ -158,16 +148,6 @@
       <pubDate>Wed, 14 Jan 2026 12:15:26  +0000</pubDate>
       <dc:creator>CMMC Watch</dc:creator>
       <content:encoded>&lt;h3&gt;1099/subcontractor roles for CCAs&lt;/h3&gt;&lt;p&gt;What’s the best way to get a 1099/subcontractor role supporting C3PAOs and consulting firms ASAP? I was thinking just DMs/cold calls but wanted to check if there’s a better way to submitted by /u/ba1ian [link] [comments]&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Reddit Cmmc&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.reddit.com/r/CMMC/comments/1qclrei/1099subcontractor_roles_for_ccas/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
-    </item>
-    <item>
-      <title>Exclusive: New CDAO Cameron Stanley Shares What Pentagon Needs From Industry</title>
-      <link>https://www.govconwire.com/articles/cdao-cameron-stanley-pentagon-ai-industry</link>
-      <description>Cameron Stanley, the Department of War’s newly appointed chief digital and artificial intelligence officer, is calling on industry partners to play a more active role in delivering innovative technology platforms as the Pentagon advances its AI strategy. According to Stanley, DOW is looking for solutions that address a wide range of potential problems, including new</description>
-      <category>cmmc_rss_govcon_wire</category>
-      <guid isPermaLink="true">https://www.govconwire.com/articles/cdao-cameron-stanley-pentagon-ai-industry</guid>
-      <pubDate>Thu, 15 Jan 2026 10:08:06  +0000</pubDate>
-      <dc:creator>CMMC Watch</dc:creator>
-      <content:encoded>&lt;h3&gt;Exclusive: New CDAO Cameron Stanley Shares What Pentagon Needs From Industry&lt;/h3&gt;&lt;p&gt;Cameron Stanley, the Department of War’s newly appointed chief digital and artificial intelligence officer, is calling on industry partners to play a more active role in delivering innovative technology platforms as the Pentagon advances its AI strategy. According to Stanley, DOW is looking for solutions that address a wide range of potential problems, including new&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Govcon Wire&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.govconwire.com/articles/cdao-cameron-stanley-pentagon-ai-industry&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
     <item>
       <title>Former CISA Director Jen Easterly Appointed CEO of RSAC</title>
@@ -248,6 +228,16 @@
       <pubDate>Wed, 14 Jan 2026 20:19:57  +0000</pubDate>
       <dc:creator>CMMC Watch</dc:creator>
       <content:encoded>&lt;h3&gt;Denmark bolsters Greenland forces ‘in close collaboration with NATO allies’&lt;/h3&gt;&lt;p&gt;“As part of the increased presence in the Arctic and the North Atlantic, the Danish Armed Forces are deploying capacities and units in connection with exercise activities from today,” said the Danish Ministry of Defense in a statement.&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Breaking Defense&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://breakingdefense.com/2026/01/denmark-bolsters-greenland-forces-in-close-collaboration-with-nato-allies/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
+    </item>
+    <item>
+      <title>NATO nations send scouting teams to Greenland amid US annexation talk</title>
+      <link>https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/</link>
+      <description>European governments are still coming to grips with the unprecedented situation of a NATO ally threatening one of their own.</description>
+      <category>cmmc_rss_defense_news</category>
+      <guid isPermaLink="true">https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/</guid>
+      <pubDate>Thu, 15 Jan 2026 11:17:34  +0000</pubDate>
+      <dc:creator>CMMC Watch</dc:creator>
+      <content:encoded>&lt;h3&gt;NATO nations send scouting teams to Greenland amid US annexation talk&lt;/h3&gt;&lt;p&gt;European governments are still coming to grips with the unprecedented situation of a NATO ally threatening one of their own.&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Defense News&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
     <item>
       <title>&quot;We Passed Our CMMC Assessment and Here's What We Learned&quot; MEGATHREAD</title>
@@ -508,6 +498,16 @@
       <pubDate>Tue, 13 Jan 2026 16:45:57  +0000</pubDate>
       <dc:creator>CMMC Watch</dc:creator>
       <content:encoded>&lt;h3&gt;Executive branch budget pact includes IT investments, less for DOGE&lt;/h3&gt;&lt;p&gt;Congressional appropriators also directed OMB to produce guidance on AI-ready datasets at agencies and cloud infrastructure adoption. The post Executive branch budget pact includes IT investments, less for DOGE appeared first on FedScoop .&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Fedscoop&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://fedscoop.com/white-house-tech-budget-doge-ai-it-cloud/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
+    </item>
+    <item>
+      <title>The hidden vulnerability: Why legacy government web forms demand urgent attention</title>
+      <link>https://federalnewsnetwork.com/commentary/2026/01/the-hidden-vulnerability-why-legacy-government-web-forms-demand-urgent-attention/</link>
+      <description>The cost of action is significant, but the cost of inaction — breached data, compromised systems, regulatory penalties and lost public trust — is far higher. The post The hidden vulnerability: Why legacy government web forms demand urgent attention first appeared on Federal News Network .</description>
+      <category>cmmc_rss_federal_news_network</category>
+      <guid isPermaLink="true">https://federalnewsnetwork.com/commentary/2026/01/the-hidden-vulnerability-why-legacy-government-web-forms-demand-urgent-attention/</guid>
+      <pubDate>Fri, 02 Jan 2026 20:00:12  +0000</pubDate>
+      <dc:creator>CMMC Watch</dc:creator>
+      <content:encoded>&lt;h3&gt;The hidden vulnerability: Why legacy government web forms demand urgent attention&lt;/h3&gt;&lt;p&gt;The cost of action is significant, but the cost of inaction — breached data, compromised systems, regulatory penalties and lost public trust — is far higher. The post The hidden vulnerability: Why legacy government web forms demand urgent attention first appeared on Federal News Network .&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Rss Federal News Network&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://federalnewsnetwork.com/commentary/2026/01/the-hidden-vulnerability-why-legacy-government-web-forms-demand-urgent-attention/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
   </channel>
 </rss>

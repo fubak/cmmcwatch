@@ -231,56 +231,96 @@ body.layout-split .top-stories {
 }
 
 /* Responsive: Mobile - Compact Overlay Cards */
-@media (max-width: 640px) {
+/* ===== MOBILE-FIRST RESPONSIVE DESIGN ===== */
+
+/* Mobile Portrait: 320-480px */
+@media (max-width: 480px) {
     .top-stories {
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
+        gap: 0.5rem;
+        padding: 0.5rem;
     }
 
     .top-stories article.story-card {
         position: relative;
-        border-radius: var(--radius);
+        border-radius: 8px;
         overflow: hidden;
+        background: var(--color-card-bg);
+        min-height: 0;
+        aspect-ratio: 1; /* Perfect square */
+    }
+
+    /* Fallback for older browsers */
+    @supports not (aspect-ratio: 1) {
+        .top-stories article.story-card::before {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 0;
+            padding-bottom: 100%; /* 1:1 aspect ratio */
+        }
+
+        .top-stories article.story-card.featured::before {
+            padding-bottom: 50%; /* 2:1 aspect ratio */
+        }
     }
 
     .top-stories article.story-card.featured {
         grid-column: span 2;
-        grid-row: span 2;
+        aspect-ratio: 2/1; /* Wider rectangle for featured */
     }
 
-    /* Image takes full card height */
+    /* Square card wrapper */
     .top-stories .story-wrapper {
         position: relative;
         height: 100%;
-    }
-
-    .top-stories .story-media,
-    .top-stories .story-image {
-        height: 160px;
-        min-height: 160px;
         width: 100%;
     }
 
-    .top-stories article.story-card.featured .story-media,
-    .top-stories article.story-card.featured .story-image {
-        min-height: 280px;
-        height: 280px;
+    /* Square image container */
+    .top-stories .story-media {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
     }
 
-    /* Content overlays the image */
+    .top-stories .story-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+
+    /* Enhanced text overlay with better contrast */
     .top-stories .story-content {
         position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
         padding: 0.75rem;
-        background: linear-gradient(to top,
+        background: linear-gradient(
+            to top,
             rgba(0, 0, 0, 0.95) 0%,
-            rgba(0, 0, 0, 0.85) 50%,
-            rgba(0, 0, 0, 0.4) 80%,
+            rgba(0, 0, 0, 0.85) 30%,
+            rgba(0, 0, 0, 0.6) 60%,
+            rgba(0, 0, 0, 0.2) 85%,
             transparent 100%
         );
-        z-index: 2;
+        z-index: 3;
+    }
+
+    .top-stories .story-content::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 0;
+        right: 0;
+        height: 20px;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.3), transparent);
+        z-index: -1;
     }
 
     /* Hide summary on mobile */
@@ -288,61 +328,79 @@ body.layout-split .top-stories {
         display: none !important;
     }
 
-    /* Source badge */
-    .top-stories .source-badge {
-        font-size: 0.65rem;
-        margin-bottom: 0.3rem;
-        opacity: 0.95;
-    }
-
-    /* Readable title */
+    /* Optimized mobile typography */
     .top-stories .story-title {
-        font-size: 0.875rem;
-        line-height: 1.35;
+        font-size: 0.8rem;
+        line-height: 1.25;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 0.25rem;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
         -webkit-line-clamp: 2;
-        margin-bottom: 0.3rem;
-        color: #fff;
-        text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+        overflow: hidden;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+        letter-spacing: 0.01em;
     }
 
     .top-stories article.story-card.featured .story-title {
-        font-size: 1.125rem;
+        font-size: 0.95rem;
         -webkit-line-clamp: 3;
-        line-height: 1.4;
+        line-height: 1.3;
     }
 
-    /* Meta info */
+    /* Minimal meta info */
     .top-stories .story-meta {
-        font-size: 0.65rem;
-        margin-top: 0.2rem;
-        padding-top: 0;
-        color: rgba(255,255,255,0.8);
+        font-size: 0.6rem;
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 500;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
     }
 
-    /* Hide action buttons on mobile cards */
+    .top-stories .story-meta span:not(:last-child):after {
+        content: " • ";
+        opacity: 0.7;
+    }
+
+    /* Hide action buttons on mobile */
     .top-stories .story-actions {
         display: none;
     }
 
-    /* Category grids also compact */
+    /* Category grids: 3-column layout for better space utilization */
     .stories-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.75rem;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 0.4rem;
+        padding: 0.5rem;
     }
 
     .stories-grid article.story-card {
         position: relative;
         overflow: hidden;
+        border-radius: 6px;
+        aspect-ratio: 1; /* Perfect square */
+        min-height: 0;
     }
 
     .stories-grid .story-wrapper {
         position: relative;
+        height: 100%;
+        width: 100%;
     }
 
-    .stories-grid .story-media,
+    .stories-grid .story-media {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
     .stories-grid .story-image {
-        height: 140px;
-        min-height: 140px;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
     }
 
     .stories-grid .story-content {
@@ -350,13 +408,15 @@ body.layout-split .top-stories {
         bottom: 0;
         left: 0;
         right: 0;
-        padding: 0.6rem;
-        background: linear-gradient(to top,
+        padding: 0.5rem;
+        background: linear-gradient(
+            to top,
             rgba(0, 0, 0, 0.95) 0%,
-            rgba(0, 0, 0, 0.85) 50%,
-            rgba(0, 0, 0, 0.4) 80%,
+            rgba(0, 0, 0, 0.8) 40%,
+            rgba(0, 0, 0, 0.4) 70%,
             transparent 100%
         );
+        z-index: 3;
     }
 
     .stories-grid .story-summary {
@@ -364,22 +424,91 @@ body.layout-split .top-stories {
     }
 
     .stories-grid .story-title {
-        font-size: 0.8rem;
-        line-height: 1.35;
+        font-size: 0.7rem;
+        line-height: 1.2;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 0.15rem;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
         -webkit-line-clamp: 2;
-        color: #fff;
-        margin-bottom: 0.25rem;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+        overflow: hidden;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+        letter-spacing: 0.01em;
     }
 
     .stories-grid .story-meta {
-        font-size: 0.6rem;
-        color: rgba(255,255,255,0.8);
-        padding-top: 0;
+        font-size: 0.55rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+        line-height: 1.1;
     }
 
     .stories-grid .story-actions {
         display: none;
+    }
+
+    /* Enhanced mobile badge positioning */
+    .image-source-badge {
+        top: 0.4rem;
+        left: 0.4rem;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.6rem;
+        border-radius: 4px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .image-date-badge {
+        top: 0.4rem;
+        right: 0.4rem;
+        padding: 0.2rem 0.4rem;
+        font-size: 0.55rem;
+        border-radius: 4px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Mobile Landscape: 481-640px */
+@media (min-width: 481px) and (max-width: 640px) {
+    .top-stories {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6rem;
+        padding: 0.75rem;
+    }
+
+    .top-stories article.story-card {
+        aspect-ratio: 1;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .top-stories article.story-card.featured {
+        grid-column: span 2;
+        aspect-ratio: 2/1;
+    }
+
+    .stories-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 0.5rem;
+    }
+
+    .stories-grid article.story-card {
+        aspect-ratio: 1;
+        border-radius: 6px;
+    }
+
+    /* Same overlay styles as mobile portrait but with slightly larger text */
+    .top-stories .story-title {
+        font-size: 0.85rem;
+        line-height: 1.3;
+    }
+
+    .stories-grid .story-title {
+        font-size: 0.75rem;
+        line-height: 1.25;
     }
 }
 
