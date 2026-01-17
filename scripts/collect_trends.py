@@ -123,6 +123,7 @@ class TrendCollector:
                             category=self._categorize_trend(title, description),
                             score=self._calculate_score(title, description),
                             image_url=self._extract_image_from_entry(entry),
+                            timestamp=self._extract_timestamp(entry),
                         )
                         self.trends.append(trend)
                         count += 1
@@ -144,7 +145,7 @@ class TrendCollector:
             ("NISTControls", "https://www.reddit.com/r/NISTControls/.rss"),
             ("FederalEmployees", "https://www.reddit.com/r/FederalEmployees/.rss"),
             ("cybersecurity", "https://www.reddit.com/r/cybersecurity/.rss"),
-            ("GovContracting", "https://www.reddit.com/r/GovContracting/.rss"),
+            # r/GovContracting removed - subreddit returns 404
         ]
 
         count = 0
@@ -184,6 +185,7 @@ class TrendCollector:
                             category=self._categorize_trend(title, description),
                             score=1.4,
                             image_url=self._extract_image_from_entry(entry),
+                            timestamp=self._extract_timestamp(entry),
                         )
                         self.trends.append(trend)
                         count += 1
@@ -270,6 +272,35 @@ class TrendCollector:
         soup = BeautifulSoup(text, "html.parser")
         clean = soup.get_text(separator=" ").strip()
         return re.sub(r"\s+", " ", clean)[:500]
+
+    def _extract_timestamp(self, entry) -> Optional[datetime]:
+        """Extract publication timestamp from RSS entry."""
+        # Try published_parsed first (feedparser standard)
+        if hasattr(entry, "published_parsed") and entry.published_parsed:
+            try:
+                return datetime(*entry.published_parsed[:6])
+            except (TypeError, ValueError):
+                pass
+
+        # Try updated_parsed
+        if hasattr(entry, "updated_parsed") and entry.updated_parsed:
+            try:
+                return datetime(*entry.updated_parsed[:6])
+            except (TypeError, ValueError):
+                pass
+
+        # Try parsing published string
+        published = entry.get("published") or entry.get("updated")
+        if published:
+            try:
+                # Common RSS date format
+                from email.utils import parsedate_to_datetime
+
+                return parsedate_to_datetime(published)
+            except (TypeError, ValueError):
+                pass
+
+        return None
 
     def _extract_image_from_entry(self, entry) -> Optional[str]:
         """Extract image URL from RSS entry.

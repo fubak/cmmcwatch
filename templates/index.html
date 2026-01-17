@@ -126,7 +126,7 @@
                         <footer class="story-meta">
                             <span>{{ story.source_display or (story.source | replace('_', ' ') | title) }}</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="{{ story.timestamp }}">{{ story.time_ago }}</time>
+                            <time datetime="{{ story.timestamp_iso }}">{{ story.time_ago }}</time>
                         </footer>
                     </div>
                 </div>
@@ -173,7 +173,7 @@
                         <footer class="story-meta">
                             <span>{{ story.source_display or (story.source | replace('_', ' ') | title) }}</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="{{ story.timestamp }}">{{ story.time_ago }}</time>
+                            <time datetime="{{ story.timestamp_iso }}">{{ story.time_ago }}</time>
                         </footer>
                     </div>
                 </div>

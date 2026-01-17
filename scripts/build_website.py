@@ -399,26 +399,42 @@ class WebsiteBuilder:
             trend["source_display"] = self._get_source_display_name(source)
 
             # Format timestamp for display
+            ts = None
             if trend.get("timestamp"):
-                ts = trend["timestamp"]
-                if isinstance(ts, str):
+                ts_raw = trend["timestamp"]
+                if isinstance(ts_raw, str):
                     try:
-                        ts = datetime.fromisoformat(ts)
+                        ts = datetime.fromisoformat(ts_raw.replace("Z", "+00:00"))
                     except ValueError:
-                        ts = datetime.now()
-                else:
-                    ts = trend["timestamp"]
+                        ts = None
+                elif isinstance(ts_raw, datetime):
+                    ts = ts_raw
 
-                # Calculate time ago
-                diff = datetime.now() - ts
+            if ts:
+                # Store ISO format for datetime attribute
+                trend["timestamp_iso"] = ts.isoformat()
+
+                # Calculate time ago with better formatting
+                now = datetime.now()
+                if ts.tzinfo:
+                    now = datetime.now(ts.tzinfo)
+                diff = now - ts
                 hours = int(diff.total_seconds() / 3600)
+                days = int(diff.total_seconds() / 86400)
+
                 if hours < 1:
                     trend["time_ago"] = "Just now"
                 elif hours < 24:
                     trend["time_ago"] = f"{hours}h ago"
+                elif days == 1:
+                    trend["time_ago"] = "Yesterday"
+                elif days < 7:
+                    trend["time_ago"] = f"{days}d ago"
                 else:
-                    trend["time_ago"] = "1d ago"
+                    # Show date for older articles
+                    trend["time_ago"] = ts.strftime("%b %d")
             else:
+                trend["timestamp_iso"] = datetime.now().isoformat()
                 trend["time_ago"] = "Today"
 
             groups[category].append(trend)
@@ -699,14 +715,13 @@ class WebsiteBuilder:
                     "@type": "NewsArticle",
                     "headline": story.get("title", ""),
                     "url": story.get("url", ""),
-                    "datePublished": (
-                        story.get("timestamp", datetime.now().isoformat())
-                        if isinstance(story.get("timestamp"), str)
-                        else datetime.now().isoformat()
+                    "datePublished": story.get(
+                        "timestamp_iso", datetime.now().isoformat()
                     ),
                     "publisher": {
                         "@type": "Organization",
-                        "name": story.get("source", "").replace("_", " ").title(),
+                        "name": story.get("source_display")
+                        or story.get("source", "").replace("_", " ").title(),
                     },
                 },
             }
