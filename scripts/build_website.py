@@ -128,14 +128,24 @@ class WebsiteBuilder:
     }
 
     def _prepare_categories(self) -> List[dict]:
-        """Map raw category keys to display-friendly names."""
+        """Map raw category keys to display-friendly names.
 
+        Excludes Reddit sources from categories (shown in dedicated section).
+        """
         categories = []
         sorted_groups = sorted(
             self.grouped_trends.items(), key=lambda x: len(x[1]), reverse=True
         )
         for title, stories in sorted_groups:
-            display_stories = stories[: self._category_card_limit]
+            # Filter out Reddit sources from category sections
+            filtered_stories = [
+                s for s in stories if not self._is_reddit_source(s.get("source", ""))
+            ]
+
+            if not filtered_stories:
+                continue  # Skip empty categories after filtering
+
+            display_stories = filtered_stories[: self._category_card_limit]
             columns = self._choose_column_count(len(display_stories))
 
             # Use display-friendly title if available, otherwise clean up the raw title
