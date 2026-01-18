@@ -153,6 +153,13 @@ class WebsiteBuilder:
             )
         return categories
 
+    # Reddit source prefixes for filtering
+    REDDIT_SOURCE_PREFIXES = ("reddit_", "cmmc_reddit_")
+
+    def _is_reddit_source(self, source: str) -> bool:
+        """Check if a source is from Reddit."""
+        return source.startswith(self.REDDIT_SOURCE_PREFIXES)
+
     # Source display name mapping
     SOURCE_DISPLAY_MAP = {
         # RSS feeds
@@ -435,6 +442,7 @@ class WebsiteBuilder:
         Select top stories using the 'Diversity Mix' algorithm.
         Ensures representation from World, Tech, and Finance.
         Enforces source diversity: max 2 stories per source.
+        Excludes Reddit content (shown separately at bottom of page).
         """
         selected_urls = set()
         top_stories = []
@@ -444,6 +452,9 @@ class WebsiteBuilder:
         def can_add_story(story: Dict) -> bool:
             """Check if story can be added based on source diversity limits."""
             source = story.get("source", "unknown")
+            # Exclude Reddit sources from top stories
+            if self._is_reddit_source(source):
+                return False
             return source_counts[source] < MAX_PER_SOURCE
 
         def add_story(story: Dict) -> None:
@@ -462,23 +473,33 @@ class WebsiteBuilder:
             candidates.sort(key=lambda x: x.get("score", 0), reverse=True)
 
             for story in candidates:
+                # Skip Reddit sources
+                if self._is_reddit_source(story.get("source", "")):
+                    continue
                 if story.get("url") not in selected_urls and can_add_story(story):
                     return story
             return None
 
-        # Slot 1: Hero - Absolute highest scoring story
+        # Slot 1: Hero - Absolute highest scoring non-Reddit story
         if self.ctx.trends:
-            hero = self.ctx.trends[0]
-            # Ensure the hero story has the same image as the hero section
-            if self._hero_image and not hero.get("image_url"):
-                hero_img_url = (
-                    self._hero_image.get("url_large")
-                    or self._hero_image.get("url_medium")
-                    or self._hero_image.get("url_original")
-                )
-                if hero_img_url:
-                    hero["image_url"] = hero_img_url
-            add_story(hero)
+            # Find first non-Reddit story for hero
+            hero = None
+            for trend in self.ctx.trends:
+                if not self._is_reddit_source(trend.get("source", "")):
+                    hero = trend
+                    break
+
+            if hero:
+                # Ensure the hero story has the same image as the hero section
+                if self._hero_image and not hero.get("image_url"):
+                    hero_img_url = (
+                        self._hero_image.get("url_large")
+                        or self._hero_image.get("url_medium")
+                        or self._hero_image.get("url_original")
+                    )
+                    if hero_img_url:
+                        hero["image_url"] = hero_img_url
+                add_story(hero)
 
         # Slot 2: World News
         world = get_best_from_category(["World News", "Politics", "Current Events"])
@@ -509,6 +530,35 @@ class WebsiteBuilder:
             self._ensure_story_description(story)
 
         return top_stories
+
+    def _get_reddit_stories(self) -> List[Dict]:
+        """Get all Reddit stories for the dedicated Reddit section.
+
+        Returns Reddit stories sorted by score, limited to 12 items.
+        """
+        reddit_stories = []
+        for trend in self.ctx.trends:
+            source = trend.get("source", "")
+            if self._is_reddit_source(source):
+                reddit_stories.append(trend)
+
+        # Sort by score (highest first)
+        reddit_stories.sort(key=lambda x: x.get("score", 0), reverse=True)
+
+        # Limit to 12 stories (3 rows of 4)
+        return reddit_stories[:12]
+
+    def _get_hero_story(self) -> Dict:
+        """Get the hero story, excluding Reddit sources."""
+        if not self.ctx.trends:
+            return {}
+
+        for trend in self.ctx.trends:
+            if not self._is_reddit_source(trend.get("source", "")):
+                return trend
+
+        # Fallback to first trend if all are Reddit (unlikely)
+        return self.ctx.trends[0] if self.ctx.trends else {}
 
     def _fetch_story_description(self, url: str) -> str:
         """Fetch a concise meta description for a story URL."""
@@ -1211,9 +1261,10 @@ class WebsiteBuilder:
             # SVG placeholder with gradient (avoids missing asset file)
             "placeholder_image_url": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231a1a2e'/%3E%3Cstop offset='100%25' stop-color='%2316213e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='800' height='450'/%3E%3Ctext x='400' y='225' fill='%234a4a6a' font-family='system-ui' font-size='14' text-anchor='middle' dy='.3em'%3ECMMC Watch%3C/text%3E%3C/svg%3E",
             # Content
-            "hero_story": self.ctx.trends[0] if self.ctx.trends else {},
+            "hero_story": self._get_hero_story(),
             "top_stories": self._select_top_stories(),
             "trends": self.ctx.trends,
+            "reddit_stories": self._get_reddit_stories(),
             "total_trends_count": len(self.ctx.trends),
             "word_cloud": self.keyword_freq,
             "categories": categories,

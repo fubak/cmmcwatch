@@ -280,6 +280,75 @@
     </section>
     {% endfor %}
 
+    <!-- Reddit Community Discussions Section -->
+    {% if reddit_stories %}
+    <section class="section reddit-section" aria-labelledby="reddit-discussions">
+        <div class="section-header">
+            <h2 id="reddit-discussions" class="section-title">
+                <svg class="reddit-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+                </svg>
+                Reddit Community Discussions
+            </h2>
+            <span class="section-count">{{ reddit_stories|length }}</span>
+        </div>
+
+        <div class="reddit-disclaimer" role="alert">
+            <svg class="disclaimer-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p><strong>Disclaimer:</strong> Content from Reddit represents community discussions and opinions. Information may not be accurate, official, or up-to-date. Always verify important details with authoritative sources before making compliance decisions.</p>
+        </div>
+
+        <div class="stories-grid" style="--category-columns: 4">
+            {% for story in reddit_stories %}
+            <article class="story-card no-summary reddit-card">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" data-source="{{ story.source_display or (story.source | replace('_', ' ') | title) }}" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper clickable-card" data-href="{{ story.url }}" role="link" tabindex="0" aria-label="Read discussion: {{ story.title }}">
+                    <figure class="story-media">
+                        {% set img_src = story.image_url or placeholder_image_url %}
+                        {% set alt_text = 'Reddit discussion: ' + story.title %}
+                        <img src="{{ img_src }}"
+                             alt="{{ alt_text }}"
+                             class="story-image{% if not story.image_url %} placeholder{% endif %}"
+                             loading="lazy"
+                             fetchpriority="low"
+                             decoding="async"
+                             referrerpolicy="no-referrer"
+                             width="400"
+                             height="225">
+                        {# Overlay badges on image #}
+                        {% set source_name = story.source_display or (story.source | replace('_', ' ') | title) %}
+                        {% set source_class = story.source | lower | replace(' ', '-') | replace('_', '-') %}
+                        <span class="image-source-badge reddit-badge {{ source_class }}">{{ source_name }}</span>
+                        <span class="image-date-badge">{{ story.time_ago }}</span>
+                    </figure>
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="{{ story.url }}" target="_blank" rel="noopener ugc" tabindex="-1">{{ story.title }}</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>{{ story.source_display or (story.source | replace('_', ' ') | title) }}</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="{{ story.timestamp_iso }}">{{ story.time_ago }}</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     <!-- Ad Unit 3 - Before Footer -->
     <div class="ad-container ad-container--footer" aria-label="Advertisement">
         <ins class="adsbygoogle"
