@@ -452,7 +452,7 @@ class WebsiteBuilder:
         Select top stories prioritizing recency over pure relevance score.
         Ensures representation from different sources.
         Enforces source diversity: max 2 stories per source.
-        Includes Reddit content when it's from today.
+        Excludes Reddit content (shown separately at bottom of page).
         """
         from datetime import datetime
 
@@ -461,9 +461,6 @@ class WebsiteBuilder:
         source_counts = defaultdict(int)
         MAX_PER_SOURCE = 2
 
-        now = datetime.now()
-        today = now.date()
-
         def get_timestamp(story: Dict) -> datetime:
             """Parse story timestamp, return epoch if invalid."""
             try:
@@ -471,18 +468,12 @@ class WebsiteBuilder:
             except (ValueError, TypeError):
                 return datetime(1970, 1, 1)
 
-        def is_from_today(story: Dict) -> bool:
-            """Check if story is from today."""
-            ts = get_timestamp(story)
-            return ts.date() == today
-
-        def can_add_story(story: Dict, allow_reddit: bool = False) -> bool:
+        def can_add_story(story: Dict) -> bool:
             """Check if story can be added based on source diversity limits."""
             source = story.get("source", "unknown")
-            # Only exclude Reddit if not allowed and not from today
+            # Exclude Reddit sources - they go in dedicated section
             if self._is_reddit_source(source):
-                if not allow_reddit and not is_from_today(story):
-                    return False
+                return False
             return source_counts[source] < MAX_PER_SOURCE
 
         def add_story(story: Dict) -> None:
@@ -491,14 +482,14 @@ class WebsiteBuilder:
             source_counts[story.get("source", "unknown")] += 1
             top_stories.append(story)
 
-        # Sort all trends by timestamp (most recent first)
+        # Sort non-Reddit trends by timestamp (most recent first)
         sorted_trends = sorted(
-            self.ctx.trends,
+            [t for t in self.ctx.trends if not self._is_reddit_source(t.get("source", ""))],
             key=lambda x: get_timestamp(x),
             reverse=True
         )
 
-        # Slot 1: Hero - Most recent story (prefer non-Reddit with image)
+        # Slot 1: Hero - Most recent non-Reddit story
         hero = self._get_hero_story()
         if hero and hero.get("url"):
             if self._hero_image and not hero.get("image_url"):
@@ -511,13 +502,13 @@ class WebsiteBuilder:
                     hero["image_url"] = hero_img_url
             add_story(hero)
 
-        # Fill remaining slots with most recent stories, allowing Reddit from today
+        # Fill remaining slots with most recent non-Reddit stories
         for story in sorted_trends:
             if len(top_stories) >= 9:
                 break
             if story.get("url") in selected_urls:
                 continue
-            if can_add_story(story, allow_reddit=True):
+            if can_add_story(story):
                 add_story(story)
 
         for story in top_stories:
@@ -543,37 +534,30 @@ class WebsiteBuilder:
         return reddit_stories[:12]
 
     def _get_hero_story(self) -> Dict:
-        """Get the hero story, prioritizing recent stories with images."""
+        """Get the hero story, prioritizing recent non-Reddit stories with images."""
         if not self.ctx.trends:
             return {}
 
-        from datetime import datetime, timedelta
+        from datetime import datetime
 
         now = datetime.now()
         today = now.date()
 
-        # First, try to find a story from today with an image (non-Reddit preferred)
+        # First, try to find a non-Reddit story from today with an image
         for trend in self.ctx.trends:
+            if self._is_reddit_source(trend.get("source", "")):
+                continue
             try:
                 ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
                 if ts.date() == today and trend.get("image_url"):
-                    if not self._is_reddit_source(trend.get("source", "")):
-                        return trend
+                    return trend
             except (ValueError, TypeError):
                 continue
 
-        # Second, try any story from today (non-Reddit preferred)
+        # Second, try any non-Reddit story from today
         for trend in self.ctx.trends:
-            try:
-                ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
-                if ts.date() == today:
-                    if not self._is_reddit_source(trend.get("source", "")):
-                        return trend
-            except (ValueError, TypeError):
+            if self._is_reddit_source(trend.get("source", "")):
                 continue
-
-        # Third, try any story from today including Reddit
-        for trend in self.ctx.trends:
             try:
                 ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
                 if ts.date() == today:
@@ -581,7 +565,7 @@ class WebsiteBuilder:
             except (ValueError, TypeError):
                 continue
 
-        # Fourth, find the most recent non-Reddit story
+        # Third, find the most recent non-Reddit story (any date)
         best_recent = None
         best_ts = None
         for trend in self.ctx.trends:
@@ -598,8 +582,12 @@ class WebsiteBuilder:
         if best_recent:
             return best_recent
 
-        # Fallback to first trend
-        return self.ctx.trends[0] if self.ctx.trends else {}
+        # Fallback to first non-Reddit trend
+        for trend in self.ctx.trends:
+            if not self._is_reddit_source(trend.get("source", "")):
+                return trend
+
+        return {}
 
     def _fetch_story_description(self, url: str) -> str:
         """Fetch a concise meta description for a story URL."""
