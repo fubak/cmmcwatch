@@ -449,10 +449,14 @@ class WebsiteBuilder:
 
     def _select_top_stories(self) -> List[Dict]:
         """
-        Select top stories prioritizing recency over pure relevance score.
+        Select top stories prioritizing CMMC-relevant content and recency.
         Ensures representation from different sources.
         Enforces source diversity: max 2 stories per source.
         Excludes Reddit content (shown separately at bottom of page).
+
+        Selection priority:
+        1. CMMC-relevant stories (by recency)
+        2. Other stories as fallback (by recency)
 
         When no new stories from today exist, uses day-based rotation to ensure
         different stories are featured on different days.
@@ -496,21 +500,27 @@ class WebsiteBuilder:
             source_counts[story.get("source", "unknown")] += 1
             top_stories.append(story)
 
-        # Sort non-Reddit trends by timestamp (most recent first)
-        sorted_trends = sorted(
-            [
-                t
-                for t in self.ctx.trends
-                if not self._is_reddit_source(t.get("source", ""))
-            ],
-            key=lambda x: get_timestamp(x),
-            reverse=True,
-        )
+        # Separate CMMC-relevant and other non-Reddit stories
+        relevant_stories = []
+        other_stories = []
+        for t in self.ctx.trends:
+            if self._is_reddit_source(t.get("source", "")):
+                continue
+            if self._is_cmmc_relevant(t):
+                relevant_stories.append(t)
+            else:
+                other_stories.append(t)
+
+        # Sort both lists by timestamp (most recent first)
+        relevant_stories.sort(key=lambda x: get_timestamp(x), reverse=True)
+        other_stories.sort(key=lambda x: get_timestamp(x), reverse=True)
 
         # Check if we have any stories from today
-        has_todays_stories = any(is_from_today(t) for t in sorted_trends)
+        has_todays_stories = any(
+            is_from_today(t) for t in relevant_stories + other_stories
+        )
 
-        # Slot 1: Hero - Most recent non-Reddit story (with rotation)
+        # Slot 1: Hero - CMMC-relevant story (with rotation)
         hero = self._get_hero_story()
         if hero and hero.get("url"):
             if self._hero_image and not hero.get("image_url"):
@@ -524,8 +534,17 @@ class WebsiteBuilder:
             add_story(hero)
 
         if has_todays_stories:
-            # We have fresh content - use normal recency-based selection
-            for story in sorted_trends:
+            # We have fresh content - prioritize CMMC-relevant, then others
+            for story in relevant_stories:
+                if len(top_stories) >= 9:
+                    break
+                if story.get("url") in selected_urls:
+                    continue
+                if can_add_story(story):
+                    add_story(story)
+
+            # Fill remaining slots with other stories
+            for story in other_stories:
                 if len(top_stories) >= 9:
                     break
                 if story.get("url") in selected_urls:
@@ -534,20 +553,39 @@ class WebsiteBuilder:
                     add_story(story)
         else:
             # No fresh content - apply rotation to ensure variety across days
-            # Create a rotation offset based on day of year
-            rotation_offset = day_of_year % max(1, len(sorted_trends) // 3)
+            rotation_offset = (
+                day_of_year % max(1, len(relevant_stories) // 3)
+                if relevant_stories
+                else 0
+            )
 
-            # Create rotated list starting from offset position
-            eligible_stories = [
-                s for s in sorted_trends if s.get("url") not in selected_urls
+            # First fill with CMMC-relevant stories (rotated)
+            eligible_relevant = [
+                s for s in relevant_stories if s.get("url") not in selected_urls
             ]
-            if eligible_stories:
-                rotated_stories = (
-                    eligible_stories[rotation_offset:]
-                    + eligible_stories[:rotation_offset]
+            if eligible_relevant:
+                rotated = (
+                    eligible_relevant[rotation_offset:]
+                    + eligible_relevant[:rotation_offset]
                 )
+                for story in rotated:
+                    if len(top_stories) >= 9:
+                        break
+                    if story.get("url") in selected_urls:
+                        continue
+                    if can_add_story(story):
+                        add_story(story)
 
-                for story in rotated_stories:
+            # Fill remaining with other stories (rotated)
+            other_offset = (
+                day_of_year % max(1, len(other_stories) // 3) if other_stories else 0
+            )
+            eligible_other = [
+                s for s in other_stories if s.get("url") not in selected_urls
+            ]
+            if eligible_other:
+                rotated = eligible_other[other_offset:] + eligible_other[:other_offset]
+                for story in rotated:
                     if len(top_stories) >= 9:
                         break
                     if story.get("url") in selected_urls:
@@ -577,8 +615,61 @@ class WebsiteBuilder:
         # Limit to 12 stories (3 rows of 4)
         return reddit_stories[:12]
 
+    def _is_cmmc_relevant(self, story: Dict) -> bool:
+        """Check if a story is relevant to CMMC, compliance, DIB, or federal contracts.
+
+        Stories are considered relevant if they have a relevant category or
+        contain relevant keywords in their title.
+        """
+        # Relevant categories (in priority order conceptually)
+        relevant_categories = {
+            "cmmc_program",
+            "nist_compliance",
+            "defense_industrial_base",
+        }
+
+        # Check category
+        category = story.get("category", "").lower()
+        if category in relevant_categories:
+            return True
+
+        # Check title for relevant keywords
+        title = story.get("title", "").lower()
+        relevant_keywords = [
+            "cmmc",
+            "nist",
+            "compliance",
+            "dfars",
+            "cui",
+            "fedramp",
+            "fisma",
+            "defense contract",
+            "dod",
+            "pentagon",
+            "defense industrial",
+            "contractor",
+            "c3pao",
+            "cyber-ab",
+            "800-171",
+            "800-172",
+            "federal contract",
+            "government contract",
+            "cleared",
+        ]
+        for keyword in relevant_keywords:
+            if keyword in title:
+                return True
+
+        return False
+
     def _get_hero_story(self) -> Dict:
-        """Get the hero story, prioritizing recent non-Reddit stories with images.
+        """Get the hero story, prioritizing CMMC/compliance-related non-Reddit stories.
+
+        Selection priority:
+        1. CMMC-relevant stories from today with images
+        2. CMMC-relevant stories from today
+        3. Most recent CMMC-relevant stories (with rotation)
+        4. Fallback to any non-Reddit story if no relevant content
 
         When no new stories from today exist, uses day-based rotation to ensure
         different stories are featured on different days.
@@ -592,61 +683,61 @@ class WebsiteBuilder:
         today = now.date()
         day_of_year = today.timetuple().tm_yday  # Use for rotation
 
-        # First, try to find a non-Reddit story from today with an image
-        todays_with_image = []
+        def get_timestamp(story: Dict) -> datetime:
+            try:
+                return datetime.strptime(
+                    story.get("timestamp", ""), "%Y-%m-%d %H:%M:%S"
+                )
+            except (ValueError, TypeError):
+                return datetime(1970, 1, 1)
+
+        # Filter for non-Reddit, CMMC-relevant stories
+        relevant_stories = []
         for trend in self.ctx.trends:
             if self._is_reddit_source(trend.get("source", "")):
                 continue
-            try:
-                ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
-                if ts.date() == today and trend.get("image_url"):
-                    todays_with_image.append(trend)
-            except (ValueError, TypeError):
-                continue
+            if self._is_cmmc_relevant(trend):
+                relevant_stories.append(trend)
 
-        if todays_with_image:
-            # Rotate through today's stories with images
-            return todays_with_image[day_of_year % len(todays_with_image)]
+        # First, try CMMC-relevant stories from today with images
+        todays_relevant_with_image = [
+            s
+            for s in relevant_stories
+            if get_timestamp(s).date() == today and s.get("image_url")
+        ]
+        if todays_relevant_with_image:
+            return todays_relevant_with_image[
+                day_of_year % len(todays_relevant_with_image)
+            ]
 
-        # Second, try any non-Reddit story from today
-        todays_stories = []
-        for trend in self.ctx.trends:
-            if self._is_reddit_source(trend.get("source", "")):
-                continue
-            try:
-                ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
-                if ts.date() == today:
-                    todays_stories.append(trend)
-            except (ValueError, TypeError):
-                continue
+        # Second, try any CMMC-relevant story from today
+        todays_relevant = [
+            s for s in relevant_stories if get_timestamp(s).date() == today
+        ]
+        if todays_relevant:
+            return todays_relevant[day_of_year % len(todays_relevant)]
 
-        if todays_stories:
-            return todays_stories[day_of_year % len(todays_stories)]
-
-        # No today's stories - collect all non-Reddit stories sorted by timestamp
-        all_non_reddit = []
-        for trend in self.ctx.trends:
-            if self._is_reddit_source(trend.get("source", "")):
-                continue
-            try:
-                ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
-                all_non_reddit.append((trend, ts))
-            except (ValueError, TypeError):
-                # Include stories without valid timestamp at the end
-                all_non_reddit.append((trend, datetime(1970, 1, 1)))
-
-        if all_non_reddit:
-            # Sort by timestamp (most recent first)
-            all_non_reddit.sort(key=lambda x: x[1], reverse=True)
-            # Use day_of_year to rotate through top stories
-            # Only rotate through top 15 to keep quality high
-            rotation_pool = [t[0] for t in all_non_reddit[:15]]
+        # Third, use most recent CMMC-relevant stories with rotation
+        if relevant_stories:
+            sorted_relevant = sorted(
+                relevant_stories, key=lambda x: get_timestamp(x), reverse=True
+            )
+            # Rotate through top 15 relevant stories
+            rotation_pool = sorted_relevant[:15]
             return rotation_pool[day_of_year % len(rotation_pool)]
 
-        # Fallback to first non-Reddit trend
-        for trend in self.ctx.trends:
-            if not self._is_reddit_source(trend.get("source", "")):
-                return trend
+        # Fallback: No CMMC-relevant stories - use any non-Reddit story
+        all_non_reddit = [
+            t
+            for t in self.ctx.trends
+            if not self._is_reddit_source(t.get("source", ""))
+        ]
+        if all_non_reddit:
+            sorted_all = sorted(
+                all_non_reddit, key=lambda x: get_timestamp(x), reverse=True
+            )
+            rotation_pool = sorted_all[:15]
+            return rotation_pool[day_of_year % len(rotation_pool)]
 
         return {}
 
