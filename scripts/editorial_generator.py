@@ -379,7 +379,7 @@ Respond with ONLY a valid JSON object:
         try:
             # Try structured output first (guaranteed valid JSON from Gemini)
             data = self._call_google_ai_structured(
-                prompt, EDITORIAL_SCHEMA, max_tokens=2000
+                prompt, EDITORIAL_SCHEMA, max_tokens=4000
             )
 
             # Fall back to regular LLM call + JSON parsing if structured output fails
@@ -387,7 +387,7 @@ Respond with ONLY a valid JSON object:
                 logger.info(
                     "Structured output unavailable, falling back to regular LLM call"
                 )
-                response = self._call_groq(prompt, max_tokens=2000)
+                response = self._call_groq(prompt, max_tokens=4000)
                 data = self._parse_json_response(response)
 
             if not data or not data.get("content"):
@@ -1437,7 +1437,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         return None
 
     def _call_google_ai_structured(
-        self, prompt: str, schema: dict, max_tokens: int = 2000, max_retries: int = 1
+        self, prompt: str, schema: dict, max_tokens: int = 4000, max_retries: int = 1
     ) -> Optional[Dict]:
         """
         Call Google AI with structured output (guaranteed valid JSON).

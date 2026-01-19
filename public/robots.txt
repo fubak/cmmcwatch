@@ -1,6 +1,5 @@
 # CMMC Watch robots.txt
 # CMMC & Compliance News Aggregator
-# https://cmmcwatch.info
 
 # Allow all crawlers by default
 User-agent: *
@@ -27,66 +26,30 @@ Allow: /
 User-agent: YandexBot
 Allow: /
 
-# Explicitly allow LLM/AI crawlers for content indexing
-# OpenAI
+# Explicitly allow LLM/AI crawlers
 User-agent: GPTBot
 Allow: /
 
 User-agent: ChatGPT-User
 Allow: /
 
-# Anthropic
 User-agent: Claude-Web
 Allow: /
 
 User-agent: ClaudeBot
 Allow: /
 
-User-agent: Anthropic-AI
-Allow: /
-
-# Perplexity
 User-agent: PerplexityBot
 Allow: /
 
-# Google AI
-User-agent: Google-Extended
+User-agent: Anthropic-AI
 Allow: /
 
-# Cohere
 User-agent: cohere-ai
 Allow: /
 
-# Meta AI
-User-agent: Meta-ExternalAgent
+User-agent: Google-Extended
 Allow: /
 
-User-agent: FacebookBot
-Allow: /
-
-# Amazon/Alexa
-User-agent: Amazonbot
-Allow: /
-
-# Apple
-User-agent: Applebot
-Allow: /
-
-User-agent: Applebot-Extended
-Allow: /
-
-# Microsoft Copilot
-User-agent: Bytespider
-Allow: /
-
-# Common Crawl (training data)
-User-agent: CCBot
-Allow: /
-
-# Sitemap locations
-Sitemap: https://cmmcwatch.info/sitemap_main.xml
-Sitemap: https://cmmcwatch.info/sitemap.xml
-
-# LLM-specific content hints
-# See /llms.txt for structured LLM-readable site information
-# See /feed.xml for RSS feed of latest articles
+# Sitemap location
+Sitemap: https://cmmcwatch.com/sitemap_main.xml

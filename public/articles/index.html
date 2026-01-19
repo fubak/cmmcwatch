@@ -4,27 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Analysis | CMMC Watch</title>
-    <meta name="description" content="Browse 2 daily editorial articles analyzing trending news and technology stories. Search, filter by mood, and explore our archive.">
+    <meta name="description" content="Browse 3 daily editorial articles analyzing trending news and technology stories. Search, filter by mood, and explore our archive.">
     <link rel="canonical" href="https://cmmcwatch.com/articles/">
 
     <meta property="og:title" content="Daily Analysis | CMMC Watch">
-    <meta property="og:description" content="Browse 2 daily editorial articles analyzing trending news and technology stories.">
+    <meta property="og:description" content="Browse 3 daily editorial articles analyzing trending news and technology stories.">
     <meta property="og:type" content="website">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Rubik:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&family=Work+Sans:wght@600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #004080;
-            --accent: #800000;
-            --bg: #1e1e1e;
-            --text: #d4d4d4;
-            --text-muted: #808080;
-            --border: #3c3c3c;
-            --card-bg: #252526;
-            --font-primary: 'Rubik', system-ui, sans-serif;
-            --font-secondary: 'Open Sans', system-ui, sans-serif;
+            --primary: #5F9EA0;
+            --accent: #D3D3D3;
+            --bg: #0a0a0a;
+            --text: #ffffff;
+            --text-muted: #a1a1aa;
+            --border: #27272a;
+            --card-bg: #18181b;
+            --font-primary: 'Work Sans', system-ui, sans-serif;
+            --font-secondary: 'Work Sans', system-ui, sans-serif;
             /* Shared component color mappings */
             --color-text: var(--text);
             --color-muted: var(--text-muted);
@@ -900,15 +900,15 @@
 
         <div class="stats-bar" aria-label="Article statistics">
             <div class="stat">
-                <div class="stat-value" id="stat-articles">2</div>
+                <div class="stat-value" id="stat-articles">3</div>
                 <div class="stat-label">Articles</div>
             </div>
             <div class="stat">
-                <div class="stat-value">2,009</div>
+                <div class="stat-value">3,073</div>
                 <div class="stat-label">Total Words</div>
             </div>
             <div class="stat">
-                <div class="stat-value">0.2h</div>
+                <div class="stat-value">0.3h</div>
                 <div class="stat-label">Reading Time</div>
             </div>
         </div>
@@ -939,6 +939,7 @@
                 <select id="mood-filter">
                     <option value="all">All Moods</option>
                     <option value="concerned">Concerned</option>
+<option value="transformative">Transformative</option>
                 </select>
             </div>
 
@@ -981,7 +982,7 @@
         </div>
 
         <div class="results-info">
-            <span id="results-count">Showing 2 articles</span>
+            <span id="results-count">Showing 3 articles</span>
             <button class="clear-filters" id="clear-filters" style="display:none;">Clear filters</button>
         </div>
 
@@ -1004,7 +1005,7 @@
         'use strict';
 
         // Article data (server-rendered, escaped)
-        const ARTICLES = [{"title": "Cyber Chaos: Are We Trading Defense for Digital Dust?", "date": "2026-01-17", "url": "/articles/2026/01/17/cyber-chaos-trading-defense-digital-dust/", "summary": "Despite a surge in cybersecurity news, the federal government appears to be fumbling its defenses, prioritizing short-term budget plays over critical leadership and infrastructure, revealing a dangerous disconnect between perceived and actual national security.", "mood": "Concerned", "word_count": 999, "keywords": ["cybersecurity leadership", "federal IT modernization", "legacy system vulnerabilities", "cyber workforce challenges", "budgetary priorities vs. security needs"]}, {"title": "Cyber's Shadow: The Unseen Price of Digital Defense", "date": "2026-01-16", "url": "/articles/2026/01/16/cybers-shadow-unseen-price-digital-defense/", "summary": "Today's news reveals a stark reality: our national cyber defense is a patchwork of urgent needs and underfunded priorities, with critical leadership vacuums threatening our digital future.", "mood": "Concerned", "word_count": 1010, "keywords": ["cybersecurity", "government technology", "leadership voids", "legacy systems", "national security"]}];
+        const ARTICLES = [{"title": "Beyond the Breach: Security's Silent Symphony of Shifting Priorities", "date": "2026-01-19", "url": "/articles/2026/01/19/security-shifting-priorities-cmmc-nist-cyber/", "summary": "The constant drumbeat of security news, from CMMC compliance to major breaches, signals a fundamental shift in government and industry priorities, moving beyond reactive defense to proactive, integrated data governance.", "mood": "Transformative", "word_count": 1064, "keywords": ["CMMC compliance evolution", "Data governance and transparency", "Cybersecurity as a strategic imperative", "Professionalization of cybersecurity careers"]}, {"title": "Cyber Chaos: Are We Trading Defense for Digital Dust?", "date": "2026-01-17", "url": "/articles/2026/01/17/cyber-chaos-trading-defense-digital-dust/", "summary": "Despite a surge in cybersecurity news, the federal government appears to be fumbling its defenses, prioritizing short-term budget plays over critical leadership and infrastructure, revealing a dangerous disconnect between perceived and actual national security.", "mood": "Concerned", "word_count": 999, "keywords": ["cybersecurity leadership", "federal IT modernization", "legacy system vulnerabilities", "cyber workforce challenges", "budgetary priorities vs. security needs"]}, {"title": "Cyber's Shadow: The Unseen Price of Digital Defense", "date": "2026-01-16", "url": "/articles/2026/01/16/cybers-shadow-unseen-price-digital-defense/", "summary": "Today's news reveals a stark reality: our national cyber defense is a patchwork of urgent needs and underfunded priorities, with critical leadership vacuums threatening our digital future.", "mood": "Concerned", "word_count": 1010, "keywords": ["cybersecurity", "government technology", "leadership voids", "legacy systems", "national security"]}];
 
         // State
         let state = {
@@ -1424,7 +1425,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>Generated on January 17, 2026</span>
+            <span>Generated on January 19, 2026</span>
             <span class="footer-separator">|</span>
             <span>Built on <a href="https://dailytrending.info" target="_blank" rel="noopener noreferrer">Daily Trending</a></span>
             <div class="footer-actions">

@@ -1,7 +1,7 @@
 // CMMC Watch Service Worker
-// Cache version: 20260117
+// Cache version: 20260119
 
-const CACHE_NAME = 'cmmcwatch-v20260117';
+const CACHE_NAME = 'cmmcwatch-v20260119';
 const OFFLINE_URL = '/offline.html';
 
 // Assets to cache immediately

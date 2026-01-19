@@ -1,24 +1,90 @@
 [
   {
+    "title": "Classifying Telemetry data",
+    "source": "cmmc_reddit_cmmc",
+    "url": "https://www.reddit.com/r/CMMC/comments/1qgur1v/classifying_telemetry_data/",
+    "description": "The company I work for sells hardware and software solutions to various branches of the Fed government. Are there any published guidelines by the DoD on how to evaluate telemetry/call-home data we collect (for technical support purposes) for the presence of CUI? submitted by /u/psenevir [link] [comments]",
+    "category": "cmmc_program",
+    "score": 3.4,
+    "keywords": [],
+    "timestamp": "2026-01-19 04:48:51",
+    "image_url": null
+  },
+  {
+    "title": "Level 1 & 2 data residency",
+    "source": "cmmc_reddit_cmmc",
+    "url": "https://www.reddit.com/r/CMMC/comments/1qgu8fg/level_1_2_data_residency/",
+    "description": "The organization I work for currently utilizes many Cloud/SaaS applications to operate their business. Some of the SaaS service providers can guarantee our CUI & FCI stored on their infrastructure will remain on US soil (i.e. Microsoft), but some cannot. As a steward for helping protect Fed data I feel there needs to be some guidance published on this topic from DoD. What do you think? How are you handling this in your organizations? submitted by /u/psenevir [link] [comments]",
+    "category": "cmmc_program",
+    "score": 3.4,
+    "keywords": [],
+    "timestamp": "2026-01-19 04:22:59",
+    "image_url": null
+  },
+  {
+    "title": "Looking for information recarging best training for CISSP",
+    "source": "cmmc_reddit_cybersecurity",
+    "url": "https://www.reddit.com/r/cybersecurity/comments/1qgqn2m/looking_for_information_recarging_best_training/",
+    "description": "Good evening everyone! If this question has already been asked feel free to delete this post and meet me in the direction of we already answered post. I'm currently working as a network security administrator and my employer has mentioned that they would like me to pursue the CISSP exam this year as I will be meeting that minimum required work experience soon. They will be paying for this certification as well as bootcamp and retake so long as it comes with the overall package. The only current ",
+    "category": "nist_compliance",
+    "score": 3.4,
+    "keywords": [],
+    "timestamp": "2026-01-19 01:34:02",
+    "image_url": null
+  },
+  {
+    "title": "CIRO got breached in August, they just told 750k investors",
+    "source": "cmmc_reddit_cybersecurity",
+    "url": "https://www.reddit.com/r/cybersecurity/comments/1qgxy50/ciro_got_breached_in_august_they_just_told_750k/",
+    "description": "The Canadian Investment Regulatory Organization (CIRO) discovered a breach on August 11, 2024. Their forensic investigation wrapped up on January 14, 2025. That\u2019s five months of investors not knowing their data was compromised. CIRO is the national self-regulatory body overseeing investment dealers, mutual fund dealers, and trading activity in Canada. They were formed in 2023 as a cornerstone of Canada\u2019s financial regulatory framework. One of the organizations responsible for maintaining market ",
+    "category": "nist_compliance",
+    "score": 3.4,
+    "keywords": [],
+    "timestamp": "2026-01-19 07:42:00",
+    "image_url": null
+  },
+  {
+    "title": "Mentorship Monday - Post All Career, Education and Job questions here!",
+    "source": "cmmc_reddit_cybersecurity",
+    "url": "https://www.reddit.com/r/cybersecurity/comments/1qgoj9s/mentorship_monday_post_all_career_education_and/",
+    "description": "This is the weekly thread for career and education questions and advice. There are no stupid questions; so, what do you want to know about certs/degrees, job requirements, and any other general cybersecurity career questions? Ask away! Interested in what other people are asking, or think your question has been asked before? Have a look through prior weeks of content - though we're working on making this more easily searchable for the future. submitted by /u/AutoModerator [link] [comments]",
+    "category": "nist_compliance",
+    "score": 2.9,
+    "keywords": [],
+    "timestamp": "2026-01-19 00:00:33",
+    "image_url": null
+  },
+  {
+    "title": "Leaving the MSSP Space",
+    "source": "cmmc_reddit_cybersecurity",
+    "url": "https://www.reddit.com/r/cybersecurity/comments/1qgqdbq/leaving_the_mssp_space/",
+    "description": "After a fair number of years working at a big name MSSP SOC I have finally had enough. I'm not leaving Cybersecurity as a career, just the MSSP space. This isn't about warning new people to not work at a MSSP because I think the experience you get is invaluable. This is more just a vent/grievance list. A bit about me first before I start complaining. I started my career as a junior analyst at a small company. We didn't even have what I would consider to be a SOC. As a result, I got to do a whole",
+    "category": "defense_industrial_base",
+    "score": 2.9,
+    "keywords": [],
+    "timestamp": "2026-01-19 01:21:23",
+    "image_url": null
+  },
+  {
+    "title": "NIW application from dual nationality",
+    "source": "cmmc_reddit_nistcontrols",
+    "url": "https://www.reddit.com/r/NISTControls/comments/1qflqna/niw_application_from_dual_nationality/",
+    "description": "What is the effect on NIW applications from dual nationality from recent freeze? submitted by /u/RelationshipFun4836 [link] [comments]",
+    "category": "federal_cybersecurity",
+    "score": 1.9,
+    "keywords": [],
+    "timestamp": "2026-01-17 19:02:30",
+    "image_url": null
+  },
+  {
     "title": "NIST SP 800-171 Rev. 3 Audit & Accountability - DoD ODP",
     "source": "cmmc_reddit_cmmc",
     "url": "https://www.reddit.com/r/CMMC/comments/1qegxhh/nist_sp_800171_rev_3_audit_accountability_dod_odp/",
     "description": "I\u2019m currently working on implementing NIST SP 800-171 rev.3 ( Audit & Accountability - AU controls) in an on-prem Active Directory environment and I\u2019d like to get some real-world input from people who have done this in practice (Yes I know CMMC lvl2 is based on rev2 but we need to comply with rev3) One area that\u2019s still somewhat unclear to me is how others interpret and implement logging for \u201cSecurity Relevant Files and Objects events (Create / Access / Modify / Delete / Permission Modification ",
     "category": "cmmc_program",
-    "score": 2.4,
+    "score": 1.5999999999999999,
     "keywords": [],
     "timestamp": "2026-01-16 14:09:23",
-    "image_url": null
-  },
-  {
-    "title": "Experience automating FedRAMP ConMon reports?",
-    "source": "cmmc_reddit_cybersecurity",
-    "url": "https://www.reddit.com/r/cybersecurity/comments/1qepcpq/experience_automating_fedramp_conmon_reports/",
-    "description": "Has anyone had success automating the creation of monthly continuous monitoring reports (i.e., inventory reports) using the FedRAMP report templates? If so, did you acquire a tool to do that? What has worked for your team? We are struggling with this time-consuming, manual process and would love some advice. submitted by /u/lieses2980 [link] [comments]",
-    "category": "nist_compliance",
-    "score": 2.4,
-    "keywords": [],
-    "timestamp": "2026-01-16 19:17:15",
     "image_url": null
   },
   {
@@ -27,230 +93,10 @@
     "url": "https://www.executivegov.com/articles/sec-russell-mcgranahan-general-counsel-appointment",
     "description": "The Securities and Exchange Commission has named Russell McGranahan as its new general counsel, succeeding Jeffrey Finnell, who served as acting general counsel. McGranahan will direct legal counsel and provide guidance to the SEC chairman, commissioners and staff across the commission\u2019s regulatory and enforcement activities, the agency said Thursday. Who Is Russell McGranahan? McGranahan most recently served as senior adviser to the SEC chairman, providing strategic and legal counsel. Before jo",
     "category": "nist_compliance",
-    "score": 2.2,
+    "score": 1.4,
     "keywords": [],
     "timestamp": "2026-01-16 21:26:07",
-    "image_url": "https://www.executivegov.com/wp-content/uploads/2026/01/russell-mcgranahan-sec-general-counsel-promotion.jpg"
-  },
-  {
-    "title": "New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video",
-    "source": "cmmc_rss_executivegov",
-    "url": "https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video",
-    "description": "Cameron Stanley, who assumed the role of chief digital and artificial intelligence officer at the Department of War on Monday, is urging industry partners to respond more aggressively as the Pentagon moves into the next phase of its artificial intelligence strategy. The Potomac Officers Club\u2019s 2026 Artificial Intelligence Summit on March 18 brings together federal, defense and GovCon leaders to examine how AI is moving from experimentation to mission use. Through keynotes and practitioner-led pa",
-    "category": "defense_industrial_base",
-    "score": 2.0,
-    "keywords": [],
-    "timestamp": "2026-01-16 20:57:21",
-    "image_url": "https://www.executivegov.com/wp-content/uploads/2026/01/cameron-stanley-ai-strategy-pentagon-cdao.jpg"
-  },
-  {
-    "title": "Former CISA Director Jen Easterly Joins RSA Conference as CEO",
-    "source": "cmmc_rss_executivegov",
-    "url": "https://www.executivegov.com/articles/jen-easterly-appointed-rsa-conference-ceo",
-    "description": "RSA Conference has named Jen Easterly, former director of the Cybersecurity and Infrastructure Security Agency and a three-time Wash100 winner, as its new CEO. What Are Jen Easterly\u2019s Responsibilities as RSAC CEO? RSAC said Wednesday that Easterly will guide its global portfolio, including its flagship conference in San Francisco, California, happening in March. The conference features speakers and exhibitors from across the cybersecurity and technology markets. Join key government and industry ",
-    "category": "federal_cybersecurity",
-    "score": 2.0,
-    "keywords": [],
-    "timestamp": "2026-01-16 20:22:56",
-    "image_url": "https://www.executivegov.com/wp-content/uploads/2026/01/jen-easterly-ceo-rsa-conference-appointment-cisa.jpg"
-  },
-  {
-    "title": "CMMC Level 2 self-attestation requests",
-    "source": "cmmc_reddit_cmmc",
-    "url": "https://www.reddit.com/r/CMMC/comments/1qe1x6z/cmmc_level_2_selfattestation_requests/",
-    "description": "We\u2019ve completed a NIST SP 800-171 self-assessment and, up until now, have typically only been asked to provide an SPRS score. Recently, a customer asked us to submit a CMMC Level 2 self-attestation in PIEE and to provide a screenshot of the submission. Curious if others are seeing this more often, or if it\u2019s still more situational. It\u2019s also possible I\u2019m not fully understanding the CMMC submission portion of PIEE, which is part of why I\u2019m asking. submitted by /u/FishermanLogical262 [link] [comme",
-    "category": "cmmc_program",
-    "score": 1.9,
-    "keywords": [],
-    "timestamp": "2026-01-16 01:10:20",
-    "image_url": null
-  },
-  {
-    "title": "Transition from RMF to CMMC",
-    "source": "cmmc_reddit_cmmc",
-    "url": "https://www.reddit.com/r/CMMC/comments/1qdtszy/transition_from_rmf_to_cmmc/",
-    "description": "I've been on the RMF side for 8 years now as ISSO and ISSM. I've been getting a lot of recruiters reaching out about filling CMMC focused ISSM/Director roles. I told them I only know RMF but they say that should be ok to transition. (I know recruiters usually just want to send names out). Is this true? Would transitioning to CMMC be easy for me or would I be too out of my depth relying on my RMF experience? submitted by /u/Sebisuarez10 [link] [comments]",
-    "category": "cmmc_program",
-    "score": 1.9,
-    "keywords": [],
-    "timestamp": "2026-01-15 19:50:41",
-    "image_url": null
-  },
-  {
-    "title": "Nominees to take over SOUTHCOM and CYBERCOM remain tight-lipped before senators",
-    "source": "cmmc_rss_breaking_defense",
-    "url": "https://breakingdefense.com/2026/01/nominees-to-take-over-southcom-and-cybercom-remain-tight-lipped-before-senators/",
-    "description": "\u201cWe really haven\u2019t received any answers about how you feel about the responsibilities you\u2019re about to take on. It\u2019s okay to tell us, and actually would be helpful,\u201d Senate Armed Services Committee Chairman Sen. Roger Wicker interjected today.",
-    "category": "nist_compliance",
-    "score": 1.7,
-    "keywords": [],
-    "timestamp": "2026-01-15 19:55:29",
-    "image_url": "https://breakingdefense.com/wp-content/uploads/sites/13/2022/09/congress_building-scaled-e1711030694393-1024x575.jpg"
-  },
-  {
-    "title": "DIU offers $100M in prizes for voice-controlled AI-enabled drone swarm \u2018orchestrator\u2019",
-    "source": "cmmc_rss_breaking_defense",
-    "url": "https://breakingdefense.com/2026/01/diu-offers-100m-in-prizes-for-voice-controlled-ai-enabled-drone-swarm-orchestrator/",
-    "description": "Instead of needing a specially trained human to remote pilot each drone or robot-boat, the Pentagon wants any servicemember to be able to give orders in plain English.",
-    "category": "nist_compliance",
-    "score": 1.7,
-    "keywords": [],
-    "timestamp": "2026-01-15 19:15:00",
-    "image_url": "https://breakingdefense.com/wp-content/uploads/sites/13/2026/01/260115_drone_swarm_grounded_8334783-scaled-e1768500437757-1024x577.jpg"
-  },
-  {
-    "title": "Why manufacturing critical defense technologies in the US is the linchpin to national security",
-    "source": "cmmc_rss_breaking_defense",
-    "url": "https://breakingdefense.com/2026/01/why-manufacturing-critical-defense-technologies-in-the-us-is-the-linchpin-to-national-security/",
-    "description": "[Sponsored] Breaking Defense visits production lines for made-in-America circuit boards, displays, and missile components.",
-    "category": "nist_compliance",
-    "score": 1.7,
-    "keywords": [],
-    "timestamp": "2026-01-15 13:31:00",
-    "image_url": "https://breakingdefense.com/wp-content/uploads/sites/13/2026/01/Thales-video-1024x576.jpg"
-  },
-  {
-    "title": "SBA Modernizes SBIC Program With Final Rule",
-    "source": "cmmc_rss_executivegov",
-    "url": "https://www.executivegov.com/articles/sba-sbic-program-final-rule",
-    "description": "The Small Business Administration has published a final rule that seeks to modernize the Small Business Investment Company, or SBIC, program to drive private capital investment in critical industries. SBA said Wednesday the final rule, which will take effect Feb. 2, eliminates certain eligibility requirements for SBIC license applications seeking access to the Expedited Subsequent Fund Evaluation Process and reduces regulatory burdens by removing obsolete provisions and improving terms and condi",
-    "category": "nist_compliance",
-    "score": 1.7,
-    "keywords": [],
-    "timestamp": "2026-01-15 20:46:02",
-    "image_url": "https://media.executivegov.com/2026/01/kelly-loeffler-sba-sbic-modernization-final-rule.jpg"
-  },
-  {
-    "title": "For those going through CMMC Level 2 readiness right now \u2014 what\u2019s been the most painful or confusing part?",
-    "source": "cmmc_reddit_cmmc",
-    "url": "https://www.reddit.com/r/CMMC/comments/1qd79o6/for_those_going_through_cmmc_level_2_readiness/",
-    "description": "I\u2019m trying to understand the real pain points companies are facing with CMMC Level 2 readiness \u2014 but from people actually in the middle of it. I\u2019m not selling anything , and I\u2019m not an assessor. I\u2019m researching whether software can realistically reduce some of the friction here. If you\u2019re currently preparing for (or recently went through) CMMC Level 2, I\u2019d love to hear: What part of the process took the most time or caused the most confusion? Where did guidance feel vague or contradictory? What ",
-    "category": "cmmc_program",
-    "score": 1.5999999999999999,
-    "keywords": [],
-    "timestamp": "2026-01-15 02:28:35",
-    "image_url": null
-  },
-  {
-    "title": "M365 G5 Intune optional Windows Update for Business Features?",
-    "source": "cmmc_reddit_cmmc",
-    "url": "https://www.reddit.com/r/CMMC/comments/1qcwprd/m365_g5_intune_optional_windows_update_for/",
-    "description": "I see a Microsoft blog stating that autopatch is available for M365 GCC tenants. Apparently, it needs to enabled manually by adding a special zero dollar license. https://techcommunity.microsoft.com/blog/windows-itpro-blog/windows-autopatch-for-the-us-government-how-to-get-started/4467570 Has anyone gone through the process of getting the license, enabling this and verified that other missing features mentioned like Windows Driver Update Policies and Feature Updates Policies will work with GCC t",
-    "category": "cmmc_program",
-    "score": 1.5999999999999999,
-    "keywords": [],
-    "timestamp": "2026-01-14 19:25:00",
-    "image_url": null
-  },
-  {
-    "title": "Former CISA Director Jen Easterly Appointed CEO of RSAC",
-    "source": "cmmc_rss_securityweek",
-    "url": "https://www.securityweek.com/former-cisa-director-jen-easterly-appointed-ceo-of-rsac/",
-    "description": "Easterly will be leading the world-renowned cybersecurity conference and other RSAC programs. The post Former CISA Director Jen Easterly Appointed CEO of RSAC appeared first on SecurityWeek .",
-    "category": "federal_cybersecurity",
-    "score": 1.5,
-    "keywords": [],
-    "timestamp": "2026-01-16 07:54:57",
-    "image_url": null
-  },
-  {
-    "title": "CISA\u2019s secure-software buying tool had a simple XSS vulnerability of its own",
-    "source": "cmmc_rss_cyberscoop",
-    "url": "https://cyberscoop.com/cisa-secure-software-buying-tool-had-a-simple-xss-vulnerability-of-its-own/",
-    "description": "A researcher who discovered the vulnerability said it was fixed in December, after he first reported it to the agency in September. The post CISA\u2019s secure-software buying tool had a simple XSS vulnerability of its own appeared first on CyberScoop .",
-    "category": "federal_cybersecurity",
-    "score": 1.5,
-    "keywords": [],
-    "timestamp": "2026-01-15 22:47:42",
-    "image_url": "https://cyberscoop.com/wp-content/uploads/sites/3/2018/11/alert-patch.png"
-  },
-  {
-    "title": "The quiet way AI normalizes foreign influence",
-    "source": "cmmc_rss_cyberscoop",
-    "url": "https://cyberscoop.com/the-quiet-way-ai-normalizes-foreign-influence/",
-    "description": "Americans are learning to \u201ctrust the citations\u201d in AI-generated answers\u2014but AI doesn\u2019t reward credibility, it rewards access. The post The quiet way AI normalizes foreign influence appeared first on CyberScoop .",
-    "category": "defense_industrial_base",
-    "score": 1.5,
-    "keywords": [],
-    "timestamp": "2026-01-15 14:30:55",
-    "image_url": "https://cyberscoop.com/wp-content/uploads/sites/3/2026/01/GettyImages-2217834360-1.jpg"
-  },
-  {
-    "title": "The Pentagon leans into drone swarms with a $100M challenge",
-    "source": "cmmc_rss_defense_one",
-    "url": "https://www.defenseone.com/technology/2026/01/pentagon-leans-drone-swarms-100m-challenge/410742/",
-    "description": "An Ender\u2019s Game challenge illustrates the U.S. military's evolving approach to AI.",
-    "category": "defense_industrial_base",
-    "score": 1.5,
-    "keywords": [],
-    "timestamp": "2026-01-16 01:12:55",
-    "image_url": "https://cdn.defenseone.com/media/img/cd/2026/01/15/Target_drones_of_exh_2500/thumb.jpg"
-  },
-  {
-    "title": "EU mandates buy-European preference in new Ukraine assistance package",
-    "source": "cmmc_rss_defense_news",
-    "url": "https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/",
-    "description": "The language represents Brussels\u2019 most explicit attempt yet in leveraging aid to bolster Europe\u2019s defense industrial base, though not all members agree.",
-    "category": "defense_industrial_base",
-    "score": 1.5,
-    "keywords": [],
-    "timestamp": "2026-01-16 12:04:59",
-    "image_url": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/F6EP3F6D45DC7JVCV62NFLDPJY.jpg"
-  },
-  {
-    "title": "Bipartisan Senate Bill to Direct Pentagon to Develop Cyber Workforce Strategy",
-    "source": "cmmc_rss_executivegov",
-    "url": "https://www.executivegov.com/articles/senate-bill-pentagon-cyber-workforce-strategy",
-    "description": "Sens. Gary Peters, D-Mich., and Mike Rounds, R-S.D., have proposed a bill that would require the Department of War to develop a cybersecurity workforce strategy. As lawmakers push for a more coordinated Pentagon cyber workforce strategy, collaboration across government and industry remains essential to strengthening national cyber capabilities. The Potomac Officers Club\u2019s 2026 Cyber Summit will bring together leaders shaping the cyber mission across the federal landscape on May 21. Register toda",
-    "category": "defense_industrial_base",
-    "score": 1.5,
-    "keywords": [],
-    "timestamp": "2026-01-15 20:41:45",
-    "image_url": "https://media.executivegov.com/2026/01/military-cyber-workforce-senate-bill-dow.jpg"
-  },
-  {
-    "title": "California AG launches investigation into X\u2019s sexualized deepfakes",
-    "source": "cmmc_rss_cyberscoop",
-    "url": "https://cyberscoop.com/california-ag-investigates-xai-grok-nonconsensual-deepfakes-defiance-act/",
-    "description": "California Attorney General Rob Bonta announced an investigation Wednesday into xAI over allegations that its artificial intelligence model Grok is being used to create nonconsensual sexually explicit images of women and children on a large scale, marking the latest escalation in regulatory efforts to address AI-generated deepfakes. The California investigation focuses on Grok\u2019s \u201cspicy mode,\u201d [\u2026] The post California AG launches investigation into X\u2019s sexualized deepfakes appeared first on CyberS",
-    "category": "nist_compliance",
-    "score": 1.4,
-    "keywords": [],
-    "timestamp": "2026-01-14 19:36:19",
-    "image_url": "https://cyberscoop.com/wp-content/uploads/sites/3/2026/01/GettyImages-2243401901-1.jpg"
-  },
-  {
-    "title": "Predator spyware demonstrates troubleshooting, researcher-dodging capabilities",
-    "source": "cmmc_rss_cyberscoop",
-    "url": "https://cyberscoop.com/predator-spyware-demonstrates-troubleshooting-researcher-dodging-capabilities/",
-    "description": "It\u2019s the latest batch of revelations about what makes the Intellexa-made spyware stand out from competitors. The post Predator spyware demonstrates troubleshooting, researcher-dodging capabilities appeared first on CyberScoop .",
-    "category": "nist_compliance",
-    "score": 1.4,
-    "keywords": [],
-    "timestamp": "2026-01-14 18:16:49",
-    "image_url": "https://cyberscoop.com/wp-content/uploads/sites/3/2026/01/GettyImages-2161245336.jpg"
-  },
-  {
-    "title": "Denmark bolsters Greenland forces \u2018in close collaboration with NATO allies\u2019",
-    "source": "cmmc_rss_breaking_defense",
-    "url": "https://breakingdefense.com/2026/01/denmark-bolsters-greenland-forces-in-close-collaboration-with-nato-allies/",
-    "description": "\u201cAs part of the increased presence in the Arctic and the North Atlantic, the Danish Armed Forces are deploying capacities and units in connection with exercise activities from today,\u201d said the Danish Ministry of Defense in a statement.",
-    "category": "nist_compliance",
-    "score": 1.4,
-    "keywords": [],
-    "timestamp": "2026-01-14 20:19:57",
-    "image_url": "https://breakingdefense.com/wp-content/uploads/sites/13/2026/01/9366535-1024x683.jpg"
-  },
-  {
-    "title": "NATO nations send scouting teams to Greenland amid US annexation talk",
-    "source": "cmmc_rss_defense_news",
-    "url": "https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/",
-    "description": "European governments are still coming to grips with the unprecedented situation of a NATO ally threatening one of their own.",
-    "category": "nist_compliance",
-    "score": 1.4,
-    "keywords": [],
-    "timestamp": "2026-01-15 11:17:34",
-    "image_url": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/2CEZVDF7XBHX7J4TXAWJ5D7PCA.jpg"
+    "image_url": "https://media.executivegov.com/2026/01/russell-mcgranahan-sec-general-counsel-promotion.jpg"
   },
   {
     "title": "\"We Passed Our CMMC Assessment and Here's What We Learned\" MEGATHREAD",
@@ -261,6 +107,50 @@
     "score": 1.4,
     "keywords": [],
     "timestamp": "2025-11-14 14:42:57",
+    "image_url": null
+  },
+  {
+    "title": "CMMC Level 2 self-attestation requests",
+    "source": "cmmc_reddit_cmmc",
+    "url": "https://www.reddit.com/r/CMMC/comments/1qe1x6z/cmmc_level_2_selfattestation_requests/",
+    "description": "We\u2019ve completed a NIST SP 800-171 self-assessment and, up until now, have typically only been asked to provide an SPRS score. Recently, a customer asked us to submit a CMMC Level 2 self-attestation in PIEE and to provide a screenshot of the submission. Curious if others are seeing this more often, or if it\u2019s still more situational. It\u2019s also possible I\u2019m not fully understanding the CMMC submission portion of PIEE, which is part of why I\u2019m asking. submitted by /u/FishermanLogical262 [link] [comme",
+    "category": "cmmc_program",
+    "score": 1.4,
+    "keywords": [],
+    "timestamp": "2026-01-16 01:10:20",
+    "image_url": null
+  },
+  {
+    "title": "Transition from RMF to CMMC",
+    "source": "cmmc_reddit_cmmc",
+    "url": "https://www.reddit.com/r/CMMC/comments/1qdtszy/transition_from_rmf_to_cmmc/",
+    "description": "I've been on the RMF side for 8 years now as ISSO and ISSM. I've been getting a lot of recruiters reaching out about filling CMMC focused ISSM/Director roles. I told them I only know RMF but they say that should be ok to transition. (I know recruiters usually just want to send names out). Is this true? Would transitioning to CMMC be easy for me or would I be too out of my depth relying on my RMF experience? submitted by /u/Sebisuarez10 [link] [comments]",
+    "category": "cmmc_program",
+    "score": 1.4,
+    "keywords": [],
+    "timestamp": "2026-01-15 19:50:41",
+    "image_url": null
+  },
+  {
+    "title": "For those going through CMMC Level 2 readiness right now \u2014 what\u2019s been the most painful or confusing part?",
+    "source": "cmmc_reddit_cmmc",
+    "url": "https://www.reddit.com/r/CMMC/comments/1qd79o6/for_those_going_through_cmmc_level_2_readiness/",
+    "description": "I\u2019m trying to understand the real pain points companies are facing with CMMC Level 2 readiness \u2014 but from people actually in the middle of it. I\u2019m not selling anything , and I\u2019m not an assessor. I\u2019m researching whether software can realistically reduce some of the friction here. If you\u2019re currently preparing for (or recently went through) CMMC Level 2, I\u2019d love to hear: What part of the process took the most time or caused the most confusion? Where did guidance feel vague or contradictory? What ",
+    "category": "cmmc_program",
+    "score": 1.4,
+    "keywords": [],
+    "timestamp": "2026-01-15 02:28:35",
+    "image_url": null
+  },
+  {
+    "title": "M365 G5 Intune optional Windows Update for Business Features?",
+    "source": "cmmc_reddit_cmmc",
+    "url": "https://www.reddit.com/r/CMMC/comments/1qcwprd/m365_g5_intune_optional_windows_update_for/",
+    "description": "I see a Microsoft blog stating that autopatch is available for M365 GCC tenants. Apparently, it needs to enabled manually by adding a special zero dollar license. https://techcommunity.microsoft.com/blog/windows-itpro-blog/windows-autopatch-for-the-us-government-how-to-get-started/4467570 Has anyone gone through the process of getting the license, enabling this and verified that other missing features mentioned like Windows Driver Update Policies and Feature Updates Policies will work with GCC t",
+    "category": "cmmc_program",
+    "score": 1.4,
+    "keywords": [],
+    "timestamp": "2026-01-14 19:25:00",
     "image_url": null
   },
   {
@@ -286,17 +176,6 @@
     "image_url": null
   },
   {
-    "title": "SSPs quantity",
-    "source": "cmmc_reddit_cmmc",
-    "url": "https://www.reddit.com/r/CMMC/comments/1qbsqin/ssps_quantity/",
-    "description": "If an organization has multiple systems such as GCC High, Active Directory, CrowdStrike EDR, Wallix, etc. that fall within the scope of a CMMC Level 2 assessment, is it required to submit a single System Security Plan (SSP) covering all systems, or separate SSPs for each individual system? We currently have about 8 systems in scope and are in the process of creating three SSPs, each with its own POA&M. This approach is proving to be very time-consuming. From a C3PAO perspective, what is their ex",
-    "category": "cmmc_program",
-    "score": 1.4,
-    "keywords": [],
-    "timestamp": "2026-01-13 14:27:50",
-    "image_url": null
-  },
-  {
     "title": "CMMC L2 consulting cost check",
     "source": "cmmc_reddit_cmmc",
     "url": "https://www.reddit.com/r/CMMC/comments/1qbn2zz/cmmc_l2_consulting_cost_check/",
@@ -305,6 +184,17 @@
     "score": 1.4,
     "keywords": [],
     "timestamp": "2026-01-13 09:36:00",
+    "image_url": null
+  },
+  {
+    "title": "SSPs quantity",
+    "source": "cmmc_reddit_cmmc",
+    "url": "https://www.reddit.com/r/CMMC/comments/1qbsqin/ssps_quantity/",
+    "description": "If an organization has multiple systems such as GCC High, Active Directory, CrowdStrike EDR, Wallix, etc. that fall within the scope of a CMMC Level 2 assessment, is it required to submit a single System Security Plan (SSP) covering all systems, or separate SSPs for each individual system? We currently have about 8 systems in scope and are in the process of creating three SSPs, each with its own POA&M. This approach is proving to be very time-consuming. From a C3PAO perspective, what is their ex",
+    "category": "cmmc_program",
+    "score": 1.4,
+    "keywords": [],
+    "timestamp": "2026-01-13 14:27:50",
     "image_url": null
   },
   {
@@ -338,28 +228,6 @@
     "score": 1.4,
     "keywords": [],
     "timestamp": "2026-01-13 12:56:59",
-    "image_url": null
-  },
-  {
-    "title": "WSL Windows Subsystem for Linux",
-    "source": "cmmc_reddit_cmmc",
-    "url": "https://www.reddit.com/r/CMMC/comments/1qauimv/wsl_windows_subsystem_for_linux/",
-    "description": "We're attempting to tackle WSL in our compliance journey. We're a small group of people doing a large variety of work. We have lots of weird engineering, software development, and electronics apps running. All of which are a huge pita to lock down for CMMC purposes. As for WSL - on one hand it's an application but it's behaves more like a VM. I don't see any reasonable way to get technical controls running inside the WSL guest environment but it seems unreasonable to allow it to run whatever sof",
-    "category": "cmmc_program",
-    "score": 1.4,
-    "keywords": [],
-    "timestamp": "2026-01-12 13:12:45",
-    "image_url": null
-  },
-  {
-    "title": "Questions on CM.L2-3.4.1 Establish and maintain baseline configurations and inventories of organizational systems (including hardware, software, firmware, and documentation) throughout the respective system development lifecycles",
-    "source": "cmmc_reddit_cmmc",
-    "url": "https://www.reddit.com/r/CMMC/comments/1qb1jmj/questions_on_cml2341_establish_and_maintain/",
-    "description": "We are using AWS Gov Cloud enclave with outsourced MSSP CrowdStrike for Gov Cloud and this control is fully met by Falcon Complete. Anyone have any examples on how you provided evidence for the objectives? Do you point to the CS Baseline CRM? Did you break down your inventory to CUI Assets, SPA, etc? Thanks! submitted by /u/CJM3M [link] [comments]",
-    "category": "cmmc_program",
-    "score": 1.4,
-    "keywords": [],
-    "timestamp": "2026-01-12 17:41:33",
     "image_url": null
   },
   {
@@ -495,50 +363,6 @@
     "image_url": null
   },
   {
-    "title": "3.5.3 What is the required Frequency of MFA?",
-    "source": "cmmc_reddit_nistcontrols",
-    "url": "https://www.reddit.com/r/NISTControls/comments/1pe4fq7/353_what_is_the_required_frequency_of_mfa/",
-    "description": "Is MFA required at each login attempt? Or just once a day when you login? For example, I login to my computer in the morning, but step away for a meeting and lock my computer. Am I required to have MFA when I login again? Or, can I rquire the use of the MFA push once per 24 hour period? submitted by /u/ItsAWatchNotAWarning [link] [comments]",
-    "category": "federal_cybersecurity",
-    "score": 1.4,
-    "keywords": [],
-    "timestamp": "2025-12-04 16:28:22",
-    "image_url": null
-  },
-  {
-    "title": "Breakdown of the New CMMC FAQs (Version 3) \u2013 VDI, Encryption, and Cloud Storage",
-    "source": "cmmc_reddit_nistcontrols",
-    "url": "https://www.reddit.com/r/NISTControls/comments/1p88kue/breakdown_of_the_new_cmmc_faqs_version_3_vdi/",
-    "description": "submitted by /u/tmac1165 [link] [comments]",
-    "category": "cmmc_program",
-    "score": 1.4,
-    "keywords": [],
-    "timestamp": "2025-11-27 17:54:15",
-    "image_url": null
-  },
-  {
-    "title": "Mentorship Monday - Post All Career, Education and Job questions here!",
-    "source": "cmmc_reddit_cybersecurity",
-    "url": "https://www.reddit.com/r/cybersecurity/comments/1qafefd/mentorship_monday_post_all_career_education_and/",
-    "description": "This is the weekly thread for career and education questions and advice. There are no stupid questions; so, what do you want to know about certs/degrees, job requirements, and any other general cybersecurity career questions? Ask away! Interested in what other people are asking, or think your question has been asked before? Have a look through prior weeks of content - though we're working on making this more easily searchable for the future. submitted by /u/AutoModerator [link] [comments]",
-    "category": "nist_compliance",
-    "score": 1.4,
-    "keywords": [],
-    "timestamp": "2026-01-12 00:00:34",
-    "image_url": null
-  },
-  {
-    "title": "OSTP\u2019s Kratsios touts \u2018incredible\u2019 interest in Tech Force, defends Trump science and tech cuts",
-    "source": "cmmc_rss_fedscoop",
-    "url": "https://fedscoop.com/trump-ai-action-plan-michael-kratsios-tech-force/",
-    "description": "The program to recruit government technologists has garnered interest from more than 35,000 Americans, according to the OSTP director, who said \u201chard decisions\u201d to \u201cright-size\u201d agencies were made last year. The post OSTP\u2019s Kratsios touts \u2018incredible\u2019 interest in Tech Force, defends Trump science and tech cuts appeared first on FedScoop .",
-    "category": "defense_industrial_base",
-    "score": 1.2,
-    "keywords": [],
-    "timestamp": "2026-01-14 21:27:12",
-    "image_url": "https://fedscoop.com/wp-content/uploads/sites/5/2026/01/GettyImages-2255665739.jpg"
-  },
-  {
     "title": "Executive branch budget pact includes IT investments, less for DOGE",
     "source": "cmmc_rss_fedscoop",
     "url": "https://fedscoop.com/white-house-tech-budget-doge-ai-it-cloud/",
@@ -572,15 +396,136 @@
     "image_url": "https://cdn.nextgov.com/media/img/cd/2025/12/08/120825capitolNG/thumb.jpg"
   },
   {
-    "title": "Exclusive: New CDAO Cameron Stanley Shares What Pentagon Needs From Industry",
-    "source": "cmmc_rss_govcon_wire",
-    "url": "https://www.govconwire.com/articles/cdao-cameron-stanley-pentagon-ai-industry",
-    "description": "Cameron Stanley, the Department of War\u2019s newly appointed chief digital and artificial intelligence officer, is calling on industry partners to play a more active role in delivering innovative technology platforms as the Pentagon advances its AI strategy. According to Stanley, DOW is looking for solutions that address a wide range of potential problems, including new",
+    "title": "California AG launches investigation into X\u2019s sexualized deepfakes",
+    "source": "cmmc_rss_cyberscoop",
+    "url": "https://cyberscoop.com/california-ag-investigates-xai-grok-nonconsensual-deepfakes-defiance-act/",
+    "description": "California Attorney General Rob Bonta announced an investigation Wednesday into xAI over allegations that its artificial intelligence model Grok is being used to create nonconsensual sexually explicit images of women and children on a large scale, marking the latest escalation in regulatory efforts to address AI-generated deepfakes. The California investigation focuses on Grok\u2019s \u201cspicy mode,\u201d [\u2026] The post California AG launches investigation into X\u2019s sexualized deepfakes appeared first on CyberS",
+    "category": "nist_compliance",
+    "score": 1.2,
+    "keywords": [],
+    "timestamp": "2026-01-14 19:36:19",
+    "image_url": "https://cyberscoop.com/wp-content/uploads/sites/3/2026/01/GettyImages-2243401901-1.jpg"
+  },
+  {
+    "title": "Predator spyware demonstrates troubleshooting, researcher-dodging capabilities",
+    "source": "cmmc_rss_cyberscoop",
+    "url": "https://cyberscoop.com/predator-spyware-demonstrates-troubleshooting-researcher-dodging-capabilities/",
+    "description": "It\u2019s the latest batch of revelations about what makes the Intellexa-made spyware stand out from competitors. The post Predator spyware demonstrates troubleshooting, researcher-dodging capabilities appeared first on CyberScoop .",
+    "category": "nist_compliance",
+    "score": 1.2,
+    "keywords": [],
+    "timestamp": "2026-01-14 18:16:49",
+    "image_url": "https://cyberscoop.com/wp-content/uploads/sites/3/2026/01/GettyImages-2161245336.jpg"
+  },
+  {
+    "title": "Nominees to take over SOUTHCOM and CYBERCOM remain tight-lipped before senators",
+    "source": "cmmc_rss_breaking_defense",
+    "url": "https://breakingdefense.com/2026/01/nominees-to-take-over-southcom-and-cybercom-remain-tight-lipped-before-senators/",
+    "description": "\u201cWe really haven\u2019t received any answers about how you feel about the responsibilities you\u2019re about to take on. It\u2019s okay to tell us, and actually would be helpful,\u201d Senate Armed Services Committee Chairman Sen. Roger Wicker interjected today.",
+    "category": "nist_compliance",
+    "score": 1.2,
+    "keywords": [],
+    "timestamp": "2026-01-15 19:55:29",
+    "image_url": "https://breakingdefense.com/wp-content/uploads/sites/13/2022/09/congress_building-scaled-e1711030694393-1024x575.jpg"
+  },
+  {
+    "title": "DIU offers $100M in prizes for voice-controlled AI-enabled drone swarm \u2018orchestrator\u2019",
+    "source": "cmmc_rss_breaking_defense",
+    "url": "https://breakingdefense.com/2026/01/diu-offers-100m-in-prizes-for-voice-controlled-ai-enabled-drone-swarm-orchestrator/",
+    "description": "Instead of needing a specially trained human to remote pilot each drone or robot-boat, the Pentagon wants any servicemember to be able to give orders in plain English.",
+    "category": "nist_compliance",
+    "score": 1.2,
+    "keywords": [],
+    "timestamp": "2026-01-15 19:15:00",
+    "image_url": "https://breakingdefense.com/wp-content/uploads/sites/13/2026/01/260115_drone_swarm_grounded_8334783-scaled-e1768500437757-1024x577.jpg"
+  },
+  {
+    "title": "Why manufacturing critical defense technologies in the US is the linchpin to national security",
+    "source": "cmmc_rss_breaking_defense",
+    "url": "https://breakingdefense.com/2026/01/why-manufacturing-critical-defense-technologies-in-the-us-is-the-linchpin-to-national-security/",
+    "description": "[Sponsored] Breaking Defense visits production lines for made-in-America circuit boards, displays, and missile components.",
+    "category": "nist_compliance",
+    "score": 1.2,
+    "keywords": [],
+    "timestamp": "2026-01-15 13:31:00",
+    "image_url": "https://breakingdefense.com/wp-content/uploads/sites/13/2026/01/Thales-video-1024x576.jpg"
+  },
+  {
+    "title": "Denmark bolsters Greenland forces \u2018in close collaboration with NATO allies\u2019",
+    "source": "cmmc_rss_breaking_defense",
+    "url": "https://breakingdefense.com/2026/01/denmark-bolsters-greenland-forces-in-close-collaboration-with-nato-allies/",
+    "description": "\u201cAs part of the increased presence in the Arctic and the North Atlantic, the Danish Armed Forces are deploying capacities and units in connection with exercise activities from today,\u201d said the Danish Ministry of Defense in a statement.",
+    "category": "nist_compliance",
+    "score": 1.2,
+    "keywords": [],
+    "timestamp": "2026-01-14 20:19:57",
+    "image_url": "https://breakingdefense.com/wp-content/uploads/sites/13/2026/01/9366535-1024x683.jpg"
+  },
+  {
+    "title": "EU mandates buy-European preference in new Ukraine assistance package",
+    "source": "cmmc_rss_defense_news",
+    "url": "https://www.defensenews.com/global/europe/2026/01/16/eu-mandates-buy-european-preference-in-new-ukraine-assistance-package/",
+    "description": "The language represents Brussels\u2019 most explicit attempt yet in leveraging aid to bolster Europe\u2019s defense industrial base, though not all members agree.",
     "category": "defense_industrial_base",
     "score": 1.2,
     "keywords": [],
-    "timestamp": "2026-01-15 10:08:06",
-    "image_url": "https://www.govconwire.com/wp-content/uploads/2026/01/cdao-cameron-stanley-pentagon-industry-role.jpg"
+    "timestamp": "2026-01-16 12:04:59",
+    "image_url": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/F6EP3F6D45DC7JVCV62NFLDPJY.jpg"
+  },
+  {
+    "title": "NATO nations send scouting teams to Greenland amid US annexation talk",
+    "source": "cmmc_rss_defense_news",
+    "url": "https://www.defensenews.com/global/europe/2026/01/15/nato-nations-send-scouting-teams-to-greenland-amid-us-annexation-talk/",
+    "description": "European governments are still coming to grips with the unprecedented situation of a NATO ally threatening one of their own.",
+    "category": "nist_compliance",
+    "score": 1.2,
+    "keywords": [],
+    "timestamp": "2026-01-15 11:17:34",
+    "image_url": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/2CEZVDF7XBHX7J4TXAWJ5D7PCA.jpg"
+  },
+  {
+    "title": "New Pentagon CDAO Urges Industry to Deliver Faster, More Innovative AI Offerings in Executive Mosaic Video",
+    "source": "cmmc_rss_executivegov",
+    "url": "https://www.executivegov.com/articles/pentagon-cdao-cameron-stanley-ai-adoption-video",
+    "description": "Cameron Stanley, who assumed the role of chief digital and artificial intelligence officer at the Department of War on Monday, is urging industry partners to respond more aggressively as the Pentagon moves into the next phase of its artificial intelligence strategy. The Potomac Officers Club\u2019s 2026 Artificial Intelligence Summit on March 18 brings together federal, defense and GovCon leaders to examine how AI is moving from experimentation to mission use. Through keynotes and practitioner-led pa",
+    "category": "defense_industrial_base",
+    "score": 1.2,
+    "keywords": [],
+    "timestamp": "2026-01-16 20:57:21",
+    "image_url": "https://media.executivegov.com/2026/01/cameron-stanley-ai-strategy-pentagon-cdao.jpg"
+  },
+  {
+    "title": "Former CISA Director Jen Easterly Joins RSA Conference as CEO",
+    "source": "cmmc_rss_executivegov",
+    "url": "https://www.executivegov.com/articles/jen-easterly-appointed-rsa-conference-ceo",
+    "description": "RSA Conference has named Jen Easterly, former director of the Cybersecurity and Infrastructure Security Agency and a three-time Wash100 winner, as its new CEO. What Are Jen Easterly\u2019s Responsibilities as RSAC CEO? RSAC said Wednesday that Easterly will guide its global portfolio, including its flagship conference in San Francisco, California, happening in March. The conference features speakers and exhibitors from across the cybersecurity and technology markets. Join key government and industry ",
+    "category": "federal_cybersecurity",
+    "score": 1.2,
+    "keywords": [],
+    "timestamp": "2026-01-16 20:22:56",
+    "image_url": "https://media.executivegov.com/2026/01/jen-easterly-ceo-rsa-conference-appointment-cisa.jpg"
+  },
+  {
+    "title": "SBA Modernizes SBIC Program With Final Rule",
+    "source": "cmmc_rss_executivegov",
+    "url": "https://www.executivegov.com/articles/sba-sbic-program-final-rule",
+    "description": "The Small Business Administration has published a final rule that seeks to modernize the Small Business Investment Company, or SBIC, program to drive private capital investment in critical industries. SBA said Wednesday the final rule, which will take effect Feb. 2, eliminates certain eligibility requirements for SBIC license applications seeking access to the Expedited Subsequent Fund Evaluation Process and reduces regulatory burdens by removing obsolete provisions and improving terms and condi",
+    "category": "nist_compliance",
+    "score": 1.2,
+    "keywords": [],
+    "timestamp": "2026-01-15 20:46:02",
+    "image_url": "https://media.executivegov.com/2026/01/kelly-loeffler-sba-sbic-modernization-final-rule.jpg"
+  },
+  {
+    "title": "OSTP\u2019s Kratsios touts \u2018incredible\u2019 interest in Tech Force, defends Trump science and tech cuts",
+    "source": "cmmc_rss_fedscoop",
+    "url": "https://fedscoop.com/trump-ai-action-plan-michael-kratsios-tech-force/",
+    "description": "The program to recruit government technologists has garnered interest from more than 35,000 Americans, according to the OSTP director, who said \u201chard decisions\u201d to \u201cright-size\u201d agencies were made last year. The post OSTP\u2019s Kratsios touts \u2018incredible\u2019 interest in Tech Force, defends Trump science and tech cuts appeared first on FedScoop .",
+    "category": "defense_industrial_base",
+    "score": 1.0,
+    "keywords": [],
+    "timestamp": "2026-01-14 21:27:12",
+    "image_url": "https://fedscoop.com/wp-content/uploads/sites/5/2026/01/GettyImages-2255665739.jpg"
   },
   {
     "title": "CISA director void leaves cyber agency embroiled in uncertainty",
@@ -649,6 +594,50 @@
     "image_url": "https://cdn.nextgov.com/media/img/cd/2025/12/02/120225CISANG/thumb.jpg"
   },
   {
+    "title": "Exclusive: New CDAO Cameron Stanley Shares What Pentagon Needs From Industry",
+    "source": "cmmc_rss_govcon_wire",
+    "url": "https://www.govconwire.com/articles/cdao-cameron-stanley-pentagon-ai-industry",
+    "description": "Cameron Stanley, the Department of War\u2019s newly appointed chief digital and artificial intelligence officer, is calling on industry partners to play a more active role in delivering innovative technology platforms as the Pentagon advances its AI strategy. According to Stanley, DOW is looking for solutions that address a wide range of potential problems, including new",
+    "category": "defense_industrial_base",
+    "score": 1.0,
+    "keywords": [],
+    "timestamp": "2026-01-15 10:08:06",
+    "image_url": "https://www.govconwire.com/wp-content/uploads/2026/01/cdao-cameron-stanley-pentagon-industry-role.jpg"
+  },
+  {
+    "title": "CISA\u2019s secure-software buying tool had a simple XSS vulnerability of its own",
+    "source": "cmmc_rss_cyberscoop",
+    "url": "https://cyberscoop.com/cisa-secure-software-buying-tool-had-a-simple-xss-vulnerability-of-its-own/",
+    "description": "A researcher who discovered the vulnerability said it was fixed in December, after he first reported it to the agency in September. The post CISA\u2019s secure-software buying tool had a simple XSS vulnerability of its own appeared first on CyberScoop .",
+    "category": "federal_cybersecurity",
+    "score": 1.0,
+    "keywords": [],
+    "timestamp": "2026-01-15 22:47:42",
+    "image_url": "https://cyberscoop.com/wp-content/uploads/sites/3/2018/11/alert-patch.png"
+  },
+  {
+    "title": "The quiet way AI normalizes foreign influence",
+    "source": "cmmc_rss_cyberscoop",
+    "url": "https://cyberscoop.com/the-quiet-way-ai-normalizes-foreign-influence/",
+    "description": "Americans are learning to \u201ctrust the citations\u201d in AI-generated answers\u2014but AI doesn\u2019t reward credibility, it rewards access. The post The quiet way AI normalizes foreign influence appeared first on CyberScoop .",
+    "category": "defense_industrial_base",
+    "score": 1.0,
+    "keywords": [],
+    "timestamp": "2026-01-15 14:30:55",
+    "image_url": "https://cyberscoop.com/wp-content/uploads/sites/3/2026/01/GettyImages-2217834360-1.jpg"
+  },
+  {
+    "title": "The Pentagon leans into drone swarms with a $100M challenge",
+    "source": "cmmc_rss_defense_one",
+    "url": "https://www.defenseone.com/technology/2026/01/pentagon-leans-drone-swarms-100m-challenge/410742/",
+    "description": "An Ender\u2019s Game challenge illustrates the U.S. military's evolving approach to AI.",
+    "category": "defense_industrial_base",
+    "score": 1.0,
+    "keywords": [],
+    "timestamp": "2026-01-16 01:12:55",
+    "image_url": "https://cdn.defenseone.com/media/img/cd/2026/01/15/Target_drones_of_exh_2500/thumb.jpg"
+  },
+  {
     "title": "Grok is in, ethics are out in Pentagon\u2019s new AI-acceleration strategy",
     "source": "cmmc_rss_defense_one",
     "url": "https://www.defenseone.com/policy/2026/01/grok-ethics-are-out-pentagons-new-ai-acceleration-strategy/410649/",
@@ -680,5 +669,16 @@
     "keywords": [],
     "timestamp": "2026-01-13 16:09:26",
     "image_url": "https://cdn.defenseone.com/media/img/cd/2026/01/13/DB_lander/thumb.png"
+  },
+  {
+    "title": "Bipartisan Senate Bill to Direct Pentagon to Develop Cyber Workforce Strategy",
+    "source": "cmmc_rss_executivegov",
+    "url": "https://www.executivegov.com/articles/senate-bill-pentagon-cyber-workforce-strategy",
+    "description": "Sens. Gary Peters, D-Mich., and Mike Rounds, R-S.D., have proposed a bill that would require the Department of War to develop a cybersecurity workforce strategy. As lawmakers push for a more coordinated Pentagon cyber workforce strategy, collaboration across government and industry remains essential to strengthening national cyber capabilities. The Potomac Officers Club\u2019s 2026 Cyber Summit will bring together leaders shaping the cyber mission across the federal landscape on May 21. Register toda",
+    "category": "defense_industrial_base",
+    "score": 1.0,
+    "keywords": [],
+    "timestamp": "2026-01-15 20:41:45",
+    "image_url": "https://media.executivegov.com/2026/01/military-cyber-workforce-senate-bill-dow.jpg"
   }
 ]
