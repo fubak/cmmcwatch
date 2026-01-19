@@ -453,8 +453,15 @@ class WebsiteBuilder:
         Ensures representation from different sources.
         Enforces source diversity: max 2 stories per source.
         Excludes Reddit content (shown separately at bottom of page).
+
+        When no new stories from today exist, uses day-based rotation to ensure
+        different stories are featured on different days.
         """
         from datetime import datetime
+
+        now = datetime.now()
+        today = now.date()
+        day_of_year = today.timetuple().tm_yday  # Use for rotation
 
         selected_urls = set()
         top_stories = []
@@ -464,9 +471,16 @@ class WebsiteBuilder:
         def get_timestamp(story: Dict) -> datetime:
             """Parse story timestamp, return epoch if invalid."""
             try:
-                return datetime.strptime(story.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
+                return datetime.strptime(
+                    story.get("timestamp", ""), "%Y-%m-%d %H:%M:%S"
+                )
             except (ValueError, TypeError):
                 return datetime(1970, 1, 1)
+
+        def is_from_today(story: Dict) -> bool:
+            """Check if story is from today."""
+            ts = get_timestamp(story)
+            return ts.date() == today
 
         def can_add_story(story: Dict) -> bool:
             """Check if story can be added based on source diversity limits."""
@@ -484,12 +498,19 @@ class WebsiteBuilder:
 
         # Sort non-Reddit trends by timestamp (most recent first)
         sorted_trends = sorted(
-            [t for t in self.ctx.trends if not self._is_reddit_source(t.get("source", ""))],
+            [
+                t
+                for t in self.ctx.trends
+                if not self._is_reddit_source(t.get("source", ""))
+            ],
             key=lambda x: get_timestamp(x),
-            reverse=True
+            reverse=True,
         )
 
-        # Slot 1: Hero - Most recent non-Reddit story
+        # Check if we have any stories from today
+        has_todays_stories = any(is_from_today(t) for t in sorted_trends)
+
+        # Slot 1: Hero - Most recent non-Reddit story (with rotation)
         hero = self._get_hero_story()
         if hero and hero.get("url"):
             if self._hero_image and not hero.get("image_url"):
@@ -502,14 +523,37 @@ class WebsiteBuilder:
                     hero["image_url"] = hero_img_url
             add_story(hero)
 
-        # Fill remaining slots with most recent non-Reddit stories
-        for story in sorted_trends:
-            if len(top_stories) >= 9:
-                break
-            if story.get("url") in selected_urls:
-                continue
-            if can_add_story(story):
-                add_story(story)
+        if has_todays_stories:
+            # We have fresh content - use normal recency-based selection
+            for story in sorted_trends:
+                if len(top_stories) >= 9:
+                    break
+                if story.get("url") in selected_urls:
+                    continue
+                if can_add_story(story):
+                    add_story(story)
+        else:
+            # No fresh content - apply rotation to ensure variety across days
+            # Create a rotation offset based on day of year
+            rotation_offset = day_of_year % max(1, len(sorted_trends) // 3)
+
+            # Create rotated list starting from offset position
+            eligible_stories = [
+                s for s in sorted_trends if s.get("url") not in selected_urls
+            ]
+            if eligible_stories:
+                rotated_stories = (
+                    eligible_stories[rotation_offset:]
+                    + eligible_stories[:rotation_offset]
+                )
+
+                for story in rotated_stories:
+                    if len(top_stories) >= 9:
+                        break
+                    if story.get("url") in selected_urls:
+                        continue
+                    if can_add_story(story):
+                        add_story(story)
 
         for story in top_stories:
             self._ensure_story_description(story)
@@ -534,7 +578,11 @@ class WebsiteBuilder:
         return reddit_stories[:12]
 
     def _get_hero_story(self) -> Dict:
-        """Get the hero story, prioritizing recent non-Reddit stories with images."""
+        """Get the hero story, prioritizing recent non-Reddit stories with images.
+
+        When no new stories from today exist, uses day-based rotation to ensure
+        different stories are featured on different days.
+        """
         if not self.ctx.trends:
             return {}
 
@@ -542,45 +590,58 @@ class WebsiteBuilder:
 
         now = datetime.now()
         today = now.date()
+        day_of_year = today.timetuple().tm_yday  # Use for rotation
 
         # First, try to find a non-Reddit story from today with an image
+        todays_with_image = []
         for trend in self.ctx.trends:
             if self._is_reddit_source(trend.get("source", "")):
                 continue
             try:
                 ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
                 if ts.date() == today and trend.get("image_url"):
-                    return trend
+                    todays_with_image.append(trend)
             except (ValueError, TypeError):
                 continue
 
+        if todays_with_image:
+            # Rotate through today's stories with images
+            return todays_with_image[day_of_year % len(todays_with_image)]
+
         # Second, try any non-Reddit story from today
+        todays_stories = []
         for trend in self.ctx.trends:
             if self._is_reddit_source(trend.get("source", "")):
                 continue
             try:
                 ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
                 if ts.date() == today:
-                    return trend
+                    todays_stories.append(trend)
             except (ValueError, TypeError):
                 continue
 
-        # Third, find the most recent non-Reddit story (any date)
-        best_recent = None
-        best_ts = None
+        if todays_stories:
+            return todays_stories[day_of_year % len(todays_stories)]
+
+        # No today's stories - collect all non-Reddit stories sorted by timestamp
+        all_non_reddit = []
         for trend in self.ctx.trends:
             if self._is_reddit_source(trend.get("source", "")):
                 continue
             try:
                 ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
-                if best_ts is None or ts > best_ts:
-                    best_ts = ts
-                    best_recent = trend
+                all_non_reddit.append((trend, ts))
             except (ValueError, TypeError):
-                continue
+                # Include stories without valid timestamp at the end
+                all_non_reddit.append((trend, datetime(1970, 1, 1)))
 
-        if best_recent:
-            return best_recent
+        if all_non_reddit:
+            # Sort by timestamp (most recent first)
+            all_non_reddit.sort(key=lambda x: x[1], reverse=True)
+            # Use day_of_year to rotate through top stories
+            # Only rotate through top 15 to keep quality high
+            rotation_pool = [t[0] for t in all_non_reddit[:15]]
+            return rotation_pool[day_of_year % len(rotation_pool)]
 
         # Fallback to first non-Reddit trend
         for trend in self.ctx.trends:
