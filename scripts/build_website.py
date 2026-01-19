@@ -449,22 +449,40 @@ class WebsiteBuilder:
 
     def _select_top_stories(self) -> List[Dict]:
         """
-        Select top stories using the 'Diversity Mix' algorithm.
-        Ensures representation from World, Tech, and Finance.
+        Select top stories prioritizing recency over pure relevance score.
+        Ensures representation from different sources.
         Enforces source diversity: max 2 stories per source.
-        Excludes Reddit content (shown separately at bottom of page).
+        Includes Reddit content when it's from today.
         """
+        from datetime import datetime
+
         selected_urls = set()
         top_stories = []
-        source_counts = defaultdict(int)  # Track stories per source
+        source_counts = defaultdict(int)
         MAX_PER_SOURCE = 2
 
-        def can_add_story(story: Dict) -> bool:
+        now = datetime.now()
+        today = now.date()
+
+        def get_timestamp(story: Dict) -> datetime:
+            """Parse story timestamp, return epoch if invalid."""
+            try:
+                return datetime.strptime(story.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
+            except (ValueError, TypeError):
+                return datetime(1970, 1, 1)
+
+        def is_from_today(story: Dict) -> bool:
+            """Check if story is from today."""
+            ts = get_timestamp(story)
+            return ts.date() == today
+
+        def can_add_story(story: Dict, allow_reddit: bool = False) -> bool:
             """Check if story can be added based on source diversity limits."""
             source = story.get("source", "unknown")
-            # Exclude Reddit sources from top stories
+            # Only exclude Reddit if not allowed and not from today
             if self._is_reddit_source(source):
-                return False
+                if not allow_reddit and not is_from_today(story):
+                    return False
             return source_counts[source] < MAX_PER_SOURCE
 
         def add_story(story: Dict) -> None:
@@ -473,68 +491,34 @@ class WebsiteBuilder:
             source_counts[story.get("source", "unknown")] += 1
             top_stories.append(story)
 
-        # Helper to find best available story from a category
-        def get_best_from_category(category_names: List[str]) -> Optional[Dict]:
-            candidates = []
-            for cat in category_names:
-                candidates.extend(self.grouped_trends.get(cat, []))
+        # Sort all trends by timestamp (most recent first)
+        sorted_trends = sorted(
+            self.ctx.trends,
+            key=lambda x: get_timestamp(x),
+            reverse=True
+        )
 
-            # Sort by score
-            candidates.sort(key=lambda x: x.get("score", 0), reverse=True)
+        # Slot 1: Hero - Most recent story (prefer non-Reddit with image)
+        hero = self._get_hero_story()
+        if hero and hero.get("url"):
+            if self._hero_image and not hero.get("image_url"):
+                hero_img_url = (
+                    self._hero_image.get("url_large")
+                    or self._hero_image.get("url_medium")
+                    or self._hero_image.get("url_original")
+                )
+                if hero_img_url:
+                    hero["image_url"] = hero_img_url
+            add_story(hero)
 
-            for story in candidates:
-                # Skip Reddit sources
-                if self._is_reddit_source(story.get("source", "")):
-                    continue
-                if story.get("url") not in selected_urls and can_add_story(story):
-                    return story
-            return None
-
-        # Slot 1: Hero - Absolute highest scoring non-Reddit story
-        if self.ctx.trends:
-            # Find first non-Reddit story for hero
-            hero = None
-            for trend in self.ctx.trends:
-                if not self._is_reddit_source(trend.get("source", "")):
-                    hero = trend
-                    break
-
-            if hero:
-                # Ensure the hero story has the same image as the hero section
-                if self._hero_image and not hero.get("image_url"):
-                    hero_img_url = (
-                        self._hero_image.get("url_large")
-                        or self._hero_image.get("url_medium")
-                        or self._hero_image.get("url_original")
-                    )
-                    if hero_img_url:
-                        hero["image_url"] = hero_img_url
-                add_story(hero)
-
-        # Slot 2: World News
-        world = get_best_from_category(["World News", "Politics", "Current Events"])
-        if world:
-            add_story(world)
-
-        # Slot 3: Technology
-        tech = get_best_from_category(["Technology", "Hacker News", "Science"])
-        if tech:
-            add_story(tech)
-
-        # Slot 4: Finance/Business
-        finance = get_best_from_category(["Finance", "Business"])
-        if finance:
-            add_story(finance)
-
-        # Fill remaining slots (up to 9 total) with highest scoring remaining stories
-        # while respecting source diversity
-        remaining_slots = 9 - len(top_stories)
-        if remaining_slots > 0:
-            for story in self.ctx.trends:
-                if story.get("url") not in selected_urls and can_add_story(story):
-                    add_story(story)
-                    if len(top_stories) >= 9:
-                        break
+        # Fill remaining slots with most recent stories, allowing Reddit from today
+        for story in sorted_trends:
+            if len(top_stories) >= 9:
+                break
+            if story.get("url") in selected_urls:
+                continue
+            if can_add_story(story, allow_reddit=True):
+                add_story(story)
 
         for story in top_stories:
             self._ensure_story_description(story)
@@ -559,15 +543,62 @@ class WebsiteBuilder:
         return reddit_stories[:12]
 
     def _get_hero_story(self) -> Dict:
-        """Get the hero story, excluding Reddit sources."""
+        """Get the hero story, prioritizing recent stories with images."""
         if not self.ctx.trends:
             return {}
 
-        for trend in self.ctx.trends:
-            if not self._is_reddit_source(trend.get("source", "")):
-                return trend
+        from datetime import datetime, timedelta
 
-        # Fallback to first trend if all are Reddit (unlikely)
+        now = datetime.now()
+        today = now.date()
+
+        # First, try to find a story from today with an image (non-Reddit preferred)
+        for trend in self.ctx.trends:
+            try:
+                ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
+                if ts.date() == today and trend.get("image_url"):
+                    if not self._is_reddit_source(trend.get("source", "")):
+                        return trend
+            except (ValueError, TypeError):
+                continue
+
+        # Second, try any story from today (non-Reddit preferred)
+        for trend in self.ctx.trends:
+            try:
+                ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
+                if ts.date() == today:
+                    if not self._is_reddit_source(trend.get("source", "")):
+                        return trend
+            except (ValueError, TypeError):
+                continue
+
+        # Third, try any story from today including Reddit
+        for trend in self.ctx.trends:
+            try:
+                ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
+                if ts.date() == today:
+                    return trend
+            except (ValueError, TypeError):
+                continue
+
+        # Fourth, find the most recent non-Reddit story
+        best_recent = None
+        best_ts = None
+        for trend in self.ctx.trends:
+            if self._is_reddit_source(trend.get("source", "")):
+                continue
+            try:
+                ts = datetime.strptime(trend.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
+                if best_ts is None or ts > best_ts:
+                    best_ts = ts
+                    best_recent = trend
+            except (ValueError, TypeError):
+                continue
+
+        if best_recent:
+            return best_recent
+
+        # Fallback to first trend
         return self.ctx.trends[0] if self.ctx.trends else {}
 
     def _fetch_story_description(self, url: str) -> str:

@@ -5,8 +5,8 @@
     <description>Daily CMMC &amp; Compliance News Aggregator</description>
     <link>https://cmmcwatch.com</link>
     <language>en-us</language>
-    <lastBuildDate>Mon, 19 Jan 2026 12:32:59 +0000</lastBuildDate>
-    <pubDate>Mon, 19 Jan 2026 12:32:59 +0000</pubDate>
+    <lastBuildDate>Mon, 19 Jan 2026 12:52:49 +0000</lastBuildDate>
+    <pubDate>Mon, 19 Jan 2026 12:52:49 +0000</pubDate>
     <generator>CMMC Watch Pipeline</generator>
     <atom:link href="https://cmmcwatch.com/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
@@ -28,16 +28,6 @@
       <pubDate>Mon, 19 Jan 2026 04:22:59  +0000</pubDate>
       <dc:creator>CMMC Watch</dc:creator>
       <content:encoded>&lt;h3&gt;Level 1 &amp; 2 data residency&lt;/h3&gt;&lt;p&gt;The organization I work for currently utilizes many Cloud/SaaS applications to operate their business. Some of the SaaS service providers can guarantee our CUI &amp; FCI stored on their infrastructure will remain on US soil (i.e. Microsoft), but some cannot. As a steward for helping protect Fed data I feel there needs to be some guidance published on this topic from DoD. What do you think? How are you handling this in your organizations? submitted by /u/psenevir [link] [comments]&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Reddit Cmmc&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.reddit.com/r/CMMC/comments/1qgu8fg/level_1_2_data_residency/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
-    </item>
-    <item>
-      <title>Looking for information recarging best training for CISSP</title>
-      <link>https://www.reddit.com/r/cybersecurity/comments/1qgqn2m/looking_for_information_recarging_best_training/</link>
-      <description>Good evening everyone! If this question has already been asked feel free to delete this post and meet me in the direction of we already answered post. I'm currently working as a network security administrator and my employer has mentioned that they would like me to pursue the CISSP exam this year as I will be meeting that minimum required work experience soon. They will be paying for this certification as well as bootcamp and retake so long as it comes with the overall package. The only current </description>
-      <category>cmmc_reddit_cybersecurity</category>
-      <guid isPermaLink="true">https://www.reddit.com/r/cybersecurity/comments/1qgqn2m/looking_for_information_recarging_best_training/</guid>
-      <pubDate>Mon, 19 Jan 2026 01:34:02  +0000</pubDate>
-      <dc:creator>CMMC Watch</dc:creator>
-      <content:encoded>&lt;h3&gt;Looking for information recarging best training for CISSP&lt;/h3&gt;&lt;p&gt;Good evening everyone! If this question has already been asked feel free to delete this post and meet me in the direction of we already answered post. I'm currently working as a network security administrator and my employer has mentioned that they would like me to pursue the CISSP exam this year as I will be meeting that minimum required work experience soon. They will be paying for this certification as well as bootcamp and retake so long as it comes with the overall package. The only current &lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Reddit Cybersecurity&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.reddit.com/r/cybersecurity/comments/1qgqn2m/looking_for_information_recarging_best_training/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
     <item>
       <title>CIRO got breached in August, they just told 750k investors</title>
@@ -68,6 +58,16 @@
       <pubDate>Mon, 19 Jan 2026 01:21:23  +0000</pubDate>
       <dc:creator>CMMC Watch</dc:creator>
       <content:encoded>&lt;h3&gt;Leaving the MSSP Space&lt;/h3&gt;&lt;p&gt;After a fair number of years working at a big name MSSP SOC I have finally had enough. I'm not leaving Cybersecurity as a career, just the MSSP space. This isn't about warning new people to not work at a MSSP because I think the experience you get is invaluable. This is more just a vent/grievance list. A bit about me first before I start complaining. I started my career as a junior analyst at a small company. We didn't even have what I would consider to be a SOC. As a result, I got to do a whole&lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Reddit Cybersecurity&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.reddit.com/r/cybersecurity/comments/1qgqdbq/leaving_the_mssp_space/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
+    </item>
+    <item>
+      <title>Looking for information recarging best training for CISSP</title>
+      <link>https://www.reddit.com/r/cybersecurity/comments/1qgqn2m/looking_for_information_recarging_best_training/</link>
+      <description>Good evening everyone! If this question has already been asked feel free to delete this post and meet me in the direction of we already answered post. I'm currently working as a network security administrator and my employer has mentioned that they would like me to pursue the CISSP exam this year as I will be meeting that minimum required work experience soon. They will be paying for this certification as well as bootcamp and retake so long as it comes with the overall package. The only current </description>
+      <category>cmmc_reddit_cybersecurity</category>
+      <guid isPermaLink="true">https://www.reddit.com/r/cybersecurity/comments/1qgqn2m/looking_for_information_recarging_best_training/</guid>
+      <pubDate>Mon, 19 Jan 2026 01:34:02  +0000</pubDate>
+      <dc:creator>CMMC Watch</dc:creator>
+      <content:encoded>&lt;h3&gt;Looking for information recarging best training for CISSP&lt;/h3&gt;&lt;p&gt;Good evening everyone! If this question has already been asked feel free to delete this post and meet me in the direction of we already answered post. I'm currently working as a network security administrator and my employer has mentioned that they would like me to pursue the CISSP exam this year as I will be meeting that minimum required work experience soon. They will be paying for this certification as well as bootcamp and retake so long as it comes with the overall package. The only current &lt;/p&gt;&lt;p&gt;&lt;small&gt;Source: Cmmc Reddit Cybersecurity&lt;/small&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.reddit.com/r/cybersecurity/comments/1qgqn2m/looking_for_information_recarging_best_training/&quot;&gt;Read full story →&lt;/a&gt;&lt;/p&gt;</content:encoded>
     </item>
     <item>
       <title>NIW application from dual nationality</title>
