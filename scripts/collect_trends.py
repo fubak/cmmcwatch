@@ -31,6 +31,12 @@ from config import (
     setup_logging,
 )
 
+# Import story validator for AI-powered validation
+try:
+    from story_validator import StoryValidator
+except ImportError:
+    StoryValidator = None
+
 logger = setup_logging("collect_trends")
 
 
@@ -62,8 +68,13 @@ class TrendCollector:
             }
         )
 
-    def collect_all(self) -> List[Trend]:
-        """Collect trends from all CMMC sources."""
+    def collect_all(self, use_ai_validation: bool = True) -> List[Trend]:
+        """Collect trends from all CMMC sources.
+
+        Args:
+            use_ai_validation: If True, use AI to validate relevance and categories.
+                              Requires GROQ_API_KEY, OPENROUTER_API_KEY, or GOOGLE_AI_API_KEY.
+        """
         logger.info("Collecting CMMC trends from all sources...")
 
         # Collect from RSS feeds
@@ -75,8 +86,12 @@ class TrendCollector:
         # Collect from LinkedIn
         self._collect_linkedin()
 
-        # Deduplicate
+        # Basic deduplicate (quick, rule-based)
         self._deduplicate()
+
+        # AI-powered validation (relevance, categories, semantic dedup)
+        if use_ai_validation and StoryValidator is not None:
+            self._ai_validate()
 
         # Apply recency boost and sort by combined score
         self._apply_recency_and_sort()
@@ -89,6 +104,68 @@ class TrendCollector:
 
         logger.info(f"Total unique CMMC trends: {len(self.trends)}")
         return self.trends
+
+    def _ai_validate(self):
+        """Use AI to validate story relevance, correct categories, and find semantic duplicates."""
+        if not self.trends:
+            return
+
+        logger.info("Running AI-powered story validation...")
+
+        # Convert Trend objects to dicts for the validator
+        trend_dicts = []
+        for t in self.trends:
+            trend_dicts.append({
+                "title": t.title,
+                "description": t.description,
+                "category": t.category,
+                "source": t.source,
+                "url": t.url,
+                "timestamp": t.timestamp.isoformat() if t.timestamp else None,
+                "score": t.score,
+                "keywords": t.keywords,
+                "image_url": t.image_url,
+            })
+
+        # Run validation
+        validator = StoryValidator()
+        valid_dicts, rejected_dicts = validator.validate_stories(trend_dicts, use_ai=True)
+
+        # Log rejections
+        if rejected_dicts:
+            logger.info(f"AI validation rejected {len(rejected_dicts)} stories:")
+            for r in rejected_dicts[:5]:
+                logger.info(f"  - {r.get('title', '')[:50]}: {r.get('rejection_reason', 'unknown')}")
+            if len(rejected_dicts) > 5:
+                logger.info(f"  ... and {len(rejected_dicts) - 5} more")
+
+        # Convert back to Trend objects
+        self.trends = []
+        for td in valid_dicts:
+            timestamp = td.get("timestamp")
+            if isinstance(timestamp, str):
+                try:
+                    timestamp = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                except ValueError:
+                    try:
+                        timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+                    except ValueError:
+                        timestamp = None
+
+            trend = Trend(
+                title=td.get("title", ""),
+                source=td.get("source", ""),
+                url=td.get("url"),
+                description=td.get("description"),
+                category=td.get("category", "federal_cybersecurity"),
+                score=td.get("score", 1.0),
+                keywords=td.get("keywords", []),
+                timestamp=timestamp,
+                image_url=td.get("image_url"),
+            )
+            self.trends.append(trend)
+
+        logger.info(f"AI validation complete: {len(self.trends)} stories remaining")
 
     def _collect_rss_feeds(self):
         """Collect from CMMC-related RSS feeds."""

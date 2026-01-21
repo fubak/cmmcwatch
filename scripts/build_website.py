@@ -113,6 +113,9 @@ class WebsiteBuilder:
         self._hero_image = self._find_relevant_hero_image()
         self._category_card_limit = 8  # 2 rows × 4 columns (must be multiple of 4)
 
+        # Track URLs used across all sections to prevent duplicates anywhere on the page
+        self._used_urls: set = set()
+
     def _choose_column_count(self, count: int) -> int:
         """Always use 4-column layout for consistency."""
         # Always return 4 columns for uniform grid layout
@@ -131,21 +134,27 @@ class WebsiteBuilder:
         """Map raw category keys to display-friendly names.
 
         Excludes Reddit sources from categories (shown in dedicated section).
+        Excludes stories already used in hero/top stories sections (prevents duplicates).
         """
         categories = []
         sorted_groups = sorted(
             self.grouped_trends.items(), key=lambda x: len(x[1]), reverse=True
         )
         for title, stories in sorted_groups:
-            # Filter out Reddit sources from category sections
+            # Filter out Reddit sources and already-used URLs from category sections
             filtered_stories = [
-                s for s in stories if not self._is_reddit_source(s.get("source", ""))
+                s for s in stories
+                if not self._is_reddit_source(s.get("source", ""))
+                and s.get("url") not in self._used_urls
             ]
 
             if not filtered_stories:
                 continue  # Skip empty categories after filtering
 
             display_stories = filtered_stories[: self._category_card_limit]
+            # Track these URLs as used too (for consistency)
+            for s in display_stories:
+                self._used_urls.add(s.get("url"))
             columns = self._choose_column_count(len(display_stories))
 
             # Use display-friendly title if available, otherwise clean up the raw title
@@ -496,7 +505,9 @@ class WebsiteBuilder:
 
         def add_story(story: Dict) -> None:
             """Add story and update tracking."""
-            selected_urls.add(story.get("url"))
+            url = story.get("url")
+            selected_urls.add(url)
+            self._used_urls.add(url)  # Track globally for cross-section dedup
             source_counts[story.get("source", "unknown")] += 1
             top_stories.append(story)
 
@@ -1400,6 +1411,11 @@ class WebsiteBuilder:
         }
         section_gap = section_gap_map.get(spacing, "3.5rem")
 
+        # IMPORTANT: Order matters for deduplication!
+        # 1. First select hero and top stories (this populates _used_urls)
+        # 2. Then prepare categories (which excludes _used_urls)
+        hero_story = self._get_hero_story()
+        top_stories = self._select_top_stories()
         categories = self._prepare_categories()
 
         # Build context variables for the template
@@ -1441,9 +1457,9 @@ class WebsiteBuilder:
             "custom_styles": custom_styles,
             # SVG placeholder with gradient (avoids missing asset file)
             "placeholder_image_url": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231a1a2e'/%3E%3Cstop offset='100%25' stop-color='%2316213e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='800' height='450'/%3E%3Ctext x='400' y='225' fill='%234a4a6a' font-family='system-ui' font-size='14' text-anchor='middle' dy='.3em'%3ECMMC Watch%3C/text%3E%3C/svg%3E",
-            # Content
-            "hero_story": self._get_hero_story(),
-            "top_stories": self._select_top_stories(),
+            # Content (pre-computed above for proper deduplication order)
+            "hero_story": hero_story,
+            "top_stories": top_stories,
             "trends": self.ctx.trends,
             "reddit_stories": self._get_reddit_stories(),
             "total_trends_count": len(self.ctx.trends),
