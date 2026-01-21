@@ -60,6 +60,8 @@ class StoryValidator:
     VALID_CATEGORIES = [
         "cmmc_program",  # Core CMMC news (cmmc, c3pao, cyber-ab)
         "nist_compliance",  # NIST 800-171, DFARS, FedRAMP, FISMA
+        "intelligence_threats",  # Espionage, nation-state actors, APTs
+        "insider_threats",  # Insider risks, employee recruitment, data theft
         "defense_industrial_base",  # DoD contractors, DIB news
         "federal_cybersecurity",  # General federal cyber news
     ]
@@ -72,8 +74,8 @@ class StoryValidator:
         r"looking\s+for\s+(job|work|position)",
         r"(hiring|job)\s+thread",
         r"certification\s+(training|advice|bootcamp)",
-        # Non-US content
-        r"\b(denmark|greenland|nato\s+allies|eu\s+mandate|canada|ciro)\b",
+        # Non-US/Non-security content (keep espionage stories even if foreign)
+        r"\b(eu\s+mandate|ciro)\b",
         # Generic Reddit threads
         r"^\[?megathread\]?",
         r"weekly\s+(discussion|thread)",
@@ -297,20 +299,31 @@ class StoryValidator:
 - NIST 800-171/800-172 compliance
 - Defense Industrial Base (DIB) cybersecurity
 - Federal cybersecurity policy affecting defense contractors
+- Espionage, counterintelligence, and nation-state cyber threats
+- Insider threats and security clearance issues
 
 Analyze these {len(stories)} stories and determine:
 1. Is each story RELEVANT to CMMC Watch's focus? (true/false)
 2. What is the CORRECT category? Choose from:
    - cmmc_program: Core CMMC news (CMMC certification, C3PAO, Cyber-AB, assessments)
    - nist_compliance: NIST frameworks, DFARS, FedRAMP, FISMA, CUI
+   - intelligence_threats: Espionage, spying, nation-state hackers, APTs, foreign agents, counterintelligence
+   - insider_threats: Insider risks, employee recruitment by adversaries, data exfiltration, dark web recruitment
    - defense_industrial_base: DoD contractors, Pentagon, defense contracts, DIB
    - federal_cybersecurity: CISA, federal cyber policy, government IT security
 3. If irrelevant, WHY?
 
+RELEVANT content includes (keep these!):
+- Espionage cases (spying for China, Russia, etc.) - categorize as intelligence_threats
+- Nation-state hacking (APT groups, Chinese/Russian/DPRK hackers) - categorize as intelligence_threats
+- Insider threat cases and dark web recruitment - categorize as insider_threats
+- Foreign agent arrests and indictments - categorize as intelligence_threats
+- Security clearance issues - categorize as insider_threats
+
 IRRELEVANT content includes:
 - Career advice, job hunting, certification training questions
-- Non-US news (EU, NATO European affairs, Canada, Denmark/Greenland)
-- Generic cybersecurity news not specific to federal/defense
+- Generic EU/NATO European political affairs (unless espionage-related)
+- Generic cybersecurity news not specific to federal/defense/national security
 - SEC, SBA, or other non-cyber federal agencies
 - Personal career stories or rants
 - AI deepfakes, consumer privacy (unless federal policy)

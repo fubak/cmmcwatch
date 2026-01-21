@@ -126,6 +126,8 @@ class WebsiteBuilder:
     CATEGORY_DISPLAY_MAP = {
         "cmmc_program": "🎯 CMMC Program News",
         "nist_compliance": "📋 NIST & Compliance",
+        "intelligence_threats": "🕵️ Intelligence Threats",
+        "insider_threats": "⚠️ Insider Threats",
         "defense_industrial_base": "🛡️ Defense Industrial Base",
         "federal_cybersecurity": "🔒 Federal Cybersecurity",
     }
