@@ -246,11 +246,9 @@ CMMC_LINKEDIN_PROFILES = [
     # "https://www.linkedin.com/in/danielakridge/",  # Daniel Akridge - "That CMMC Show"
     # "https://www.linkedin.com/in/jacobrhill/",  # Jacob Hill - Summit 7
     # "https://www.linkedin.com/in/joybeland/",  # Joy Beland - CMMC consultant
-    # "https://www.linkedin.com/in/ericnoonan/",  # Eric Noonan - CyberSheath CEO
     # Government/National Security:
     # "https://www.linkedin.com/in/sean-plankey/",  # Sean Plankey - CISA nominee
     # "https://www.linkedin.com/in/kreaborncisa/",  # Chris Krebs - former CISA director
-    # "https://www.linkedin.com/in/dmitri-alperovitch/",  # Dmitri Alperovitch - Silverado Policy
     # "https://www.linkedin.com/in/glenn-gerstell/",  # Glenn Gerstell - former NSA General Counsel
 ]
 
