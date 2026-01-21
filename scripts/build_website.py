@@ -126,6 +126,8 @@ class WebsiteBuilder:
     CATEGORY_DISPLAY_MAP = {
         "cmmc_program": "🎯 CMMC Program News",
         "nist_compliance": "📋 NIST & Compliance",
+        "intelligence_threats": "🕵️ Intelligence Threats",
+        "insider_threats": "⚠️ Insider Threats",
         "defense_industrial_base": "🛡️ Defense Industrial Base",
         "federal_cybersecurity": "🔒 Federal Cybersecurity",
     }
@@ -133,7 +135,8 @@ class WebsiteBuilder:
     def _prepare_categories(self) -> List[dict]:
         """Map raw category keys to display-friendly names.
 
-        Excludes Reddit sources from categories (shown in dedicated section).
+        Prioritizes professional news sources, but includes Reddit stories
+        when not enough professional sources exist for a category.
         Excludes stories already used in hero/top stories sections (prevents duplicates).
         """
         categories = []
@@ -141,18 +144,35 @@ class WebsiteBuilder:
             self.grouped_trends.items(), key=lambda x: len(x[1]), reverse=True
         )
         for title, stories in sorted_groups:
-            # Filter out Reddit sources and already-used URLs from category sections
-            filtered_stories = [
+            # Filter out already-used URLs
+            available_stories = [
                 s for s in stories
-                if not self._is_reddit_source(s.get("source", ""))
-                and s.get("url") not in self._used_urls
+                if s.get("url") not in self._used_urls
             ]
 
-            if not filtered_stories:
-                continue  # Skip empty categories after filtering
+            if not available_stories:
+                continue  # Skip empty categories
 
-            display_stories = filtered_stories[: self._category_card_limit]
-            # Track these URLs as used too (for consistency)
+            # Separate professional sources from Reddit
+            professional = [
+                s for s in available_stories
+                if not self._is_reddit_source(s.get("source", ""))
+            ]
+            reddit = [
+                s for s in available_stories
+                if self._is_reddit_source(s.get("source", ""))
+            ]
+
+            # Prioritize professional sources, fill remaining slots with Reddit
+            display_stories = professional[: self._category_card_limit]
+            remaining_slots = self._category_card_limit - len(display_stories)
+            if remaining_slots > 0 and reddit:
+                display_stories.extend(reddit[:remaining_slots])
+
+            if not display_stories:
+                continue  # Skip if still empty
+
+            # Track these URLs as used (prevents showing in Reddit section too)
             for s in display_stories:
                 self._used_urls.add(s.get("url"))
             columns = self._choose_column_count(len(display_stories))
@@ -610,21 +630,29 @@ class WebsiteBuilder:
         return top_stories
 
     def _get_reddit_stories(self) -> List[Dict]:
-        """Get all Reddit stories for the dedicated Reddit section.
+        """Get Reddit stories for the dedicated Reddit section.
 
+        Excludes Reddit stories already used in category sections.
         Returns Reddit stories sorted by score, limited to 12 items.
         """
         reddit_stories = []
         for trend in self.ctx.trends:
             source = trend.get("source", "")
-            if self._is_reddit_source(source):
+            url = trend.get("url", "")
+            # Only include Reddit stories not already used elsewhere
+            if self._is_reddit_source(source) and url not in self._used_urls:
                 reddit_stories.append(trend)
 
         # Sort by score (highest first)
         reddit_stories.sort(key=lambda x: x.get("score", 0), reverse=True)
 
+        # Track these URLs as used
+        result = reddit_stories[:12]
+        for s in result:
+            self._used_urls.add(s.get("url"))
+
         # Limit to 12 stories (3 rows of 4)
-        return reddit_stories[:12]
+        return result
 
     def _is_cmmc_relevant(self, story: Dict) -> bool:
         """Check if a story is relevant to CMMC, compliance, DIB, or federal contracts.

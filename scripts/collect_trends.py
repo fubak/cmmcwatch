@@ -25,6 +25,8 @@ from config import (
     CMMC_RSS_FEEDS,
     DELAYS,
     DIB_KEYWORDS,
+    INSIDER_THREAT_KEYWORDS,
+    INTELLIGENCE_KEYWORDS,
     LIMITS,
     NIST_KEYWORDS,
     TIMEOUTS,
@@ -312,7 +314,16 @@ class TrendCollector:
             logger.warning(f"LinkedIn collection error: {e}")
 
     def _categorize_trend(self, title: str, description: str) -> str:
-        """Categorize a trend based on keywords."""
+        """Categorize a trend based on keywords.
+
+        Categories (in priority order):
+        1. cmmc_program - Core CMMC certification news
+        2. nist_compliance - NIST frameworks, DFARS, FedRAMP
+        3. intelligence_threats - Espionage, nation-state actors, APTs
+        4. insider_threats - Insider risks, employee recruitment, data theft
+        5. defense_industrial_base - DoD contractors, defense contracts
+        6. federal_cybersecurity - General federal cyber news (fallback)
+        """
         content = (title + " " + description).lower()
 
         # Check categories in priority order
@@ -320,6 +331,10 @@ class TrendCollector:
             return "cmmc_program"
         elif any(kw.lower() in content for kw in NIST_KEYWORDS):
             return "nist_compliance"
+        elif any(kw.lower() in content for kw in INTELLIGENCE_KEYWORDS):
+            return "intelligence_threats"
+        elif any(kw.lower() in content for kw in INSIDER_THREAT_KEYWORDS):
+            return "insider_threats"
         elif any(kw.lower() in content for kw in DIB_KEYWORDS):
             return "defense_industrial_base"
         else:

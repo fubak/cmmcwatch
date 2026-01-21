@@ -88,6 +88,14 @@ CMMC_RSS_FEEDS = {
     "Defense One": "https://www.defenseone.com/rss/all/",
     "Defense News": "https://www.defensenews.com/arc/outboundfeeds/rss/?outputType=xml",
     "ExecutiveGov": "https://executivegov.com/feed/",
+    # Intelligence, espionage, and nation-state threat sources
+    "Industrial Cyber": "https://industrialcyber.co/feed/",
+    "IntelNews": "https://intelnews.org/feed/",
+    "CSIS": "https://www.csis.org/rss/analysis/all",
+    "Cyberpress": "https://cyberpress.org/feed/",
+    "Reuters Security": "https://www.reuters.com/arc/outboundfeeds/v3/rss/section/world/cybersecurity/?outputType=xml",
+    # DOJ Press Releases (National Security Division)
+    "DOJ National Security": "https://www.justice.gov/feeds/opa/justice-news.xml",
 }
 
 # ============================================================================
@@ -136,11 +144,90 @@ DIB_KEYWORDS = [
     "dod cybersecurity",
 ]
 
+# Keywords for Intelligence Threats (espionage, counterintelligence, nation-state)
+INTELLIGENCE_KEYWORDS = [
+    # Espionage
+    "espionage",
+    "spy",
+    "spying",
+    "spied",
+    "foreign agent",
+    "foreign intelligence",
+    "counterintelligence",
+    "counterespionage",
+    "intelligence officer",
+    "covert",
+    # Nation-state threat actors
+    "apt",
+    "advanced persistent threat",
+    "state-sponsored",
+    "nation-state",
+    "chinese hackers",
+    "russian hackers",
+    "north korean hackers",
+    "iranian hackers",
+    "gru",
+    "fsb",
+    "mss",
+    "pla",
+    "lazarus group",
+    "apt29",
+    "apt28",
+    "cozy bear",
+    "fancy bear",
+    "volt typhoon",
+    "salt typhoon",
+    # Intelligence agencies
+    "cia",
+    "fbi counterintelligence",
+    "nsa",
+    "dia",
+    "five eyes",
+    # Tradecraft
+    "dead drop",
+    "handler",
+    "asset recruitment",
+    "classified information",
+    "national security",
+    "treason",
+]
+
+# Keywords for Insider Threats
+INSIDER_THREAT_KEYWORDS = [
+    "insider threat",
+    "insider risk",
+    "malicious insider",
+    "trusted insider",
+    "employee threat",
+    "internal threat",
+    "data exfiltration",
+    "unauthorized disclosure",
+    "dark web recruitment",
+    "employee recruitment",
+    "bribery",
+    "compromised employee",
+    "security clearance",
+    "clearance revoked",
+    "access abuse",
+    "privilege abuse",
+    "sabotage",
+    "whistleblower",  # Context matters
+    "leaker",
+    "unauthorized access",
+    "credential theft",
+    "social engineering",
+    "phishing employee",
+    "fake identity",
+    "fraudulent identity",
+    "remote worker fraud",
+    "contractor fraud",
+]
+
 # ============================================================================
 # CMMC LINKEDIN INFLUENCERS
 # ============================================================================
 
-# Key CMMC influencers to track on LinkedIn
+# Key CMMC and national security influencers to track on LinkedIn
 # Reduced to 4 key profiles to stay within Apify free tier ($5/month)
 # Full list available but commented out to reduce API costs
 CMMC_LINKEDIN_PROFILES = [
@@ -153,10 +240,16 @@ CMMC_LINKEDIN_PROFILES = [
     # Amira Armond - Kieri Solutions (C3PAO), cmmcaudit.org editor
     "https://www.linkedin.com/in/amira-armond/",
     # Additional profiles (uncomment if API budget allows):
+    # CMMC Industry Experts:
     # "https://www.linkedin.com/in/mscottedwards/",  # Scott Edwards - Summit 7 CEO
     # "https://www.linkedin.com/in/jacob-evan-horne/",  # Jacob Horne - Summit 7
     # "https://www.linkedin.com/in/danielakridge/",  # Daniel Akridge - "That CMMC Show"
     # "https://www.linkedin.com/in/jacobrhill/",  # Jacob Hill - Summit 7
+    # "https://www.linkedin.com/in/joybeland/",  # Joy Beland - CMMC consultant
+    # Government/National Security:
+    # "https://www.linkedin.com/in/sean-plankey/",  # Sean Plankey - CISA nominee
+    # "https://www.linkedin.com/in/kreaborncisa/",  # Chris Krebs - former CISA director
+    # "https://www.linkedin.com/in/glenn-gerstell/",  # Glenn Gerstell - former NSA General Counsel
 ]
 
 # LinkedIn scraper limits (to stay within Apify free tier)
@@ -228,6 +321,36 @@ CMMC_KEYWORDS = [
     "supply chain security",
     "supply chain risk",
     "scrm",
+    # Intelligence threats (espionage, nation-state)
+    "espionage",
+    "spy",
+    "spying",
+    "foreign agent",
+    "counterintelligence",
+    "nation-state",
+    "state-sponsored",
+    "apt",
+    "advanced persistent threat",
+    "chinese hackers",
+    "russian hackers",
+    "north korean hackers",
+    "gru",
+    "lazarus group",
+    "volt typhoon",
+    "salt typhoon",
+    "cozy bear",
+    "fancy bear",
+    # Insider threats
+    "insider threat",
+    "insider risk",
+    "malicious insider",
+    "data exfiltration",
+    "unauthorized disclosure",
+    "dark web recruitment",
+    "compromised employee",
+    "fake identity",
+    "fraudulent identity",
+    "remote worker fraud",
 ]
 
 # Quality gates
