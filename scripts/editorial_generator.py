@@ -233,11 +233,15 @@ class EditorialGenerator:
         has_ollama = self._check_ollama_available()
         has_api_keys = self.groq_key or self.openrouter_key or self.google_key
         if not has_ollama and not has_api_keys:
-            logger.warning("No AI provider available - skipping editorial generation")
+            logger.error(
+                "ARTICLE GENERATION FAILED: No AI provider available (no API keys configured)"
+            )
             return None
 
         if len(trends) < 3:
-            logger.warning("Insufficient trends for editorial")
+            logger.error(
+                f"ARTICLE GENERATION FAILED: Insufficient trends ({len(trends)} found, need at least 3)"
+            )
             return None
 
         # Check if an article for today already exists (prevent duplicates)
@@ -392,7 +396,9 @@ Respond with ONLY a valid JSON object:
                 data = self._parse_json_response(response)
 
             if not data or not data.get("content"):
-                logger.warning("Failed to parse editorial response")
+                logger.error(
+                    "ARTICLE GENERATION FAILED: AI returned invalid/empty response (no content field)"
+                )
                 return None
 
             # Build article object
@@ -403,8 +409,7 @@ Respond with ONLY a valid JSON object:
             # Validate content completeness - check for required sections
             required_sections = ["The Lead", "Conclusion"]
             missing_sections = [
-                section for section in required_sections
-                if section not in content
+                section for section in required_sections if section not in content
             ]
             if missing_sections:
                 logger.warning(
@@ -2040,7 +2045,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         # Check if we're in an unclosed string (odd number of unescaped quotes)
         # Simple heuristic: if last significant char is not }, ], or "
         stripped = json_str.rstrip()
-        if stripped and stripped[-1] not in "}\"]":
+        if stripped and stripped[-1] not in '}"]':
             # Try to close an open string if we appear to be mid-string
             if open_braces > 0 or open_brackets > 0:
                 # Check if we might be in an unclosed string value
@@ -2217,9 +2222,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                 missing = [s for s in required_sections if s not in content]
 
                 if missing:
-                    logger.warning(
-                        f"Article {article_id} missing sections: {missing}"
-                    )
+                    logger.warning(f"Article {article_id} missing sections: {missing}")
                     results["incomplete"].append(article_id)
                 else:
                     results["complete"].append(article_id)
@@ -2363,9 +2366,7 @@ Respond with ONLY a valid JSON object:
                 html = self._generate_article_html(article, tokens, related_articles)
                 (article_dir / "index.html").write_text(html, encoding="utf-8")
 
-                logger.info(
-                    f"Fixed article: {article_id} ({article.word_count} words)"
-                )
+                logger.info(f"Fixed article: {article_id} ({article.word_count} words)")
                 fixed_count += 1
 
             except Exception as e:
@@ -2373,6 +2374,54 @@ Respond with ONLY a valid JSON object:
 
         logger.info(f"Fixed {fixed_count} of {len(incomplete)} incomplete articles")
         return fixed_count
+
+    def cleanup_orphaned_articles(self, dry_run: bool = False) -> List[str]:
+        """
+        Find and remove orphaned article directories (metadata.json without index.html).
+
+        These orphans occur when article generation fails partway through, or when
+        the cache contains stale metadata from failed runs.
+
+        Args:
+            dry_run: If True, only report orphans without deleting them
+
+        Returns:
+            List of paths that were (or would be) removed
+        """
+        orphans = []
+
+        if not self.articles_dir.exists():
+            return orphans
+
+        for metadata_file in self.articles_dir.rglob("metadata.json"):
+            article_dir = metadata_file.parent
+            index_file = article_dir / "index.html"
+
+            if not index_file.exists():
+                orphans.append(str(article_dir))
+
+                if dry_run:
+                    logger.warning(
+                        f"ORPHAN (dry-run): {article_dir} - has metadata.json but no index.html"
+                    )
+                else:
+                    logger.warning(
+                        f"REMOVING ORPHAN: {article_dir} - has metadata.json but no index.html"
+                    )
+                    try:
+                        # Remove the entire article directory
+                        import shutil
+
+                        shutil.rmtree(article_dir)
+                    except Exception as e:
+                        logger.error(f"Failed to remove orphan {article_dir}: {e}")
+
+        if orphans:
+            logger.info(f"Found {len(orphans)} orphaned article(s)")
+        else:
+            logger.info("No orphaned articles found")
+
+        return orphans
 
     def regenerate_all_article_pages(self, design: Optional[Dict] = None) -> int:
         """
@@ -3583,15 +3632,39 @@ if __name__ == "__main__":
         action="store_true",
         help="Fix truncated articles by regenerating their content using AI",
     )
+    parser.add_argument(
+        "--cleanup-orphans",
+        action="store_true",
+        help="Remove orphaned article directories (metadata.json without index.html)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="With --cleanup-orphans, only report orphans without deleting",
+    )
 
     args = parser.parse_args()
 
     gen = EditorialGenerator()
 
-    if args.regenerate_html:
+    if args.cleanup_orphans:
+        orphans = gen.cleanup_orphaned_articles(dry_run=args.dry_run)
+        if args.dry_run:
+            print(f"Found {len(orphans)} orphaned article(s) (dry-run, not deleted)")
+        else:
+            print(f"Removed {len(orphans)} orphaned article(s)")
+        # Also regenerate the index after cleanup
+        if not args.dry_run and orphans:
+            gen.generate_articles_index()
+            print("Regenerated articles index")
+    elif args.regenerate_html:
+        # Clean up orphans before regenerating HTML
+        gen.cleanup_orphaned_articles(dry_run=False)
         count = gen.regenerate_all_article_pages()
         print(f"Regenerated {count} article pages")
     elif args.regenerate_index:
+        # Clean up orphans before regenerating index
+        gen.cleanup_orphaned_articles(dry_run=False)
         gen.generate_articles_index()
         print("Regenerated articles index")
     elif args.validate:

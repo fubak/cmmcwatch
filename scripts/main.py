@@ -224,12 +224,20 @@ class CMMCWatchPipeline:
                 keywords=self.keywords,
                 design=self.design,
             )
-            logger.info("Editorial article generated")
 
-            # Generate articles index page
+            if self.editorial_article:
+                logger.info(
+                    f"Editorial article generated: {self.editorial_article.title}"
+                )
+            else:
+                logger.error(
+                    "Editorial article generation returned None - check logs above for details"
+                )
+
+            # Generate articles index page (always regenerate to keep index current)
             self.editorial_generator.generate_articles_index(design=self.design)
         except Exception as e:
-            logger.warning(f"Editorial generation failed: {e}")
+            logger.error(f"Editorial generation failed with exception: {e}")
             self.editorial_article = None
 
     def _build_website(self):

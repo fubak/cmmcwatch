@@ -72,6 +72,11 @@ jobs:
           rm -f data/*.json 2>/dev/null || true
           echo "Cleared stale data files"
 
+      - name: Clean up orphaned articles (metadata without HTML)
+        run: |
+          cd scripts
+          python editorial_generator.py --cleanup-orphans || echo "Cleanup complete"
+
       - name: Regenerate article HTML (apply latest navigation/footer)
         run: |
           cd scripts
