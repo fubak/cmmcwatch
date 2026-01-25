@@ -2233,6 +2233,147 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         )
         return results
 
+    def fix_truncated_articles(self, design: Optional[Dict] = None) -> int:
+        """
+        Attempt to fix truncated/incomplete articles by regenerating content.
+
+        For each incomplete article, this re-runs the AI generation using
+        the stored top_stories as context, then updates the metadata and HTML.
+
+        Args:
+            design: Optional design spec for styling
+
+        Returns:
+            Number of articles fixed
+        """
+        # First, find incomplete articles
+        validation = self.validate_articles()
+        incomplete = validation.get("incomplete", [])
+
+        if not incomplete:
+            logger.info("No incomplete articles found")
+            return 0
+
+        fixed_count = 0
+        tokens = self._get_design_tokens(design)
+
+        for article_id in incomplete:
+            try:
+                # Parse date/slug from article_id (format: "YYYY-MM-DD/slug")
+                date_str, slug = article_id.split("/", 1)
+                date_parts = date_str.split("-")
+
+                # Load existing metadata
+                article_dir = (
+                    self.articles_dir
+                    / date_parts[0]
+                    / date_parts[1]
+                    / date_parts[2]
+                    / slug
+                )
+                metadata_file = article_dir / "metadata.json"
+
+                if not metadata_file.exists():
+                    logger.warning(f"Metadata file not found: {metadata_file}")
+                    continue
+
+                with open(metadata_file) as f:
+                    metadata = json.load(f)
+
+                logger.info(f"Attempting to fix: {article_id}")
+
+                # Build a focused prompt using the existing top_stories
+                top_stories = metadata.get("top_stories", [])
+                existing_title = metadata.get("title", "")
+                existing_mood = metadata.get("mood", "informative")
+
+                if not top_stories:
+                    logger.warning(f"No top_stories in metadata for {article_id}")
+                    continue
+
+                # Create a regeneration prompt
+                stories_text = "\n".join(f"- {story}" for story in top_stories)
+                prompt = f"""You previously started writing an editorial article but it was truncated.
+Please write a COMPLETE article based on these source stories:
+
+{stories_text}
+
+The article title is: "{existing_title}"
+The mood/tone should be: {existing_mood}
+
+IMPORTANT: You MUST include ALL of the following sections:
+1. The Lead (1 paragraph) - Hook and central thesis
+2. What People Think (1-2 paragraphs) - Conventional wisdom
+3. What's Actually Happening (2-3 paragraphs) - Your deeper analysis
+4. The Hidden Tradeoffs (1-2 paragraphs) - Costs not being discussed
+5. The Best Counterarguments (1 paragraph) - Strongest objection
+6. What This Means Next (1-2 paragraphs) - Concrete predictions
+7. Practical Framework (1 paragraph) - Actionable mental model
+8. Conclusion (1 paragraph) - Circle back to hook
+
+Use HTML formatting: <h2> for section headers, <p> for paragraphs, <strong> for emphasis.
+
+Respond with ONLY a valid JSON object:
+{{
+  "content": "Full article content with HTML formatting including ALL 8 sections ending with Conclusion"
+}}"""
+
+                # Call AI with high token limit
+                response = self._call_groq(prompt, max_tokens=8000)
+                data = self._parse_json_response(response)
+
+                if not data or not data.get("content"):
+                    logger.warning(f"Failed to regenerate content for {article_id}")
+                    continue
+
+                new_content = data.get("content", "")
+
+                # Validate the new content has required sections
+                if "Conclusion" not in new_content:
+                    logger.warning(
+                        f"Regenerated content still missing Conclusion for {article_id}"
+                    )
+                    continue
+
+                # Update metadata
+                metadata["content"] = new_content
+                metadata["word_count"] = len(new_content.split())
+
+                # Save updated metadata
+                with open(metadata_file, "w") as f:
+                    json.dump(metadata, f, indent=2)
+
+                # Reconstruct article and regenerate HTML
+                article = EditorialArticle(
+                    title=metadata.get("title", ""),
+                    slug=metadata.get("slug", ""),
+                    date=metadata.get("date", ""),
+                    summary=metadata.get("summary", ""),
+                    content=new_content,
+                    word_count=metadata.get("word_count", 0),
+                    top_stories=metadata.get("top_stories", []),
+                    keywords=metadata.get("keywords", []),
+                    mood=metadata.get("mood", "informative"),
+                    url=metadata.get("url", ""),
+                )
+
+                related_articles = self._get_related_articles(
+                    article.date, article.slug, limit=3
+                )
+                html = self._generate_article_html(article, tokens, related_articles)
+                (article_dir / "index.html").write_text(html, encoding="utf-8")
+
+                logger.info(
+                    f"Fixed article: {article_id} ({article.word_count} words)"
+                )
+                fixed_count += 1
+
+            except Exception as e:
+                logger.error(f"Failed to fix {article_id}: {e}")
+
+        logger.info(f"Fixed {fixed_count} of {len(incomplete)} incomplete articles")
+        return fixed_count
+
     def regenerate_all_article_pages(self, design: Optional[Dict] = None) -> int:
         """
         Regenerate HTML pages for all existing articles from their metadata.
@@ -3437,6 +3578,11 @@ if __name__ == "__main__":
         action="store_true",
         help="Validate all articles for completeness (checks for required sections)",
     )
+    parser.add_argument(
+        "--fix",
+        action="store_true",
+        help="Fix truncated articles by regenerating their content using AI",
+    )
 
     args = parser.parse_args()
 
@@ -3457,5 +3603,13 @@ if __name__ == "__main__":
             print("\nIncomplete articles:")
             for article in results["incomplete"]:
                 print(f"  - {article}")
+    elif args.fix:
+        print("Checking for truncated articles...")
+        fixed = gen.fix_truncated_articles()
+        if fixed > 0:
+            print(f"\nFixed {fixed} truncated article(s)")
+            print("Run --validate again to verify")
+        else:
+            print("No truncated articles found or none could be fixed")
     else:
         parser.print_help()
