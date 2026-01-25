@@ -378,8 +378,9 @@ Respond with ONLY a valid JSON object:
 
         try:
             # Try structured output first (guaranteed valid JSON from Gemini)
+            # Use 8000 tokens to prevent truncation of longer articles
             data = self._call_google_ai_structured(
-                prompt, EDITORIAL_SCHEMA, max_tokens=4000
+                prompt, EDITORIAL_SCHEMA, max_tokens=8000
             )
 
             # Fall back to regular LLM call + JSON parsing if structured output fails
@@ -387,7 +388,7 @@ Respond with ONLY a valid JSON object:
                 logger.info(
                     "Structured output unavailable, falling back to regular LLM call"
                 )
-                response = self._call_groq(prompt, max_tokens=4000)
+                response = self._call_groq(prompt, max_tokens=8000)
                 data = self._parse_json_response(response)
 
             if not data or not data.get("content"):
@@ -398,6 +399,17 @@ Respond with ONLY a valid JSON object:
             today = datetime.now().strftime("%Y-%m-%d")
             slug = self._sanitize_slug(data.get("slug", "daily-editorial"))
             content = data.get("content", "")
+
+            # Validate content completeness - check for required sections
+            required_sections = ["The Lead", "Conclusion"]
+            missing_sections = [
+                section for section in required_sections
+                if section not in content
+            ]
+            if missing_sections:
+                logger.warning(
+                    f"Article content may be truncated - missing sections: {missing_sections}"
+                )
 
             article = EditorialArticle(
                 title=data.get("title", "Today's Analysis"),
@@ -2020,6 +2032,51 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         json_str = re.sub(r",\s*}", "}", json_str)
         json_str = re.sub(r",\s*]", "]", json_str)
 
+        # Handle truncated JSON by closing open structures
+        # Count unmatched brackets
+        open_braces = json_str.count("{") - json_str.count("}")
+        open_brackets = json_str.count("[") - json_str.count("]")
+
+        # Check if we're in an unclosed string (odd number of unescaped quotes)
+        # Simple heuristic: if last significant char is not }, ], or "
+        stripped = json_str.rstrip()
+        if stripped and stripped[-1] not in "}\"]":
+            # Try to close an open string if we appear to be mid-string
+            if open_braces > 0 or open_brackets > 0:
+                # Check if we might be in an unclosed string value
+                # by looking for an odd number of quotes
+                quote_count = 0
+                i = len(stripped) - 1
+                while i >= 0:
+                    if stripped[i] == '"' and (i == 0 or stripped[i - 1] != "\\"):
+                        quote_count += 1
+                        if quote_count == 1:
+                            break
+                    i -= 1
+                if quote_count % 2 == 1:
+                    # We're in an unclosed string, close it
+                    json_str = stripped + '"'
+
+        # Re-count after potential string closure
+        stripped = json_str.rstrip()
+        open_braces = json_str.count("{") - json_str.count("}")
+        open_brackets = json_str.count("[") - json_str.count("]")
+
+        # Close any remaining open structures
+        if open_brackets > 0:
+            json_str = json_str.rstrip()
+            # Remove trailing comma if present
+            if json_str.endswith(","):
+                json_str = json_str[:-1]
+            json_str += "]" * open_brackets
+
+        if open_braces > 0:
+            json_str = json_str.rstrip()
+            # Remove trailing comma if present
+            if json_str.endswith(","):
+                json_str = json_str[:-1]
+            json_str += "}" * open_braces
+
         return json_str
 
     def _parse_json_response(self, response: Optional[str]) -> Optional[Dict]:
@@ -2121,6 +2178,60 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         # Sort by date descending
         articles.sort(key=lambda x: x.get("date", ""), reverse=True)
         return articles
+
+    def validate_articles(self) -> Dict[str, List[str]]:
+        """
+        Validate all existing articles for completeness.
+
+        Checks that each article has all required sections.
+
+        Returns:
+            Dict with 'complete' and 'incomplete' lists of article slugs
+        """
+        required_sections = [
+            "The Lead",
+            "What People Think",
+            "What's Actually Happening",
+            "The Hidden Tradeoffs",
+            "The Best Counterarguments",
+            "What This Means Next",
+            "Practical Framework",
+            "Conclusion",
+        ]
+
+        results = {"complete": [], "incomplete": []}
+
+        if not self.articles_dir.exists():
+            return results
+
+        for metadata_file in self.articles_dir.rglob("metadata.json"):
+            try:
+                with open(metadata_file) as f:
+                    metadata = json.load(f)
+
+                content = metadata.get("content", "")
+                slug = metadata.get("slug", "unknown")
+                date = metadata.get("date", "unknown")
+                article_id = f"{date}/{slug}"
+
+                missing = [s for s in required_sections if s not in content]
+
+                if missing:
+                    logger.warning(
+                        f"Article {article_id} missing sections: {missing}"
+                    )
+                    results["incomplete"].append(article_id)
+                else:
+                    results["complete"].append(article_id)
+
+            except Exception as e:
+                logger.error(f"Failed to validate {metadata_file}: {e}")
+
+        logger.info(
+            f"Validation complete: {len(results['complete'])} complete, "
+            f"{len(results['incomplete'])} incomplete"
+        )
+        return results
 
     def regenerate_all_article_pages(self, design: Optional[Dict] = None) -> int:
         """
@@ -3321,6 +3432,11 @@ if __name__ == "__main__":
         action="store_true",
         help="Regenerate the articles index page",
     )
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Validate all articles for completeness (checks for required sections)",
+    )
 
     args = parser.parse_args()
 
@@ -3332,5 +3448,14 @@ if __name__ == "__main__":
     elif args.regenerate_index:
         gen.generate_articles_index()
         print("Regenerated articles index")
+    elif args.validate:
+        results = gen.validate_articles()
+        print(f"\nArticle Validation Results:")
+        print(f"  Complete: {len(results['complete'])}")
+        print(f"  Incomplete: {len(results['incomplete'])}")
+        if results["incomplete"]:
+            print("\nIncomplete articles:")
+            for article in results["incomplete"]:
+                print(f"  - {article}")
     else:
         parser.print_help()
