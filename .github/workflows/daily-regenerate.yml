@@ -99,6 +99,18 @@ jobs:
             python main.py
           fi
 
+      - name: Fix truncated articles
+        env:
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          cd scripts
+          echo "Checking for truncated articles..."
+          python editorial_generator.py --validate
+          echo "Fixing truncated articles..."
+          python editorial_generator.py --fix || echo "Fix completed with some errors"
+
       - name: Cache build artifacts
         uses: actions/cache@v4
         with:
