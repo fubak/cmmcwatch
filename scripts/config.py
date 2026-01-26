@@ -96,6 +96,11 @@ CMMC_RSS_FEEDS = {
     "Reuters Security": "https://www.reuters.com/arc/outboundfeeds/v3/rss/section/world/cybersecurity/?outputType=xml",
     # DOJ Press Releases (National Security Division)
     "DOJ National Security": "https://www.justice.gov/feeds/opa/justice-news.xml",
+    # NIST CSRC (official NIST 800-171 updates)
+    "NIST CSRC": "https://csrc.nist.gov/csrc/media/feeds/metafeeds/all.rss",
+    # CMMC-specific resources
+    "CMMC Audit Blog": "https://cmmcaudit.org/feed/",
+    "Cyber-AB News": "https://cyberab.org/feed/",
 }
 
 # ============================================================================
