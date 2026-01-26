@@ -79,6 +79,11 @@ class CMMCWatchPipeline:
         logger.info(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         logger.info("=" * 60)
 
+        # Validate environment variables
+        if not self._validate_environment():
+            logger.error("Environment validation failed. Aborting.")
+            return False
+
         try:
             # Step 1: Archive previous
             if archive:
@@ -172,6 +177,49 @@ class CMMCWatchPipeline:
                 logger.info(f"Loaded environment from {env_file}")
         except ImportError:
             pass
+
+    def _validate_environment(self) -> bool:
+        """
+        Validate that required environment variables are set.
+        
+        Returns:
+            True if all required variables are set, False otherwise
+        """
+        # At least one AI key is required
+        ai_keys = [
+            os.getenv("GROQ_API_KEY"),
+            os.getenv("OPENROUTER_API_KEY"),
+            os.getenv("GOOGLE_AI_API_KEY"),
+        ]
+        
+        if not any(ai_keys):
+            logger.error("Missing AI API key!")
+            logger.error("At least one of these must be set:")
+            logger.error("  - GROQ_API_KEY (recommended)")
+            logger.error("  - OPENROUTER_API_KEY")
+            logger.error("  - GOOGLE_AI_API_KEY")
+            return False
+        
+        # Log which AI service will be used
+        if os.getenv("GROQ_API_KEY"):
+            logger.info("✓ Using Groq for AI generation")
+        elif os.getenv("OPENROUTER_API_KEY"):
+            logger.info("✓ Using OpenRouter for AI generation")
+        elif os.getenv("GOOGLE_AI_API_KEY"):
+            logger.info("✓ Using Google AI for AI generation")
+        
+        # Image keys are recommended but not required
+        if not any([os.getenv("PEXELS_API_KEY"), os.getenv("UNSPLASH_ACCESS_KEY")]):
+            logger.warning("⚠ No image API keys set - images may be limited")
+            logger.warning("  Consider adding PEXELS_API_KEY or UNSPLASH_ACCESS_KEY")
+        
+        # LinkedIn is optional
+        if not os.getenv("APIFY_API_KEY"):
+            logger.info("ℹ LinkedIn scraping disabled (APIFY_API_KEY not set)")
+        else:
+            logger.info("✓ LinkedIn scraping enabled via Apify")
+        
+        return True
 
     def _generate_design(self) -> dict:
         """Generate or load design specification."""

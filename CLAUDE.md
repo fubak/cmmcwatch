@@ -2,11 +2,11 @@
 
 Claude Code guidance for CMMC Watch - Daily CMMC/NIST compliance news aggregator.
 
-**Live:** https://cmmcwatch.com
+**Live:** https://cmmcwatch.com | **Docs:** See README.md, CONTRIBUTING.md, ANALYSIS.md
 
 ## Commands
 
-**Run:** `cd scripts && python main.py` | **No archive:** `--no-archive` | **Dry run:** `--dry-run`
+**Run:** `cd scripts && python main.py` | **No archive:** `--no-archive` | **Dry run:** `--dry-run` | **Test:** `pytest` | **Format:** `ruff format scripts/`
 
 ## Environment Variables
 

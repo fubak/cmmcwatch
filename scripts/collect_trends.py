@@ -18,6 +18,12 @@ from typing import Dict, List, Optional
 import feedparser
 import requests
 from bs4 import BeautifulSoup
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 from config import (
     CMMC_CORE_KEYWORDS,
     CMMC_KEYWORDS,
@@ -169,6 +175,18 @@ class TrendCollector:
 
         logger.info(f"AI validation complete: {len(self.trends)} stories remaining")
 
+    @retry(
+        retry=retry_if_exception_type((requests.RequestException, requests.Timeout)),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        reraise=True,
+    )
+    def _fetch_rss_with_retry(self, feed_url: str, timeout: int = 15) -> requests.Response:
+        """Fetch RSS feed with retry logic."""
+        response = self.session.get(feed_url, timeout=timeout)
+        response.raise_for_status()
+        return response
+
     def _collect_rss_feeds(self):
         """Collect from CMMC-related RSS feeds."""
         logger.info("Fetching from CMMC RSS feeds...")
@@ -176,8 +194,7 @@ class TrendCollector:
 
         for feed_name, feed_url in CMMC_RSS_FEEDS.items():
             try:
-                response = self.session.get(feed_url, timeout=TIMEOUTS.get("rss", 15))
-                response.raise_for_status()
+                response = self._fetch_rss_with_retry(feed_url, timeout=TIMEOUTS.get("rss", 15))
                 feed = feedparser.parse(response.content)
 
                 for entry in feed.entries[: LIMITS.get("rss", 20)]:
