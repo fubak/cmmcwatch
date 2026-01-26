@@ -356,14 +356,43 @@ class TrendCollector:
         return min(score, 3.0)  # Cap at 3.0
 
     def _clean_html(self, text: str) -> str:
-        """Remove HTML tags from text."""
+        """Remove HTML tags from text and apply smart truncation."""
         if not text:
             return ""
-        if "<" not in text:
-            return re.sub(r"\s+", " ", text.strip())[:500]
-        soup = BeautifulSoup(text, "html.parser")
-        clean = soup.get_text(separator=" ").strip()
-        return re.sub(r"\s+", " ", clean)[:500]
+        
+        # Clean HTML if present
+        if "<" in text:
+            soup = BeautifulSoup(text, "html.parser")
+            clean = soup.get_text(separator=" ").strip()
+        else:
+            clean = text.strip()
+        
+        # Normalize whitespace
+        clean = re.sub(r"\s+", " ", clean)
+        
+        # Smart truncation at sentence boundaries (up to 1500 chars)
+        max_length = 1500
+        if len(clean) > max_length:
+            truncated = clean[:max_length]
+            # Find last sentence boundary
+            last_period = max(
+                truncated.rfind('. '),
+                truncated.rfind('! '),
+                truncated.rfind('? ')
+            )
+            
+            # If found a good sentence boundary with reasonable content
+            if last_period > 300:
+                return clean[:last_period + 1]
+            else:
+                # Fall back to word boundary
+                last_space = truncated.rfind(' ')
+                if last_space > 200:
+                    return clean[:last_space] + "..."
+                else:
+                    return clean[:max_length] + "..."
+        
+        return clean
 
     def _extract_timestamp(self, entry) -> Optional[datetime]:
         """Extract publication timestamp from RSS entry."""
