@@ -135,8 +135,9 @@ class WebsiteBuilder:
     def _prepare_categories(self) -> List[dict]:
         """Map raw category keys to display-friendly names.
 
-        Prioritizes professional news sources, but includes Reddit stories
-        when not enough professional sources exist for a category.
+        Only includes professional news sources in category sections.
+        Reddit posts are excluded here - they appear in the dedicated
+        "Reddit Community Discussions" section at the bottom of the page.
         Excludes stories already used in hero/top stories sections (prevents duplicates).
         """
         categories = []
@@ -144,35 +145,24 @@ class WebsiteBuilder:
             self.grouped_trends.items(), key=lambda x: len(x[1]), reverse=True
         )
         for title, stories in sorted_groups:
-            # Filter out already-used URLs
+            # Filter out already-used URLs and Reddit sources
+            # Reddit posts only appear in the dedicated Reddit section
             available_stories = [
                 s for s in stories
                 if s.get("url") not in self._used_urls
+                and not self._is_reddit_source(s.get("source", ""))
             ]
 
             if not available_stories:
                 continue  # Skip empty categories
 
-            # Separate professional sources from Reddit
-            professional = [
-                s for s in available_stories
-                if not self._is_reddit_source(s.get("source", ""))
-            ]
-            reddit = [
-                s for s in available_stories
-                if self._is_reddit_source(s.get("source", ""))
-            ]
-
-            # Prioritize professional sources, fill remaining slots with Reddit
-            display_stories = professional[: self._category_card_limit]
-            remaining_slots = self._category_card_limit - len(display_stories)
-            if remaining_slots > 0 and reddit:
-                display_stories.extend(reddit[:remaining_slots])
+            # Only show professional news sources in category sections
+            display_stories = available_stories[: self._category_card_limit]
 
             if not display_stories:
                 continue  # Skip if still empty
 
-            # Track these URLs as used (prevents showing in Reddit section too)
+            # Track these URLs as used (prevents duplicates elsewhere)
             for s in display_stories:
                 self._used_urls.add(s.get("url"))
             columns = self._choose_column_count(len(display_stories))
