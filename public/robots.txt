@@ -51,5 +51,7 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-# Sitemap location
+# Sitemap locations
+Sitemap: https://cmmcwatch.com/sitemap.xml
 Sitemap: https://cmmcwatch.com/sitemap_main.xml
+Sitemap: https://cmmcwatch.com/sitemap_news.xml

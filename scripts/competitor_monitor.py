@@ -112,7 +112,7 @@ class CompetitorMonitor:
         "white_case": {
             "name": "White & Case",
             "type": "scrape",
-            "url": "https://www.whitecase.com/insight-our-thinking?topics=1161",
+            "url": "https://www.whitecase.com/insights?topic=cybersecurity",
             "filter_keywords": ["cmmc", "cybersecurity", "defense", "dfars", "nist"],
         },
         "nist_csf": {

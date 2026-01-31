@@ -231,28 +231,42 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-# Sitemap location
+# Sitemap locations
+Sitemap: {base_url}/sitemap.xml
 Sitemap: {base_url}/sitemap_main.xml
+Sitemap: {base_url}/sitemap_news.xml
 """
 
 
-def generate_sitemap_index(base_url: str = "https://cmmcwatch.com") -> str:
+def generate_sitemap_index(
+    base_url: str = "https://cmmcwatch.com", include_news: bool = True
+) -> str:
     """
-    Generate a sitemap index pointing to the main sitemap.
+    Generate a sitemap index pointing to all sitemaps.
 
     Args:
         base_url: Base URL of the website
+        include_news: Whether to include the Google News sitemap
 
     Returns:
         XML string for sitemap index
     """
     today = datetime.now().strftime("%Y-%m-%d")
+
+    news_sitemap = ""
+    if include_news:
+        news_sitemap = f"""
+  <sitemap>
+    <loc>{base_url}/sitemap_news.xml</loc>
+    <lastmod>{today}</lastmod>
+  </sitemap>"""
+
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
     <loc>{base_url}/sitemap_main.xml</loc>
     <lastmod>{today}</lastmod>
-  </sitemap>
+  </sitemap>{news_sitemap}
 </sitemapindex>
 """
 
@@ -263,7 +277,7 @@ def save_sitemap(
     extra_urls: Optional[List[str]] = None,
 ):
     """
-    Save sitemap.xml and robots.txt to the public directory.
+    Save sitemap.xml, news sitemap, and robots.txt to the public directory.
 
     Args:
         public_dir: Path to the public output directory
@@ -280,8 +294,16 @@ def save_sitemap(
     main_sitemap_path.write_text(sitemap_content)
     print(f"  Created {main_sitemap_path}")
 
-    # Also save as sitemap.xml (sitemap index pointing to main)
-    sitemap_index_content = generate_sitemap_index(base_url=base_url)
+    # Generate and save Google News sitemap
+    news_sitemap_content = generate_news_sitemap(
+        base_url=base_url, public_dir=public_dir
+    )
+    news_sitemap_path = public_dir / "sitemap_news.xml"
+    news_sitemap_path.write_text(news_sitemap_content)
+    print(f"  Created {news_sitemap_path} (Google News)")
+
+    # Also save as sitemap.xml (sitemap index pointing to all sitemaps)
+    sitemap_index_content = generate_sitemap_index(base_url=base_url, include_news=True)
     sitemap_path = public_dir / "sitemap.xml"
     sitemap_path.write_text(sitemap_index_content)
     print(f"  Created {sitemap_path} (index)")
@@ -299,6 +321,106 @@ def save_sitemap(
     print(f"  Created {robots_path}")
 
     print(f"SEO assets saved to {public_dir}")
+
+
+def generate_news_sitemap(
+    base_url: str = "https://cmmcwatch.com",
+    public_dir: Optional[Path] = None,
+    max_age_days: int = 7,
+) -> str:
+    """
+    Generate Google News sitemap for recent articles.
+
+    Google News sitemaps have specific requirements:
+    - Only include articles from the last 2 days for indexing priority
+    - But we include up to 7 days for discovery during gaps
+    - Must include news:publication, news:title, news:publication_date
+    - Optional: news:keywords
+
+    Args:
+        base_url: Base URL of the website
+        public_dir: Path to public directory to scan for articles
+        max_age_days: Maximum age of articles to include (default 7)
+
+    Returns:
+        XML string for news sitemap
+    """
+    from datetime import timedelta
+
+    # Create root element with namespaces
+    urlset = ET.Element("urlset")
+    urlset.set("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9")
+    urlset.set("xmlns:news", "http://www.google.com/schemas/sitemap-news/0.9")
+
+    today = datetime.now()
+    cutoff_date = (today - timedelta(days=max_age_days)).strftime("%Y-%m-%d")
+
+    articles_found = 0
+
+    # Discover articles from /articles directory
+    if public_dir:
+        articles_dir = public_dir / "articles"
+        if articles_dir.exists():
+            for metadata_file in articles_dir.rglob("metadata.json"):
+                try:
+                    with open(metadata_file) as f:
+                        article_meta = json.load(f)
+
+                    article_url = article_meta.get("url", "")
+                    article_date = article_meta.get("date", "")
+                    article_title = article_meta.get("title", "")
+                    article_keywords = article_meta.get("keywords", [])
+
+                    # Only include articles from last 2 days
+                    if not article_date or article_date < cutoff_date:
+                        continue
+
+                    if not article_url or not article_title:
+                        continue
+
+                    full_url = f"{base_url}{article_url}"
+
+                    # Create URL entry
+                    url_elem = ET.SubElement(urlset, "url")
+                    ET.SubElement(url_elem, "loc").text = full_url
+
+                    # Create news:news element
+                    news_elem = ET.SubElement(url_elem, "news:news")
+
+                    # Publication info
+                    pub_elem = ET.SubElement(news_elem, "news:publication")
+                    ET.SubElement(pub_elem, "news:name").text = "CMMC Watch"
+                    ET.SubElement(pub_elem, "news:language").text = "en"
+
+                    # Publication date (ISO 8601 format)
+                    ET.SubElement(news_elem, "news:publication_date").text = (
+                        f"{article_date}T06:00:00Z"
+                    )
+
+                    # Title
+                    ET.SubElement(news_elem, "news:title").text = article_title
+
+                    # Keywords (optional, max 10)
+                    if article_keywords:
+                        keywords_str = ", ".join(article_keywords[:10])
+                        ET.SubElement(news_elem, "news:keywords").text = keywords_str
+
+                    articles_found += 1
+
+                except Exception:
+                    continue
+
+    # Add proper indentation
+    ET.indent(urlset, space="  ")
+
+    # Convert to string with declaration
+    xml_string = ET.tostring(urlset, encoding="unicode", method="xml")
+
+    print(
+        f"  Google News sitemap: {articles_found} articles from last {max_age_days} days"
+    )
+
+    return f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_string}'
 
 
 def count_urls_in_sitemap(sitemap_path: Path) -> int:
