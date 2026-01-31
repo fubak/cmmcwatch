@@ -148,7 +148,8 @@ class WebsiteBuilder:
             # Filter out already-used URLs and Reddit sources
             # Reddit posts only appear in the dedicated Reddit section
             available_stories = [
-                s for s in stories
+                s
+                for s in stories
                 if s.get("url") not in self._used_urls
                 and not self._is_reddit_source(s.get("source", ""))
             ]
@@ -931,10 +932,10 @@ class WebsiteBuilder:
     def _build_structured_data(self) -> str:
         """Generate comprehensive JSON-LD structured data for SEO and LLMs."""
 
-        # Organization schema - establishes CMMC Watch as a publisher entity
+        # Organization schema - NewsMediaOrganization for Google News eligibility
         organization_schema = {
             "@context": "https://schema.org",
-            "@type": "Organization",
+            "@type": "NewsMediaOrganization",
             "@id": "https://cmmcwatch.info/#organization",
             "name": "CMMC Watch",
             "alternateName": "CMMCWatch",
@@ -969,6 +970,9 @@ class WebsiteBuilder:
                 "FedRAMP",
                 "DFARS",
             ],
+            "publishingPrinciples": "https://cmmcwatch.com/about",
+            "masthead": "https://cmmcwatch.com/about",
+            "actionableFeedbackPolicy": "https://github.com/bshannon/cmmcwatch/issues",
         }
 
         # Base WebSite schema

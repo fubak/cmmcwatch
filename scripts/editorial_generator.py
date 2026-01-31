@@ -783,6 +783,9 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
     <meta name="twitter:description" content="{summary_escaped}">
     <meta name="twitter:image" content="https://cmmcwatch.com/og-image.png">
 
+    <!-- Google News -->
+    <meta name="news_keywords" content="{', '.join(article.keywords[:5]) if article.keywords else 'CMMC, NIST 800-171, cybersecurity, compliance'}">
+
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {{
