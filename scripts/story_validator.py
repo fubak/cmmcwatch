@@ -96,9 +96,7 @@ class StoryValidator:
         self.google_key = google_key or os.getenv("GOOGLE_AI_API_KEY")
         self.session = requests.Session()
 
-    def validate_stories(
-        self, stories: List[Dict], use_ai: bool = True
-    ) -> Tuple[List[Dict], List[Dict]]:
+    def validate_stories(self, stories: List[Dict], use_ai: bool = True) -> Tuple[List[Dict], List[Dict]]:
         """
         Validate all stories and return filtered list.
 
@@ -150,6 +148,11 @@ class StoryValidator:
         rejected = []
 
         for story in stories:
+            # LinkedIn influencer posts are curated — skip pattern filtering
+            if story.get("source") == "cmmc_linkedin":
+                valid.append(story)
+                continue
+
             title = (story.get("title") or "").lower()
             description = (story.get("description") or "").lower()
             content = f"{title} {description}"
@@ -232,9 +235,7 @@ class StoryValidator:
         """Check if any AI API keys are available."""
         return bool(self.groq_key or self.openrouter_key or self.google_key)
 
-    def _ai_validate(
-        self, stories: List[Dict]
-    ) -> Tuple[List[Dict], List[Dict], int]:
+    def _ai_validate(self, stories: List[Dict]) -> Tuple[List[Dict], List[Dict], int]:
         """
         Use AI to validate stories for relevance and correct categories.
 
@@ -265,7 +266,8 @@ class StoryValidator:
         corrections = 0
 
         for story, result in zip(stories, validation_results):
-            if not result.is_relevant:
+            is_linkedin = story.get("source") == "cmmc_linkedin"
+            if not result.is_relevant and not is_linkedin:
                 story["rejection_reason"] = result.rejection_reason or "AI marked as irrelevant"
                 rejected.append(story)
             else:
@@ -284,7 +286,7 @@ class StoryValidator:
         story_list = []
         for i, story in enumerate(stories):
             story_list.append(
-                f"{i+1}. Title: {story.get('title', '')[:100]}\n"
+                f"{i + 1}. Title: {story.get('title', '')[:100]}\n"
                 f"   Description: {(story.get('description') or '')[:150]}\n"
                 f"   Current Category: {story.get('category', 'unknown')}\n"
                 f"   Source: {story.get('source', 'unknown')}"
@@ -384,12 +386,7 @@ Example:
                 timeout=60,
             )
             response.raise_for_status()
-            result = (
-                response.json()
-                .get("choices", [{}])[0]
-                .get("message", {})
-                .get("content")
-            )
+            result = response.json().get("choices", [{}])[0].get("message", {}).get("content")
             if result:
                 logger.info("  Groq validation successful")
                 return result
@@ -418,12 +415,7 @@ Example:
                 timeout=90,
             )
             response.raise_for_status()
-            result = (
-                response.json()
-                .get("choices", [{}])[0]
-                .get("message", {})
-                .get("content")
-            )
+            result = response.json().get("choices", [{}])[0].get("message", {}).get("content")
             if result:
                 logger.info("  OpenRouter validation successful")
                 return result
@@ -467,9 +459,7 @@ Example:
             logger.warning(f"  Google AI validation failed: {e}")
         return None
 
-    def _parse_validation_response(
-        self, response: str, stories: List[Dict]
-    ) -> List[ValidationResult]:
+    def _parse_validation_response(self, response: str, stories: List[Dict]) -> List[ValidationResult]:
         """Parse AI validation response into ValidationResult objects."""
         # Extract JSON from response
         json_match = re.search(r"\[.*\]", response, re.DOTALL)
@@ -558,9 +548,7 @@ Example:
         """Build prompt for semantic duplicate detection."""
         story_list = []
         for i, story in enumerate(stories):
-            story_list.append(
-                f"{i+1}. [{story.get('source', 'unknown')}] {story.get('title', '')[:80]}"
-            )
+            story_list.append(f"{i + 1}. [{story.get('source', 'unknown')}] {story.get('title', '')[:80]}")
 
         stories_text = "\n".join(story_list)
 
@@ -588,9 +576,7 @@ Example:
 
 If NO duplicates found, respond with: []"""
 
-    def _parse_duplicate_response(
-        self, response: str, stories: List[Dict]
-    ) -> List[DuplicateCluster]:
+    def _parse_duplicate_response(self, response: str, stories: List[Dict]) -> List[DuplicateCluster]:
         """Parse AI duplicate detection response."""
         # Extract JSON from response
         json_match = re.search(r"\[.*\]", response, re.DOTALL)
@@ -651,6 +637,7 @@ def validate_trends(trends: List[Dict], use_ai: bool = True) -> List[Dict]:
 if __name__ == "__main__":
     # Test with sample stories
     from dotenv import load_dotenv
+
     load_dotenv()
 
     sample_stories = [
