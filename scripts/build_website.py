@@ -617,8 +617,7 @@ class WebsiteBuilder:
     def _get_linkedin_stories(self) -> List[Dict]:
         """Get LinkedIn influencer posts for the dedicated sidebar.
 
-        Excludes LinkedIn stories already used elsewhere.
-        Returns LinkedIn stories sorted by score, limited to 10 items.
+        Returns the top-scoring post from each author, limited to 5.
         """
         linkedin_stories = []
         for trend in self.ctx.trends:
@@ -630,7 +629,18 @@ class WebsiteBuilder:
         # Sort by score (highest first)
         linkedin_stories.sort(key=lambda x: x.get("score", 0), reverse=True)
 
-        result = linkedin_stories[:10]
+        # One post per author (author is the part before ":" in the title)
+        seen_authors = set()
+        result = []
+        for s in linkedin_stories:
+            author = s.get("title", "").split(":")[0].strip()
+            if author in seen_authors:
+                continue
+            seen_authors.add(author)
+            result.append(s)
+            if len(result) >= 5:
+                break
+
         for s in result:
             self._used_urls.add(s.get("url"))
 
