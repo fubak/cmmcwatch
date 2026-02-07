@@ -290,7 +290,7 @@ You're a senior editorial writer for CMMC Watch, known for combining factual rig
 - Memorable without being gimmicky
 
 ## TASK
-Write a daily editorial article (600-900 words) that synthesizes today's top trending stories into a cohesive narrative, analyzes patterns and connections, and provides actionable insights.
+Write a concise daily editorial article (strictly 400-500 words) that synthesizes today's top trending stories into a cohesive narrative, analyzes patterns and connections, and provides actionable insights. You MUST stay under 500 words.
 
 {context}
 
@@ -313,47 +313,14 @@ Your thesis should take a clear stance on this question and defend it throughout
 - If making predictions, state the confidence level and reasoning
 
 ## REQUIRED STRUCTURE (use these as <h2> sections):
+Keep each section tight — 1 short paragraph each. Total MUST be 400-500 words.
 
-1. **The Lead** (1 paragraph)
-   - Hook readers with a surprising connection or insight
-   - State your central thesis clearly
-   - Preview what's at stake
-
-2. **What People Think** (1-2 paragraphs)
-   - Steelman the conventional wisdom or surface narrative
-   - Show you understand the obvious interpretation
-   - Use phrases like "The common view is..." or "Most coverage focuses on..."
-
-3. **What's Actually Happening** (2-3 paragraphs)
-   - Present your contrarian or deeper analysis
-   - Connect dots between multiple stories
-   - Use specific evidence from the stories provided
-   - This is your main argument section
-
-4. **The Hidden Tradeoffs** (1-2 paragraphs)
-   - What costs or downsides aren't being discussed?
-   - Who wins and who loses from current trends?
-   - What are we optimizing for and what are we sacrificing?
-
-5. **The Best Counterarguments** (1 paragraph)
-   - Steelman the strongest objection to your thesis
-   - Respond to it honestly - don't strawman
-   - Acknowledge where your analysis might be wrong
-
-6. **What This Means Next** (1-2 paragraphs)
-   - Concrete predictions with timeframes
-   - What to watch for that would confirm or refute your thesis
-   - Second-order effects most people are missing
-
-7. **Practical Framework** (1 paragraph)
-   - How should readers think about or act on this?
-   - A memorable mental model, heuristic, or framework
-   - Make it specific and actionable
-
-8. **Conclusion** (1 paragraph)
-   - Circle back to your hook
-   - Restate thesis in light of your argument
-   - Leave readers with something memorable
+1. **The Lead** (2-3 sentences) — Hook with a surprising connection, state thesis
+2. **What People Think** (2-3 sentences) — Steelman the conventional wisdom
+3. **What's Actually Happening** (1 paragraph) — Your deeper analysis connecting multiple stories with evidence
+4. **The Hidden Tradeoffs** (2-3 sentences) — Costs and downsides not being discussed
+5. **What This Means Next** (2-3 sentences) — Concrete predictions with timeframes
+6. **Conclusion** (2-3 sentences) — Circle back to hook, leave something memorable
 
 ## STYLE RULES
 - Use active voice and strong verbs
@@ -382,7 +349,7 @@ Respond with ONLY a valid JSON object:
 
         try:
             # Try structured output first (guaranteed valid JSON from Gemini)
-            # Use 16384 tokens — a 900-word HTML article in JSON needs ~6000-8000 tokens
+            # Use 16384 tokens — generous headroom for a 500-word HTML article in JSON
             data = self._call_google_ai_structured(prompt, EDITORIAL_SCHEMA, max_tokens=16384)
 
             # Fall back to regular LLM call + JSON parsing if structured output fails
@@ -2197,21 +2164,19 @@ Please write a COMPLETE article based on these source stories:
 The article title is: "{existing_title}"
 The mood/tone should be: {existing_mood}
 
-IMPORTANT: You MUST include ALL of the following sections:
-1. The Lead (1 paragraph) - Hook and central thesis
-2. What People Think (1-2 paragraphs) - Conventional wisdom
-3. What's Actually Happening (2-3 paragraphs) - Your deeper analysis
-4. The Hidden Tradeoffs (1-2 paragraphs) - Costs not being discussed
-5. The Best Counterarguments (1 paragraph) - Strongest objection
-6. What This Means Next (1-2 paragraphs) - Concrete predictions
-7. Practical Framework (1 paragraph) - Actionable mental model
-8. Conclusion (1 paragraph) - Circle back to hook
+IMPORTANT: Keep it to 400-500 words. You MUST include ALL of the following sections:
+1. The Lead (2-3 sentences) - Hook and central thesis
+2. What People Think (2-3 sentences) - Conventional wisdom
+3. What's Actually Happening (1 paragraph) - Your deeper analysis
+4. The Hidden Tradeoffs (2-3 sentences) - Costs not being discussed
+5. What This Means Next (2-3 sentences) - Concrete predictions
+6. Conclusion (2-3 sentences) - Circle back to hook
 
 Use HTML formatting: <h2> for section headers, <p> for paragraphs, <strong> for emphasis.
 
 Respond with ONLY a valid JSON object:
 {{
-  "content": "Full article content with HTML formatting including ALL 8 sections ending with Conclusion"
+  "content": "Full article content with HTML formatting including ALL 6 sections ending with Conclusion. MUST be under 500 words."
 }}"""
 
                 # Call AI with high token limit
