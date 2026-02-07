@@ -32,7 +32,7 @@ class TestConfig:
         """Test that RSS feeds are configured."""
         assert len(CMMC_RSS_FEEDS) > 0
         assert isinstance(CMMC_RSS_FEEDS, dict)
-        
+
         # Check at least some key feeds
         assert "FedScoop" in CMMC_RSS_FEEDS
         assert "NIST CSRC" in CMMC_RSS_FEEDS
@@ -42,7 +42,7 @@ class TestConfig:
         """Test that LinkedIn profiles are configured."""
         assert len(CMMC_LINKEDIN_PROFILES) > 0
         assert isinstance(CMMC_LINKEDIN_PROFILES, list)
-        
+
         # Check that profiles are valid URLs
         for profile in CMMC_LINKEDIN_PROFILES:
             assert profile.startswith("https://www.linkedin.com/")
@@ -52,7 +52,7 @@ class TestConfig:
         assert len(CMMC_CORE_KEYWORDS) > 0
         assert len(NIST_KEYWORDS) > 0
         assert len(CMMC_KEYWORDS) > 0
-        
+
         # Check for critical keywords
         assert "cmmc" in [k.lower() for k in CMMC_CORE_KEYWORDS]
         assert "nist 800-171" in [k.lower() for k in NIST_KEYWORDS]

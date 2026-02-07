@@ -43,6 +43,18 @@ from sitemap_generator import save_sitemap
 logger = setup_logging("pipeline")
 
 
+def _to_dict(obj):
+    """Convert a dataclass instance to dict, or return as-is if already a dict."""
+    if hasattr(obj, "__dataclass_fields__"):
+        return asdict(obj)
+    return obj
+
+
+def _to_dict_list(items):
+    """Convert a list of dataclass instances or dicts to a list of dicts."""
+    return [_to_dict(item) for item in items]
+
+
 class CMMCWatchPipeline:
     """Orchestrates the CMMC Watch website generation pipeline."""
 
@@ -181,7 +193,7 @@ class CMMCWatchPipeline:
     def _validate_environment(self) -> bool:
         """
         Validate that required environment variables are set.
-        
+
         Returns:
             True if all required variables are set, False otherwise
         """
@@ -191,7 +203,7 @@ class CMMCWatchPipeline:
             os.getenv("OPENROUTER_API_KEY"),
             os.getenv("GOOGLE_AI_API_KEY"),
         ]
-        
+
         if not any(ai_keys):
             logger.error("Missing AI API key!")
             logger.error("At least one of these must be set:")
@@ -199,7 +211,7 @@ class CMMCWatchPipeline:
             logger.error("  - OPENROUTER_API_KEY")
             logger.error("  - GOOGLE_AI_API_KEY")
             return False
-        
+
         # Log which AI service will be used
         if os.getenv("GROQ_API_KEY"):
             logger.info("✓ Using Groq for AI generation")
@@ -207,18 +219,18 @@ class CMMCWatchPipeline:
             logger.info("✓ Using OpenRouter for AI generation")
         elif os.getenv("GOOGLE_AI_API_KEY"):
             logger.info("✓ Using Google AI for AI generation")
-        
+
         # Image keys are recommended but not required
         if not any([os.getenv("PEXELS_API_KEY"), os.getenv("UNSPLASH_ACCESS_KEY")]):
             logger.warning("⚠ No image API keys set - images may be limited")
             logger.warning("  Consider adding PEXELS_API_KEY or UNSPLASH_ACCESS_KEY")
-        
+
         # LinkedIn is optional
         if not os.getenv("APIFY_API_KEY"):
             logger.info("ℹ LinkedIn scraping disabled (APIFY_API_KEY not set)")
         else:
             logger.info("✓ LinkedIn scraping enabled via Apify")
-        
+
         return True
 
     def _generate_design(self) -> dict:
@@ -237,21 +249,13 @@ class CMMCWatchPipeline:
                 pass
 
         # Generate new design - convert trends to dicts first
-        trends_for_design = []
-        for t in self.trends[:5]:
-            if hasattr(t, "__dataclass_fields__"):
-                trends_for_design.append(asdict(t))
-            else:
-                trends_for_design.append(t)
-
         design = self.design_generator.generate(
-            trends=trends_for_design,
+            trends=_to_dict_list(self.trends[:5]),
             keywords=self.keywords[:10],
         )
 
         # Convert to dict if needed
-        if hasattr(design, "__dataclass_fields__"):
-            design = asdict(design)
+        design = _to_dict(design)
 
         design["design_seed"] = today
         return design
@@ -259,16 +263,8 @@ class CMMCWatchPipeline:
     def _generate_editorial(self):
         """Generate daily editorial article."""
         try:
-            # Convert trends to dict format
-            trends_dict = []
-            for t in self.trends[:20]:
-                if hasattr(t, "__dataclass_fields__"):
-                    trends_dict.append(asdict(t))
-                else:
-                    trends_dict.append(t)
-
             self.editorial_article = self.editorial_generator.generate_editorial(
-                trends=trends_dict,
+                trends=_to_dict_list(self.trends[:20]),
                 keywords=self.keywords,
                 design=self.design,
             )
@@ -292,32 +288,13 @@ class CMMCWatchPipeline:
         """Build the main HTML website."""
         from build_website import BuildContext, WebsiteBuilder
 
-        # Prepare trends as dicts
-        trends_dict = []
-        for t in self.trends:
-            if hasattr(t, "__dataclass_fields__"):
-                trends_dict.append(asdict(t))
-            else:
-                trends_dict.append(t)
-
-        # Prepare images as dicts
-        images_dict = []
-        for img in self.images:
-            if hasattr(img, "__dataclass_fields__"):
-                images_dict.append(asdict(img))
-            else:
-                images_dict.append(img)
-
         context = BuildContext(
-            trends=trends_dict,
-            images=images_dict,
+            trends=_to_dict_list(self.trends),
+            images=_to_dict_list(self.images),
             design=self.design,
             keywords=self.keywords,
             editorial_article=(
-                asdict(self.editorial_article)
-                if self.editorial_article
-                and hasattr(self.editorial_article, "__dataclass_fields__")
-                else self.editorial_article
+                _to_dict(self.editorial_article) if self.editorial_article else None
             ),
         )
 
@@ -332,15 +309,8 @@ class CMMCWatchPipeline:
 
     def _generate_rss(self):
         """Generate RSS feed."""
-        trends_dict = []
-        for t in self.trends[:50]:
-            if hasattr(t, "__dataclass_fields__"):
-                trends_dict.append(asdict(t))
-            else:
-                trends_dict.append(t)
-
         generate_rss_feed(
-            trends=trends_dict,
+            trends=_to_dict_list(self.trends[:50]),
             output_path=self.public_dir / "feed.xml",
             title="CMMC Watch",
             description="Daily CMMC & Compliance News Aggregator",
@@ -351,26 +321,12 @@ class CMMCWatchPipeline:
     def _save_data(self):
         """Save pipeline data to JSON files."""
         # Save trends
-        trends_dict = []
-        for t in self.trends:
-            if hasattr(t, "__dataclass_fields__"):
-                trends_dict.append(asdict(t))
-            else:
-                trends_dict.append(t)
-
         with open(self.data_dir / "trends.json", "w") as f:
-            json.dump(trends_dict, f, indent=2, default=str)
+            json.dump(_to_dict_list(self.trends), f, indent=2, default=str)
 
         # Save images
-        images_dict = []
-        for img in self.images:
-            if hasattr(img, "__dataclass_fields__"):
-                images_dict.append(asdict(img))
-            else:
-                images_dict.append(img)
-
         with open(self.data_dir / "images.json", "w") as f:
-            json.dump(images_dict, f, indent=2, default=str)
+            json.dump(_to_dict_list(self.images), f, indent=2, default=str)
 
         # Save design
         with open(self.data_dir / "design.json", "w") as f:

@@ -41,9 +41,12 @@ class ArchiveManager:
             print("No current website to archive")
             return None
 
-        # Create dated archive folder
+        # Create dated archive folder with path validation
         today = datetime.now().strftime("%Y-%m-%d")
-        archive_path = self.archive_dir / today
+        archive_path = (self.archive_dir / today).resolve()
+        if not str(archive_path).startswith(str(self.archive_dir.resolve())):
+            print(f"Invalid archive path: {archive_path}")
+            return None
 
         # Don't overwrite existing archive, but always regenerate index
         if archive_path.exists():

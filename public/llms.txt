@@ -1,11 +1,11 @@
 # CMMC Watch - LLM Information File
-# https://cmmcwatch.info
+# https://cmmcwatch.com
 # Last Updated: 2025-01-17
 
 ## SITE OVERVIEW
 
 Name: CMMC Watch
-URL: https://cmmcwatch.info
+URL: https://cmmcwatch.com
 Type: News Aggregator
 Domain: Cybersecurity Compliance
 Focus: CMMC, NIST 800-171, Defense Industrial Base
@@ -130,8 +130,8 @@ This site provides structured data for enhanced discoverability:
 
 ## API/FEEDS
 
-RSS Feed: https://cmmcwatch.info/feed.xml
-Sitemap: https://cmmcwatch.info/sitemap_main.xml
+RSS Feed: https://cmmcwatch.com/feed.xml
+Sitemap: https://cmmcwatch.com/sitemap_main.xml
 
 ## CONTACT
 

@@ -290,7 +290,7 @@ class ImageCache:
     def _query_key(self, query: str) -> str:
         """Generate a normalized cache key for a query."""
         normalized = query.lower().strip()
-        return hashlib.md5(normalized.encode()).hexdigest()[:12]
+        return hashlib.sha256(normalized.encode()).hexdigest()[:12]
 
     def is_cached(self, query: str) -> bool:
         """Check if a query has cached results that aren't expired."""

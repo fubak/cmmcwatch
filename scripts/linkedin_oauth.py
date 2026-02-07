@@ -8,16 +8,17 @@ Runs a local server to handle the OAuth callback and save credentials.
 import os
 import sys
 import webbrowser
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import parse_qs, urlparse
-import requests
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
+
+import requests
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from dotenv import load_dotenv, set_key
+from dotenv import load_dotenv, set_key  # noqa: E402
 
 # Load environment variables
 load_dotenv(PROJECT_ROOT / ".env")
@@ -63,7 +64,7 @@ class OAuthHandler(BaseHTTPRequestHandler):
                 self.send_header("Content-type", "text/html")
                 self.end_headers()
                 self.wfile.write(
-                    b"""
+                    """
                     <html>
                     <body style="font-family: sans-serif; text-align: center; padding: 50px;">
                         <h1 style="color: #0077B5;">✅ LinkedIn Connected!</h1>
@@ -71,7 +72,7 @@ class OAuthHandler(BaseHTTPRequestHandler):
                         <p>You can close this window now.</p>
                     </body>
                     </html>
-                """
+                """.encode()
                 )
             else:
                 # Error response
@@ -79,14 +80,14 @@ class OAuthHandler(BaseHTTPRequestHandler):
                 self.send_header("Content-type", "text/html")
                 self.end_headers()
                 self.wfile.write(
-                    b"""
+                    """
                     <html>
                     <body style="font-family: sans-serif; text-align: center; padding: 50px;">
                         <h1 style="color: #cc0000;">❌ Token Exchange Failed</h1>
                         <p>Check the console for error details.</p>
                     </body>
                     </html>
-                """
+                """.encode()
                 )
 
         elif "error" in query:
@@ -109,7 +110,7 @@ class OAuthHandler(BaseHTTPRequestHandler):
             """.encode()
             )
 
-    def exchange_code_for_token(self, auth_code: str) -> dict:
+    def exchange_code_for_token(self, auth_code: str) -> dict | None:
         """Exchange authorization code for access token"""
         data = {
             "grant_type": "authorization_code",
@@ -124,7 +125,9 @@ class OAuthHandler(BaseHTTPRequestHandler):
             response.raise_for_status()
             token_data = response.json()
 
-            print(f"✅ Access token received (expires in {token_data.get('expires_in', 0)} seconds)")
+            print(
+                f"✅ Access token received (expires in {token_data.get('expires_in', 0)} seconds)"
+            )
             return token_data
 
         except requests.exceptions.RequestException as e:
@@ -144,7 +147,7 @@ class OAuthHandler(BaseHTTPRequestHandler):
                 import shutil
 
                 shutil.copy(example_path, env_path)
-                print(f"✅ Created .env from .env.example")
+                print("✅ Created .env from .env.example")
 
         # Save tokens
         set_key(env_path, "LINKEDIN_ACCESS_TOKEN", token_data["access_token"])
@@ -163,7 +166,9 @@ def start_oauth_flow():
     """Start the OAuth authorization flow"""
     # Check for required credentials
     if not CLIENT_ID or not CLIENT_SECRET:
-        print("❌ Error: LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET must be set in .env")
+        print(
+            "❌ Error: LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET must be set in .env"
+        )
         print("\nSee scripts/linkedin_api_setup.md for instructions.")
         sys.exit(1)
 
@@ -180,18 +185,18 @@ def start_oauth_flow():
     print("=" * 60)
     print("LinkedIn OAuth 2.0 Authorization")
     print("=" * 60)
-    print(f"\n1. Opening authorization URL in your browser...")
+    print("\n1. Opening authorization URL in your browser...")
     print(f"   {auth_url[:80]}...")
-    print(f"\n2. Please authorize the app in your browser")
-    print(f"3. You'll be redirected to http://localhost:8888/callback")
-    print(f"4. Your access token will be saved to .env automatically")
+    print("\n2. Please authorize the app in your browser")
+    print("3. You'll be redirected to http://localhost:8888/callback")
+    print("4. Your access token will be saved to .env automatically")
     print("\n" + "=" * 60)
 
     # Open browser
     webbrowser.open(auth_url)
 
     # Start local server to handle callback
-    print(f"\n🔄 Starting local server on port 8888...")
+    print("\n🔄 Starting local server on port 8888...")
     server = HTTPServer(("localhost", 8888), OAuthHandler)
 
     print("✅ Server running. Waiting for authorization callback...")

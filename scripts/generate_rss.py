@@ -149,7 +149,7 @@ def generate_rss_feed(
 
         # Description - smart truncation at sentence boundaries
         desc = trend.get("description") or trend.get("title", "")
-        
+
         # Smart truncation: prefer complete sentences up to ~800 chars
         # If still too long, truncate at word boundary
         max_length = 800
@@ -157,22 +157,20 @@ def generate_rss_feed(
             # Try to find last sentence boundary within limit
             truncated = desc[:max_length]
             last_period = max(
-                truncated.rfind('. '),
-                truncated.rfind('! '),
-                truncated.rfind('? ')
+                truncated.rfind(". "), truncated.rfind("! "), truncated.rfind("? ")
             )
-            
+
             # If we found a good sentence boundary with reasonable length
             if last_period > 200:
-                desc = desc[:last_period + 1]
+                desc = desc[: last_period + 1]
             else:
                 # Fall back to word boundary
-                last_space = truncated.rfind(' ')
+                last_space = truncated.rfind(" ")
                 if last_space > 100:
                     desc = desc[:last_space] + "..."
                 else:
                     desc = desc[:max_length] + "..."
-        
+
         ET.SubElement(item, "description").text = desc
 
         # Source/Category

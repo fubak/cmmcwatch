@@ -10,6 +10,7 @@ Includes:
 """
 
 import json
+import os
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
@@ -309,7 +310,7 @@ def save_sitemap(
     print(f"  Created {sitemap_path} (index)")
 
     # Create IndexNow API key file for search engine indexing
-    indexnow_key = "cmmcwatchinfo12345"
+    indexnow_key = os.environ.get("INDEXNOW_KEY", "cmmcwatchcom12345")
     indexnow_path = public_dir / f"{indexnow_key}.txt"
     indexnow_path.write_text(indexnow_key)
     print(f"  Created {indexnow_path} (IndexNow key)")

@@ -9,21 +9,22 @@ Note: LinkedIn API has limited access to personal profile posts.
 This script focuses on organization/company page posts which are publicly accessible.
 """
 
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional
+
 import requests
-from typing import List, Dict
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import setup_logging, TIMEOUTS
-from dotenv import load_dotenv
+from config import TIMEOUTS, setup_logging  # noqa: E402
+from dotenv import load_dotenv  # noqa: E402
 
 # Load environment variables
 load_dotenv(PROJECT_ROOT / ".env")
@@ -59,9 +60,7 @@ class LinkedInAPI:
             logger.error(f"Failed to fetch profile info: {e}")
             return {}
 
-    def get_organization_posts(
-        self, org_id: str, max_results: int = 10
-    ) -> List[Dict]:
+    def get_organization_posts(self, org_id: str, max_results: int = 10) -> List[Dict]:
         """
         Fetch posts from an organization/company page.
 
@@ -81,7 +80,10 @@ class LinkedInAPI:
 
         try:
             response = requests.get(
-                SHARES_URL, headers=self.headers, params=params, timeout=TIMEOUTS["default"]
+                SHARES_URL,
+                headers=self.headers,
+                params=params,
+                timeout=TIMEOUTS["default"],
             )
             response.raise_for_status()
             data = response.json()
@@ -99,7 +101,7 @@ class LinkedInAPI:
             logger.error(f"Failed to fetch organization posts: {e}")
             return []
 
-    def _parse_post(self, element: Dict) -> Dict:
+    def _parse_post(self, element: Dict) -> Optional[Dict]:
         """Parse a LinkedIn post element into a simplified format"""
         try:
             # Extract text content
@@ -133,8 +135,6 @@ class LinkedInAPI:
             # Build post URL (may not work for all posts)
             post_url = ""
             if post_id:
-                # Extract numeric ID from URN
-                numeric_id = post_id.split(":")[-1] if ":" in post_id else post_id
                 post_url = f"https://www.linkedin.com/feed/update/{post_id}"
 
             return {
@@ -203,15 +203,11 @@ def fetch_posts_for_profiles(
     # You'll need to map profile URLs to organization URNs
     # or use a different approach for personal profiles
 
-    logger.warning(
-        "LinkedIn API has limited access to personal profile posts."
-    )
+    logger.warning("LinkedIn API has limited access to personal profile posts.")
     logger.warning(
         "For production, consider using RSSHub or keeping Apify for personal profiles."
     )
-    logger.warning(
-        "This script works best for organization/company pages."
-    )
+    logger.warning("This script works best for organization/company pages.")
 
     return all_posts
 

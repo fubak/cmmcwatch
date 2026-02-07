@@ -163,7 +163,6 @@ class RateLimiter:
                 # Extract rate limit info
                 rate_limit = data.get("rate_limit", {})
                 requests_remaining = rate_limit.get("requests")
-                rate_limit.get("interval", "minute")
 
                 # Check usage
                 usage = data.get("usage", 0)
@@ -489,7 +488,6 @@ class RateLimiter:
         limit_requests = headers.get("x-ratelimit-limit-requests")
         remaining_tokens = headers.get("x-ratelimit-remaining-tokens")
         limit_tokens = headers.get("x-ratelimit-limit-tokens")
-        headers.get("x-ratelimit-reset-requests")
 
         if remaining_requests is not None:
             try:

@@ -29,7 +29,6 @@ from urllib.parse import urljoin
 import feedparser
 import requests
 from bs4 import BeautifulSoup
-
 from config import DATA_DIR, TIMEOUTS, setup_logging
 
 # Initialize logger

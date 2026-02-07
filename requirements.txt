@@ -8,3 +8,4 @@ apify-client>=1.7.0  # LinkedIn scraping via Apify (optional)
 pytest>=7.4.0  # Testing framework
 pytest-cov>=4.1.0  # Test coverage reporting
 tenacity>=8.2.0  # Retry logic with exponential backoff
+cffi>=1.15.0  # Required by pynacl for cryptographic operations

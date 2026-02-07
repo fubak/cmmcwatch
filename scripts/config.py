@@ -262,47 +262,15 @@ LINKEDIN_MAX_PROFILES = 4  # Max profiles per run (reduced from 10)
 LINKEDIN_MAX_POSTS_PER_PROFILE = 3  # Max posts per profile (reduced from 5)
 
 # ============================================================================
-# CMMC WATCH KEYWORDS
+# CMMC WATCH KEYWORDS (COMPOSITE)
 # ============================================================================
 
-# Keywords for filtering CMMC-relevant content from RSS feeds
-# Broader keywords to capture more defense/federal cybersecurity content
-CMMC_KEYWORDS = [
-    # Primary CMMC terms
-    "cmmc",
-    "cmmc 2.0",
-    "cmmc level",
-    "c3pao",
-    "cyber-ab",
-    "cyberab",
-    "cmmc certification",
-    "cmmc assessment",
-    "cmmc compliance",
-    # NIST/Compliance
-    "nist 800-171",
-    "nist sp 800-171",
-    "nist 800-172",
-    "sp 800-172",
+# Additional keywords not covered by category-specific lists above
+_ADDITIONAL_KEYWORDS = [
     "nist framework",
     "nist cybersecurity",
-    "dfars",
-    "dfars 252.204",
-    "dfars 7012",
     "dfars compliance",
-    "cui",
-    "controlled unclassified",
-    "fedramp",
-    "fisma",
-    "ato",
-    "authority to operate",
-    # Defense Industrial Base
-    "defense industrial base",
-    "dib",
-    "defense contractor",
-    "dod contractor",
-    "cleared contractor",
     "industrial security",
-    "pentagon",
     "department of defense",
     # Federal cybersecurity (broader)
     "federal cybersecurity",
@@ -326,37 +294,20 @@ CMMC_KEYWORDS = [
     "supply chain security",
     "supply chain risk",
     "scrm",
-    # Intelligence threats (espionage, nation-state)
-    "espionage",
-    "spy",
-    "spying",
-    "foreign agent",
-    "counterintelligence",
-    "nation-state",
-    "state-sponsored",
-    "apt",
-    "advanced persistent threat",
-    "chinese hackers",
-    "russian hackers",
-    "north korean hackers",
-    "gru",
-    "lazarus group",
-    "volt typhoon",
-    "salt typhoon",
-    "cozy bear",
-    "fancy bear",
-    # Insider threats
-    "insider threat",
-    "insider risk",
-    "malicious insider",
-    "data exfiltration",
-    "unauthorized disclosure",
-    "dark web recruitment",
-    "compromised employee",
-    "fake identity",
-    "fraudulent identity",
-    "remote worker fraud",
 ]
+
+# Composite keyword list for filtering CMMC-relevant content from RSS feeds
+# Composed from category-specific lists plus additional broader keywords
+CMMC_KEYWORDS = list(
+    dict.fromkeys(
+        CMMC_CORE_KEYWORDS
+        + NIST_KEYWORDS
+        + DIB_KEYWORDS
+        + INTELLIGENCE_KEYWORDS
+        + INSIDER_THREAT_KEYWORDS
+        + _ADDITIONAL_KEYWORDS
+    )
+)
 
 # Quality gates
 MIN_TRENDS = 5  # Minimum trends required to build

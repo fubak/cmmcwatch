@@ -10,6 +10,7 @@ Focused sources:
 
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime
 from difflib import SequenceMatcher
@@ -18,18 +19,11 @@ from typing import Dict, List, Optional
 import feedparser
 import requests
 from bs4 import BeautifulSoup
-from tenacity import (
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_exponential,
-)
 from config import (
     CMMC_CORE_KEYWORDS,
     CMMC_KEYWORDS,
     CMMC_LINKEDIN_PROFILES,
     CMMC_RSS_FEEDS,
-    DELAYS,
     DIB_KEYWORDS,
     INSIDER_THREAT_KEYWORDS,
     INTELLIGENCE_KEYWORDS,
@@ -37,6 +31,12 @@ from config import (
     NIST_KEYWORDS,
     TIMEOUTS,
     setup_logging,
+)
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
 )
 
 # Import story validator for AI-powered validation
@@ -75,6 +75,14 @@ class TrendCollector:
                 "User-Agent": "Mozilla/5.0 (compatible; CMMCWatch/1.0; +https://cmmcwatch.com)"
             }
         )
+        # Connection pooling for parallel RSS fetching
+        adapter = requests.adapters.HTTPAdapter(
+            pool_connections=10,
+            pool_maxsize=20,
+            max_retries=3,
+        )
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)
 
     def collect_all(self, use_ai_validation: bool = True) -> List[Trend]:
         """Collect trends from all CMMC sources.
@@ -123,27 +131,33 @@ class TrendCollector:
         # Convert Trend objects to dicts for the validator
         trend_dicts = []
         for t in self.trends:
-            trend_dicts.append({
-                "title": t.title,
-                "description": t.description,
-                "category": t.category,
-                "source": t.source,
-                "url": t.url,
-                "timestamp": t.timestamp.isoformat() if t.timestamp else None,
-                "score": t.score,
-                "keywords": t.keywords,
-                "image_url": t.image_url,
-            })
+            trend_dicts.append(
+                {
+                    "title": t.title,
+                    "description": t.description,
+                    "category": t.category,
+                    "source": t.source,
+                    "url": t.url,
+                    "timestamp": t.timestamp.isoformat() if t.timestamp else None,
+                    "score": t.score,
+                    "keywords": t.keywords,
+                    "image_url": t.image_url,
+                }
+            )
 
         # Run validation
         validator = StoryValidator()
-        valid_dicts, rejected_dicts = validator.validate_stories(trend_dicts, use_ai=True)
+        valid_dicts, rejected_dicts = validator.validate_stories(
+            trend_dicts, use_ai=True
+        )
 
         # Log rejections
         if rejected_dicts:
             logger.info(f"AI validation rejected {len(rejected_dicts)} stories:")
             for r in rejected_dicts[:5]:
-                logger.info(f"  - {r.get('title', '')[:50]}: {r.get('rejection_reason', 'unknown')}")
+                logger.info(
+                    f"  - {r.get('title', '')[:50]}: {r.get('rejection_reason', 'unknown')}"
+                )
             if len(rejected_dicts) > 5:
                 logger.info(f"  ... and {len(rejected_dicts) - 5} more")
 
@@ -181,54 +195,70 @@ class TrendCollector:
         wait=wait_exponential(multiplier=1, min=1, max=10),
         reraise=True,
     )
-    def _fetch_rss_with_retry(self, feed_url: str, timeout: int = 15) -> requests.Response:
+    def _fetch_rss_with_retry(
+        self, feed_url: str, timeout: int = 15
+    ) -> requests.Response:
         """Fetch RSS feed with retry logic."""
         response = self.session.get(feed_url, timeout=timeout)
         response.raise_for_status()
         return response
 
+    def _collect_single_rss_feed(self, feed_name: str, feed_url: str) -> List[Trend]:
+        """Collect trends from a single RSS feed. Thread-safe."""
+        trends = []
+        try:
+            response = self._fetch_rss_with_retry(
+                feed_url, timeout=TIMEOUTS.get("rss_feed", 15)
+            )
+            feed = feedparser.parse(response.content)
+
+            for entry in feed.entries[: LIMITS.get("rss", 20)]:
+                title = entry.get("title", "").strip()
+                description = entry.get("summary", "") or entry.get("description", "")
+
+                if not title or len(title) < 10:
+                    continue
+
+                # Check if CMMC-related
+                content = (title + " " + description).lower()
+                is_cmmc = any(kw.lower() in content for kw in CMMC_KEYWORDS)
+
+                if is_cmmc:
+                    trend = Trend(
+                        title=title[:200],
+                        source=f"cmmc_rss_{feed_name.lower().replace(' ', '_')}",
+                        url=entry.get("link"),
+                        description=self._clean_html(description),
+                        category=self._categorize_trend(title, description),
+                        score=self._calculate_score(title, description),
+                        image_url=self._extract_image_from_entry(entry),
+                        timestamp=self._extract_timestamp(entry),
+                    )
+                    trends.append(trend)
+
+        except Exception as e:
+            logger.warning(f"RSS feed {feed_name} error: {e}")
+
+        return trends
+
     def _collect_rss_feeds(self):
-        """Collect from CMMC-related RSS feeds."""
+        """Collect from CMMC-related RSS feeds in parallel."""
         logger.info("Fetching from CMMC RSS feeds...")
         count = 0
 
-        for feed_name, feed_url in CMMC_RSS_FEEDS.items():
-            try:
-                response = self._fetch_rss_with_retry(feed_url, timeout=TIMEOUTS.get("rss", 15))
-                feed = feedparser.parse(response.content)
-
-                for entry in feed.entries[: LIMITS.get("rss", 20)]:
-                    title = entry.get("title", "").strip()
-                    description = entry.get("summary", "") or entry.get(
-                        "description", ""
-                    )
-
-                    if not title or len(title) < 10:
-                        continue
-
-                    # Check if CMMC-related
-                    content = (title + " " + description).lower()
-                    is_cmmc = any(kw.lower() in content for kw in CMMC_KEYWORDS)
-
-                    if is_cmmc:
-                        trend = Trend(
-                            title=title[:200],
-                            source=f"cmmc_rss_{feed_name.lower().replace(' ', '_')}",
-                            url=entry.get("link"),
-                            description=self._clean_html(description),
-                            category=self._categorize_trend(title, description),
-                            score=self._calculate_score(title, description),
-                            image_url=self._extract_image_from_entry(entry),
-                            timestamp=self._extract_timestamp(entry),
-                        )
-                        self.trends.append(trend)
-                        count += 1
-
-                time.sleep(DELAYS.get("rss", 0.2))
-
-            except Exception as e:
-                logger.warning(f"RSS feed {feed_name} error: {e}")
-                continue
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = {
+                executor.submit(self._collect_single_rss_feed, name, url): name
+                for name, url in CMMC_RSS_FEEDS.items()
+            }
+            for future in as_completed(futures):
+                feed_name = futures[future]
+                try:
+                    trends = future.result()
+                    self.trends.extend(trends)
+                    count += len(trends)
+                except Exception as e:
+                    logger.warning(f"RSS feed {feed_name} error: {e}")
 
         logger.info(f"  Found {count} CMMC stories from RSS feeds")
 
@@ -376,39 +406,42 @@ class TrendCollector:
         """Remove HTML tags from text and apply smart truncation."""
         if not text:
             return ""
-        
+
+        # Limit input size to prevent DoS via malformed HTML
+        max_input_size = 1_000_000  # 1MB
+        if len(text) > max_input_size:
+            text = text[:max_input_size]
+
         # Clean HTML if present
         if "<" in text:
             soup = BeautifulSoup(text, "html.parser")
             clean = soup.get_text(separator=" ").strip()
         else:
             clean = text.strip()
-        
+
         # Normalize whitespace
         clean = re.sub(r"\s+", " ", clean)
-        
+
         # Smart truncation at sentence boundaries (up to 1500 chars)
         max_length = 1500
         if len(clean) > max_length:
             truncated = clean[:max_length]
             # Find last sentence boundary
             last_period = max(
-                truncated.rfind('. '),
-                truncated.rfind('! '),
-                truncated.rfind('? ')
+                truncated.rfind(". "), truncated.rfind("! "), truncated.rfind("? ")
             )
-            
+
             # If found a good sentence boundary with reasonable content
             if last_period > 300:
-                return clean[:last_period + 1]
+                return clean[: last_period + 1]
             else:
                 # Fall back to word boundary
-                last_space = truncated.rfind(' ')
+                last_space = truncated.rfind(" ")
                 if last_space > 200:
                     return clean[:last_space] + "..."
                 else:
                     return clean[:max_length] + "..."
-        
+
         return clean
 
     def _extract_timestamp(self, entry) -> Optional[datetime]:
@@ -665,8 +698,7 @@ class TrendCollector:
         Recency boost ensures today's articles rank higher than older ones,
         even if older articles have slightly higher keyword relevance.
         """
-        now = datetime.now()
-        now.replace(hour=0, minute=0, second=0, microsecond=0)
+        now = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
         for trend in self.trends:
             recency_boost = 0.0

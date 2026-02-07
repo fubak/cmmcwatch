@@ -11,7 +11,6 @@ Features:
 - Jinja2 templating
 """
 
-import html
 import json
 import os
 import random
@@ -800,7 +799,6 @@ class WebsiteBuilder:
         except Exception:
             description = ""
 
-        description = html.unescape(description)
         description = re.sub(r"\s+", " ", description).strip()
         if len(description) > 220:
             description = description[:217].rsplit(" ", 1)[0] + "..."
@@ -936,13 +934,13 @@ class WebsiteBuilder:
         organization_schema = {
             "@context": "https://schema.org",
             "@type": "NewsMediaOrganization",
-            "@id": "https://cmmcwatch.info/#organization",
+            "@id": "https://cmmcwatch.com/#organization",
             "name": "CMMC Watch",
             "alternateName": "CMMCWatch",
-            "url": "https://cmmcwatch.info/",
+            "url": "https://cmmcwatch.com/",
             "logo": {
                 "@type": "ImageObject",
-                "url": "https://cmmcwatch.info/icons/icon-512.png",
+                "url": "https://cmmcwatch.com/icons/icon-512.png",
                 "width": 512,
                 "height": 512,
             },
@@ -981,12 +979,12 @@ class WebsiteBuilder:
             "@type": "WebSite",
             "name": "CMMC Watch",
             "alternateName": "CMMC Watch",
-            "url": "https://cmmcwatch.info/",
+            "url": "https://cmmcwatch.com/",
             "description": "Daily CMMC & NIST compliance news aggregator for defense contractors",
-            "publisher": {"@id": "https://cmmcwatch.info/#organization"},
+            "publisher": {"@id": "https://cmmcwatch.com/#organization"},
             "potentialAction": {
                 "@type": "SearchAction",
-                "target": "https://cmmcwatch.info/?q={search_term_string}",
+                "target": "https://cmmcwatch.com/?q={search_term_string}",
                 "query-input": "required name=search_term_string",
             },
             "sameAs": [
@@ -1008,13 +1006,13 @@ class WebsiteBuilder:
                     "@type": "ListItem",
                     "position": 1,
                     "name": "Home",
-                    "item": "https://cmmcwatch.info/",
+                    "item": "https://cmmcwatch.com/",
                 },
                 {
                     "@type": "ListItem",
                     "position": 2,
                     "name": "Daily News",
-                    "item": f"https://cmmcwatch.info/#news-{self.ctx.generated_at.replace(' ', '-').replace(',', '')}",
+                    "item": f"https://cmmcwatch.com/#news-{self.ctx.generated_at.replace(' ', '-').replace(',', '')}",
                 },
             ],
         }
@@ -1059,7 +1057,7 @@ class WebsiteBuilder:
             "@type": "CollectionPage",
             "name": f"CMMC & Compliance News - {self.ctx.generated_at}",
             "description": self._build_meta_description(),
-            "url": "https://cmmcwatch.info/",
+            "url": "https://cmmcwatch.com/",
             "datePublished": datetime.now().isoformat(),
             "mainEntity": {
                 "@type": "ItemList",
@@ -1445,7 +1443,7 @@ class WebsiteBuilder:
             "page_title": self._build_page_title(),
             "meta_description": self._build_meta_description(),
             "keywords_str": ", ".join(self.ctx.keywords[:15]),
-            "canonical_url": "https://cmmcwatch.info/",
+            "canonical_url": "https://cmmcwatch.com/",
             "date_str": self.ctx.generated_at,
             "date_iso": datetime.now().strftime("%Y-%m-%d"),
             "last_modified": datetime.now().isoformat(),

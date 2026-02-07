@@ -14,14 +14,12 @@ Designed to work within free tier API limits by using batch processing.
 import json
 import os
 import re
-import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from difflib import SequenceMatcher
 from typing import Dict, List, Optional, Set, Tuple
 
 import requests
-
 from config import setup_logging
 
 logger = setup_logging("story_validator")

@@ -3672,7 +3672,7 @@ if __name__ == "__main__":
         print("Regenerated articles index")
     elif args.validate:
         results = gen.validate_articles()
-        print(f"\nArticle Validation Results:")
+        print("\nArticle Validation Results:")
         print(f"  Complete: {len(results['complete'])}")
         print(f"  Incomplete: {len(results['incomplete'])}")
         if results["incomplete"]:
