@@ -2,7 +2,7 @@
 """
 LinkedIn Post Scraper - Fetches posts from key CMMC influencers via Apify.
 
-Uses the scraper-engine/linkedin-post-scraper actor on Apify to pull
+Uses the apimaestro/linkedin-profile-posts actor on Apify to pull
 recent posts from specified LinkedIn profiles.
 
 Free tier limits (Apify):
@@ -14,12 +14,16 @@ To stay within free limits:
 - Runs once daily (via main pipeline)
 - Limited to 10 influencers max
 - Fetches only 5 most recent posts per profile
+- Tracks last fetch time to skip already-seen posts
 """
 
+import json
 import os
+import re
 import time
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Optional
 
 from config import setup_logging
@@ -27,12 +31,15 @@ from config import setup_logging
 logger = setup_logging("linkedin_scraper")
 
 # Default actor ID - can be overridden via environment variable
-DEFAULT_APIFY_ACTOR = "scraper-engine/linkedin-post-scraper"
+DEFAULT_APIFY_ACTOR = "apimaestro/linkedin-profile-posts"
 
 # Conservative limits to stay within Apify free tier
 MAX_PROFILES = 10  # Maximum profiles to scrape per run
 MAX_POSTS_PER_PROFILE = 5  # Maximum posts per profile
 SCRAPER_TIMEOUT_SECONDS = 120  # Max wait time for scraper
+
+# Last-fetched tracking file
+LAST_FETCHED_FILE = Path(__file__).parent.parent / "data" / "linkedin_last_fetched.json"
 
 
 @dataclass
@@ -49,6 +56,9 @@ class LinkedInPost:
     likes: int = 0
     comments: int = 0
     shares: int = 0
+    profile_picture: Optional[str] = None
+    headline: Optional[str] = None
+    post_type: Optional[str] = None
 
 
 def get_apify_client():
@@ -70,6 +80,38 @@ def get_apify_client():
     except ImportError:
         logger.warning("apify-client not installed - run: pip install apify-client")
         return None
+
+
+def _get_profile_username(profile_url: str) -> str:
+    """Extract username from LinkedIn profile URL.
+
+    Example: https://www.linkedin.com/in/katie-arrington-a6949425/ -> katie-arrington-a6949425
+    """
+    match = re.search(r"linkedin\.com/in/([^/]+)", profile_url)
+    if match:
+        return match.group(1).rstrip("/")
+    return profile_url
+
+
+def _load_last_fetched() -> dict:
+    """Load last-fetched tracking data."""
+    try:
+        if LAST_FETCHED_FILE.exists():
+            with open(LAST_FETCHED_FILE) as f:
+                return json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        logger.debug(f"Could not load last-fetched data: {e}")
+    return {}
+
+
+def _save_last_fetched(data: dict) -> None:
+    """Save last-fetched tracking data."""
+    try:
+        LAST_FETCHED_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(LAST_FETCHED_FILE, "w") as f:
+            json.dump(data, f, indent=2)
+    except OSError as e:
+        logger.warning(f"Could not save last-fetched data: {e}")
 
 
 def fetch_linkedin_posts(
@@ -95,23 +137,23 @@ def fetch_linkedin_posts(
     # Respect free tier limits
     profiles_to_scrape = profile_urls[:MAX_PROFILES]
     if len(profile_urls) > MAX_PROFILES:
-        logger.warning(
-            f"Limiting to {MAX_PROFILES} profiles (requested: {len(profile_urls)})"
-        )
+        logger.warning(f"Limiting to {MAX_PROFILES} profiles (requested: {len(profile_urls)})")
+
+    # Load last-fetched timestamp for filtering old posts
+    last_fetched = _load_last_fetched()
+    last_fetched_ts = last_fetched.get("last_fetched_ts", 0)
 
     posts = []
 
     for profile_url in profiles_to_scrape:
         try:
-            logger.info(f"Fetching posts from: {profile_url}")
+            username = _get_profile_username(profile_url)
+            logger.info(f"Fetching posts from: {username}")
 
-            # Prepare input for the scraper
-            # Note: Input format may vary by actor - this is a common pattern
+            # Prepare input for the new actor
             run_input = {
-                "profileUrls": [profile_url],
-                "maxPosts": max_posts_per_profile,
-                "scrapeComments": False,  # Save credits
-                "scrapeReactions": False,  # Save credits
+                "username": username,
+                "total_posts": max_posts_per_profile,
             }
 
             # Run the actor and wait for completion
@@ -121,16 +163,27 @@ def fetch_linkedin_posts(
             )
 
             # Fetch results from the dataset
-            dataset_items = list(
-                client.dataset(run["defaultDatasetId"]).iterate_items()
-            )
+            dataset_items = list(client.dataset(run["defaultDatasetId"]).iterate_items())
 
+            new_count = 0
             for item in dataset_items:
+                # Filter out reposts
+                post_type = item.get("post_type", "regular")
+                if post_type == "repost":
+                    continue
+
+                # Filter out posts older than last fetch
+                posted_at = item.get("posted_at", {})
+                post_ts = posted_at.get("timestamp", 0)
+                if last_fetched_ts and post_ts and post_ts <= last_fetched_ts:
+                    continue
+
                 post = _parse_linkedin_item(item)
                 if post:
                     posts.append(post)
+                    new_count += 1
 
-            logger.info(f"  Found {len(dataset_items)} posts")
+            logger.info(f"  Found {len(dataset_items)} posts, {new_count} new (filtered reposts and old)")
 
             # Small delay between profiles to be respectful
             time.sleep(1)
@@ -138,6 +191,16 @@ def fetch_linkedin_posts(
         except Exception as e:
             logger.warning(f"Failed to fetch posts from {profile_url}: {e}")
             continue
+
+    # Update last-fetched timestamp
+    if posts:
+        now = datetime.now()
+        _save_last_fetched(
+            {
+                "last_fetched_ts": int(now.timestamp() * 1000),
+                "last_fetched_date": now.isoformat(),
+            }
+        )
 
     logger.info(f"Total LinkedIn posts collected: {len(posts)}")
     return posts
@@ -147,63 +210,45 @@ def _parse_linkedin_item(item: Dict) -> Optional[LinkedInPost]:
     """
     Parse a raw Apify result item into a LinkedInPost.
 
-    The exact field names may vary depending on the scraper version.
-    This function handles common field variations.
+    Handles the apimaestro/linkedin-profile-posts output format.
     """
     try:
-        # Extract content - try multiple field names
-        content = (
-            item.get("text")
-            or item.get("content")
-            or item.get("postText")
-            or item.get("description")
-            or ""
-        )
-
+        # Extract content
+        content = item.get("text") or ""
         if not content:
             return None
 
         # Extract author info
-        author_name = (
-            item.get("authorName")
-            or item.get("author", {}).get("name")
-            or item.get("profileName")
-            or "Unknown"
-        )
+        author = item.get("author", {})
+        first_name = author.get("first_name", "")
+        last_name = author.get("last_name", "")
+        author_name = f"{first_name} {last_name}".strip() or "Unknown"
 
-        author_title = (
-            item.get("authorTitle")
-            or item.get("author", {}).get("title")
-            or item.get("profileTitle")
-            or ""
-        )
+        author_title = author.get("headline", "")
+        author_url = author.get("profile_url", "")
+        profile_picture = author.get("profile_picture", "")
 
-        author_url = (
-            item.get("authorUrl")
-            or item.get("author", {}).get("url")
-            or item.get("profileUrl")
-            or ""
-        )
-
-        post_url = item.get("postUrl") or item.get("url") or item.get("link") or ""
+        post_url = item.get("url", "")
 
         # Extract timestamp
         timestamp = None
-        ts_raw = item.get("timestamp") or item.get("postedAt") or item.get("date")
-        if ts_raw:
+        posted_at = item.get("posted_at", {})
+        date_str = posted_at.get("date", "")
+        if date_str:
             try:
-                if isinstance(ts_raw, str):
-                    # Try ISO format first
-                    timestamp = datetime.fromisoformat(ts_raw.replace("Z", "+00:00"))
-                elif isinstance(ts_raw, (int, float)):
-                    timestamp = datetime.fromtimestamp(ts_raw / 1000)  # ms to seconds
-            except (ValueError, TypeError, OSError):
+                # Format: "2026-02-01 14:20:41"
+                timestamp = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+            except (ValueError, TypeError):
                 pass
 
         # Extract engagement metrics
-        likes = int(item.get("likes") or item.get("numLikes") or 0)
-        comments = int(item.get("comments") or item.get("numComments") or 0)
-        shares = int(item.get("shares") or item.get("numShares") or 0)
+        stats = item.get("stats", {})
+        likes = int(stats.get("total_reactions", 0) or 0)
+        comments = int(stats.get("comments", 0) or 0)
+        shares = int(stats.get("reposts", 0) or 0)
+
+        # Post type
+        post_type = item.get("post_type", "regular")
 
         # Create title from content excerpt
         title = content[:100].replace("\n", " ").strip()
@@ -221,6 +266,9 @@ def _parse_linkedin_item(item: Dict) -> Optional[LinkedInPost]:
             likes=likes,
             comments=comments,
             shares=shares,
+            profile_picture=profile_picture,
+            headline=author_title,
+            post_type=post_type,
         )
 
     except Exception as e:
@@ -251,7 +299,15 @@ def linkedin_posts_to_trends(posts: List[LinkedInPost]) -> List[Dict]:
             "score": _calculate_post_score(post),
             "keywords": _extract_keywords(post.content),
             "timestamp": post.timestamp.isoformat() if post.timestamp else None,
-            "image_url": None,  # LinkedIn posts typically don't have extractable images
+            "image_url": None,
+            # LinkedIn-specific metadata for influencer sidebar
+            "linkedin_author_picture": post.profile_picture,
+            "linkedin_author_headline": post.headline,
+            "linkedin_engagement": {
+                "total_reactions": post.likes,
+                "comments": post.comments,
+                "reposts": post.shares,
+            },
         }
         trends.append(trend)
 
@@ -284,8 +340,6 @@ def _calculate_post_score(post: LinkedInPost) -> float:
 
 def _extract_keywords(content: str) -> List[str]:
     """Extract meaningful keywords from post content."""
-    import re
-
     # CMMC-specific keywords to look for
     cmmc_terms = {
         "cmmc",
@@ -333,9 +387,7 @@ def test_connection() -> bool:
     try:
         # Just check we can access the API
         user_info = client.user().get()
-        logger.info(
-            f"Apify connection OK - User: {user_info.get('username', 'unknown')}"
-        )
+        logger.info(f"Apify connection OK - User: {user_info.get('username', 'unknown')}")
         return True
     except Exception as e:
         logger.error(f"Apify connection failed: {e}")

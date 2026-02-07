@@ -357,6 +357,26 @@
                 });
             });
 
+            // Tab switching
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabId = btn.dataset.tab;
+                    const section = btn.closest('.tabbed-categories-section');
+                    // Deactivate all tabs and panels
+                    section.querySelectorAll('.tab-button').forEach(b => {
+                        b.classList.remove('active');
+                        b.setAttribute('aria-selected', 'false');
+                    });
+                    section.querySelectorAll('.tab-panel').forEach(p => {
+                        p.classList.remove('active');
+                    });
+                    // Activate clicked tab and panel
+                    btn.classList.add('active');
+                    btn.setAttribute('aria-selected', 'true');
+                    section.querySelector(`[data-panel="${tabId}"]`).classList.add('active');
+                });
+            });
+
             // Clickable cards
             const clickableCards = document.querySelectorAll('.clickable-card');
             clickableCards.forEach((card) => {

@@ -61,6 +61,7 @@ class Trend:
     keywords: List[str] = field(default_factory=list)
     timestamp: Optional[datetime] = None
     image_url: Optional[str] = None
+    metadata: Dict = field(default_factory=dict)
 
 
 class TrendCollector:
@@ -70,11 +71,7 @@ class TrendCollector:
         self.trends: List[Trend] = []
         self.global_keywords: List[str] = []
         self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": "Mozilla/5.0 (compatible; CMMCWatch/1.0; +https://cmmcwatch.com)"
-            }
-        )
+        self.session.headers.update({"User-Agent": "Mozilla/5.0 (compatible; CMMCWatch/1.0; +https://cmmcwatch.com)"})
         # Connection pooling for parallel RSS fetching
         adapter = requests.adapters.HTTPAdapter(
             pool_connections=10,
@@ -142,22 +139,19 @@ class TrendCollector:
                     "score": t.score,
                     "keywords": t.keywords,
                     "image_url": t.image_url,
+                    "metadata": t.metadata,
                 }
             )
 
         # Run validation
         validator = StoryValidator()
-        valid_dicts, rejected_dicts = validator.validate_stories(
-            trend_dicts, use_ai=True
-        )
+        valid_dicts, rejected_dicts = validator.validate_stories(trend_dicts, use_ai=True)
 
         # Log rejections
         if rejected_dicts:
             logger.info(f"AI validation rejected {len(rejected_dicts)} stories:")
             for r in rejected_dicts[:5]:
-                logger.info(
-                    f"  - {r.get('title', '')[:50]}: {r.get('rejection_reason', 'unknown')}"
-                )
+                logger.info(f"  - {r.get('title', '')[:50]}: {r.get('rejection_reason', 'unknown')}")
             if len(rejected_dicts) > 5:
                 logger.info(f"  ... and {len(rejected_dicts) - 5} more")
 
@@ -184,6 +178,7 @@ class TrendCollector:
                 keywords=td.get("keywords", []),
                 timestamp=timestamp,
                 image_url=td.get("image_url"),
+                metadata=td.get("metadata", {}),
             )
             self.trends.append(trend)
 
@@ -195,9 +190,7 @@ class TrendCollector:
         wait=wait_exponential(multiplier=1, min=1, max=10),
         reraise=True,
     )
-    def _fetch_rss_with_retry(
-        self, feed_url: str, timeout: int = 15
-    ) -> requests.Response:
+    def _fetch_rss_with_retry(self, feed_url: str, timeout: int = 15) -> requests.Response:
         """Fetch RSS feed with retry logic."""
         response = self.session.get(feed_url, timeout=timeout)
         response.raise_for_status()
@@ -207,9 +200,7 @@ class TrendCollector:
         """Collect trends from a single RSS feed. Thread-safe."""
         trends = []
         try:
-            response = self._fetch_rss_with_retry(
-                feed_url, timeout=TIMEOUTS.get("rss_feed", 15)
-            )
+            response = self._fetch_rss_with_retry(feed_url, timeout=TIMEOUTS.get("rss_feed", 15))
             feed = feedparser.parse(response.content)
 
             for entry in feed.entries[: LIMITS.get("rss", 20)]:
@@ -248,8 +239,7 @@ class TrendCollector:
 
         with ThreadPoolExecutor(max_workers=5) as executor:
             futures = {
-                executor.submit(self._collect_single_rss_feed, name, url): name
-                for name, url in CMMC_RSS_FEEDS.items()
+                executor.submit(self._collect_single_rss_feed, name, url): name for name, url in CMMC_RSS_FEEDS.items()
             }
             for future in as_completed(futures):
                 feed_name = futures[future]
@@ -298,9 +288,7 @@ class TrendCollector:
                         include_post = True
                     else:
                         content = (title + " " + description).lower()
-                        include_post = any(
-                            kw.lower() in content for kw in CMMC_KEYWORDS
-                        )
+                        include_post = any(kw.lower() in content for kw in CMMC_KEYWORDS)
 
                     if include_post:
                         trend = Trend(
@@ -350,6 +338,11 @@ class TrendCollector:
                     score=td.get("score", 1.5),
                     keywords=td.get("keywords", []),
                     image_url=td.get("image_url"),
+                    metadata={
+                        "linkedin_author_picture": td.get("linkedin_author_picture"),
+                        "linkedin_author_headline": td.get("linkedin_author_headline"),
+                        "linkedin_engagement": td.get("linkedin_engagement", {}),
+                    },
                 )
                 self.trends.append(trend)
 
@@ -427,9 +420,7 @@ class TrendCollector:
         if len(clean) > max_length:
             truncated = clean[:max_length]
             # Find last sentence boundary
-            last_period = max(
-                truncated.rfind(". "), truncated.rfind("! "), truncated.rfind("? ")
-            )
+            last_period = max(truncated.rfind(". "), truncated.rfind("! "), truncated.rfind("? "))
 
             # If found a good sentence boundary with reasonable content
             if last_period > 300:
@@ -486,9 +477,7 @@ class TrendCollector:
         # Check media_content
         if hasattr(entry, "media_content") and entry.media_content:
             for media in entry.media_content:
-                if media.get("medium") == "image" or media.get("type", "").startswith(
-                    "image"
-                ):
+                if media.get("medium") == "image" or media.get("type", "").startswith("image"):
                     url = media.get("url")
                     if url and self._is_valid_image_url(url):
                         return url
@@ -583,10 +572,7 @@ class TrendCollector:
             "arcpublishing",
         ]
 
-        has_extension = any(
-            url_lower.endswith(ext) or f"{ext}?" in url_lower
-            for ext in image_extensions
-        )
+        has_extension = any(url_lower.endswith(ext) or f"{ext}?" in url_lower for ext in image_extensions)
         from_cdn = any(cdn in url_lower for cdn in image_cdns)
 
         return has_extension or from_cdn
@@ -608,9 +594,7 @@ class TrendCollector:
         ]
 
         trends_to_fetch = [
-            t
-            for t in self.trends
-            if not t.image_url and any(s in t.source for s in sources_with_og_image)
+            t for t in self.trends if not t.image_url and any(s in t.source for s in sources_with_og_image)
         ]
 
         if not trends_to_fetch:
@@ -757,9 +741,7 @@ class TrendCollector:
                     keyword_counts[word] = keyword_counts.get(word, 0) + 1
 
         # Sort by frequency
-        sorted_keywords = sorted(
-            keyword_counts.items(), key=lambda x: x[1], reverse=True
-        )
+        sorted_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)
         self.global_keywords = [kw for kw, _ in sorted_keywords[:100]]
 
         logger.info(f"Found {len(self.global_keywords)} global keywords")

@@ -134,16 +134,7 @@
         </div>
     </section>
     
-    <!-- Word Cloud -->
-    <section class="word-cloud-section" aria-label="Trending keywords">
-        <div class="word-cloud">
-            {% for word, freq, size in word_cloud %}
-            <span class="word-cloud-item size-{{ size }}" role="img" aria-label="{{ word }}">{{ word }}</span>
-            {% endfor %}
-        </div>
-    </section>
-
-    <!-- Ad Unit 1 - After Word Cloud -->
+    <!-- Ad Unit 1 -->
     <div class="ad-container" aria-label="Advertisement">
         <ins class="adsbygoogle"
              style="display:block"
@@ -154,65 +145,103 @@
         <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
-    <!-- Top Stories - Compact Horizontal Layout -->
-    {% set display_top_stories = top_stories[:9] %}
-    <section class="section top-stories-section">
-        <div class="section-header">
-            <h2 class="section-title">Top Stories</h2>
-            <span class="section-count">{{ display_top_stories|length }}</span>
-        </div>
-        <div class="top-stories">
-            {% for story in display_top_stories %}
-            {% set summary = story.summary or story.description %}
-            <article class="story-card {% if loop.first %}featured{% endif %}{% if not summary %} no-summary{% endif %}">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" data-source="{{ story.source_display or (story.source | replace('_', ' ') | title) }}" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper clickable-card" data-href="{{ story.url }}" role="link" tabindex="0" aria-label="Read story: {{ story.title }}">
-                    <figure class="story-media">
-                        {% set img_src = story.image_url or placeholder_image_url %}
-                        {% set alt_text = story.title if story.image_url else ((story.category if story.category else story.source | replace('_', ' ') | title) + ' story: ' + story.title) %}
-                        <img src="{{ img_src }}"
-                             alt="{{ alt_text }}"
-                             class="story-image{% if not story.image_url %} placeholder{% endif %}"
-                             loading="{% if loop.index <= 3 %}eager{% else %}lazy{% endif %}"
-                             fetchpriority="{% if loop.first %}high{% elif loop.index <= 3 %}auto{% else %}low{% endif %}"
-                             decoding="async"
-                             referrerpolicy="no-referrer"
-                             width="800"
-                             height="450">
-                        {# Overlay badges on image #}
-                        {% set source_name = story.source_display or (story.source | replace('_', ' ') | title) %}
-                        {% set source_class = story.source | lower | replace(' ', '-') | replace('_', '-') %}
-                        <span class="image-source-badge {{ source_class }}">{{ source_name }}</span>
-                        <span class="image-date-badge">{{ story.time_ago }}</span>
-                    </figure>
+    <!-- Top Stories + Influencer Spotlight -->
+    <div class="main-content-grid {% if not linkedin_stories %}full-width{% endif %}">
+        <!-- Top Stories (2/3) -->
+        {% set display_top_stories = top_stories[:9] %}
+        <section class="section top-stories-section">
+            <div class="section-header">
+                <h2 class="section-title">Top Stories</h2>
+                <span class="section-count">{{ display_top_stories|length }}</span>
+            </div>
+            <div class="top-stories">
+                {% for story in display_top_stories %}
+                {% set summary = story.summary or story.description %}
+                <article class="story-card {% if loop.first %}featured{% endif %}{% if not summary %} no-summary{% endif %}">
+                    <div class="story-actions">
+                        <button class="save-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" data-source="{{ story.source_display or (story.source | replace('_', ' ') | title) }}" aria-label="Save story" aria-pressed="false" title="Save for later">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                        </button>
+                        <button class="share-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" aria-label="Share story" title="Share">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                        </button>
+                    </div>
+                    <div class="story-wrapper clickable-card" data-href="{{ story.url }}" role="link" tabindex="0" aria-label="Read story: {{ story.title }}">
+                        <figure class="story-media">
+                            {% set img_src = story.image_url or placeholder_image_url %}
+                            {% set alt_text = story.title if story.image_url else ((story.category if story.category else story.source | replace('_', ' ') | title) + ' story: ' + story.title) %}
+                            <img src="{{ img_src }}"
+                                 alt="{{ alt_text }}"
+                                 class="story-image{% if not story.image_url %} placeholder{% endif %}"
+                                 loading="{% if loop.index <= 3 %}eager{% else %}lazy{% endif %}"
+                                 fetchpriority="{% if loop.first %}high{% elif loop.index <= 3 %}auto{% else %}low{% endif %}"
+                                 decoding="async"
+                                 referrerpolicy="no-referrer"
+                                 width="800"
+                                 height="450">
+                            {# Overlay badges on image #}
+                            {% set source_name = story.source_display or (story.source | replace('_', ' ') | title) %}
+                            {% set source_class = story.source | lower | replace(' ', '-') | replace('_', '-') %}
+                            <span class="image-source-badge {{ source_class }}">{{ source_name }}</span>
+                            <span class="image-date-badge">{{ story.time_ago }}</span>
+                        </figure>
 
-                    <div class="story-content">
-                        <h3 class="story-title">
-                            <a href="{{ story.url }}" target="_blank" rel="noopener" tabindex="-1">{{ story.title }}</a>
-                        </h3>
+                        <div class="story-content">
+                            <h3 class="story-title">
+                                <a href="{{ story.url }}" target="_blank" rel="noopener" tabindex="-1">{{ story.title }}</a>
+                            </h3>
 
-                        {% if summary %}
-                        <p class="story-summary">{{ summary[:120] }}{% if summary|length > 120 %}...{% endif %}</p>
+                            {% if summary %}
+                            <p class="story-summary">{{ summary[:120] }}{% if summary|length > 120 %}...{% endif %}</p>
+                            {% endif %}
+
+                            <footer class="story-meta">
+                                <span>{{ story.source_display or (story.source | replace('_', ' ') | title) }}</span>
+                                <span aria-hidden="true">•</span>
+                                <time datetime="{{ story.timestamp_iso }}">{{ story.time_ago }}</time>
+                            </footer>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Influencer Spotlight (1/3 sidebar) -->
+        {% if linkedin_stories %}
+        <aside class="influencer-spotlight">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <svg class="linkedin-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                    Influencer Spotlight
+                </h2>
+            </div>
+            {% for post in linkedin_stories %}
+            <article class="influencer-card clickable-card" data-href="{{ post.url }}">
+                <div class="influencer-header">
+                    {% set avatar_url = post.metadata.linkedin_author_picture if post.metadata and post.metadata.linkedin_author_picture else placeholder_image_url %}
+                    <img class="influencer-avatar" src="{{ avatar_url }}" alt="{{ post.source_display }}" loading="lazy" referrerpolicy="no-referrer">
+                    <div class="influencer-info">
+                        <span class="influencer-name">{{ post.title.split(':')[0] }}</span>
+                        {% if post.metadata and post.metadata.linkedin_author_headline %}
+                        <span class="influencer-headline">{{ post.metadata.linkedin_author_headline }}</span>
                         {% endif %}
-
-                        <footer class="story-meta">
-                            <span>{{ story.source_display or (story.source | replace('_', ' ') | title) }}</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="{{ story.timestamp_iso }}">{{ story.time_ago }}</time>
-                        </footer>
                     </div>
                 </div>
+                <p class="influencer-excerpt">{{ post.description[:150] }}{% if post.description|length > 150 %}...{% endif %}</p>
+                <footer class="influencer-meta">
+                    {% if post.metadata and post.metadata.linkedin_engagement %}
+                    <span class="influencer-engagement">{{ post.metadata.linkedin_engagement.total_reactions }} reactions</span>
+                    {% endif %}
+                    <time>{{ post.time_ago }}</time>
+                </footer>
             </article>
             {% endfor %}
-        </div>
-    </section>
+        </aside>
+        {% endif %}
+    </div>
 
     <!-- Ad Unit 2 - After Top Stories -->
     <div class="ad-container" aria-label="Advertisement">
@@ -225,60 +254,48 @@
         <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
-    <!-- Category Sections -->
-    {% for category in categories %}
-    <section class="section category-section" aria-labelledby="cat-{{ category.title|lower|replace(' ', '-') }}">
+    <!-- Category Sections - Tabbed Interface -->
+    <section class="section tabbed-categories-section">
         <div class="section-header">
-            <h2 id="cat-{{ category.title|lower|replace(' ', '-') }}" class="section-title">{{ category.title }}</h2>
-            <span class="section-count">{{ category.count }}</span>
+            <h2 class="section-title">Latest News by Category</h2>
         </div>
-        <div class="stories-grid" style="--category-columns: {{ category.columns }}">
-            {% set category_stories = category.stories %}
-            {% for story in category_stories %}
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" data-source="{{ story.source_display or (story.source | replace('_', ' ') | title) }}" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper clickable-card" data-href="{{ story.url }}" role="link" tabindex="0" aria-label="Read story: {{ story.title }}">
-                    <figure class="story-media">
-                        {% set img_src = story.image_url or placeholder_image_url %}
-                        {% set alt_text = story.title if story.image_url else ((story.category if story.category else story.source | replace('_', ' ') | title) + ' story: ' + story.title) %}
-                        <img src="{{ img_src }}"
-                             alt="{{ alt_text }}"
-                             class="story-image{% if not story.image_url %} placeholder{% endif %}"
-                             loading="lazy"
-                             fetchpriority="low"
-                             decoding="async"
-                             referrerpolicy="no-referrer"
-                             width="400"
-                             height="225">
-                        {# Overlay badges on image #}
-                        {% set source_name = story.source_display or (story.source | replace('_', ' ') | title) %}
-                        {% set source_class = story.source | lower | replace(' ', '-') | replace('_', '-') %}
-                        <span class="image-source-badge {{ source_class }}">{{ source_name }}</span>
-                        <span class="image-date-badge">{{ story.time_ago }}</span>
-                    </figure>
-                    <div class="story-content">
-                        <h3 class="story-title">
-                            <a href="{{ story.url }}" target="_blank" rel="noopener" tabindex="-1">{{ story.title }}</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>{{ story.source_display or (story.source | replace('_', ' ') | title) }}</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="{{ story.timestamp_iso }}">{{ story.time_ago }}</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
+        <div class="tab-bar" role="tablist">
+            <button class="tab-button active" role="tab" aria-selected="true" data-tab="all">All</button>
+            {% for category in categories %}
+            <button class="tab-button" role="tab" aria-selected="false" data-tab="{{ loop.index }}">{{ category.title }}</button>
             {% endfor %}
         </div>
+
+        <!-- All tab: compact list of everything -->
+        <div class="tab-panel active" role="tabpanel" data-panel="all">
+            <div class="compact-story-list">
+                {% for category in categories %}
+                {% for story in category.stories %}
+                <a href="{{ story.url }}" target="_blank" rel="noopener" class="compact-story-row">
+                    <span class="compact-source-badge {{ story.source|lower|replace(' ','-')|replace('_','-') }}">{{ story.source_display or (story.source|replace('_',' ')|title) }}</span>
+                    <span class="compact-story-title">{{ story.title }}</span>
+                    <time class="compact-story-time">{{ story.time_ago }}</time>
+                </a>
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Per-category tabs -->
+        {% for category in categories %}
+        <div class="tab-panel" role="tabpanel" data-panel="{{ loop.index }}">
+            <div class="compact-story-list">
+                {% for story in category.stories %}
+                <a href="{{ story.url }}" target="_blank" rel="noopener" class="compact-story-row">
+                    <span class="compact-source-badge {{ story.source|lower|replace(' ','-')|replace('_','-') }}">{{ story.source_display or (story.source|replace('_',' ')|title) }}</span>
+                    <span class="compact-story-title">{{ story.title }}</span>
+                    <time class="compact-story-time">{{ story.time_ago }}</time>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
     </section>
-    {% endfor %}
 
     <!-- Reddit Community Discussions Section -->
     {% if reddit_stories %}

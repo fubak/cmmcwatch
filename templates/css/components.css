@@ -524,6 +524,262 @@
     }
 }
 
+/* ===== MAIN CONTENT GRID (Top Stories + Influencer Sidebar) ===== */
+.main-content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-bottom: var(--section-gap);
+}
+
+.main-content-grid.full-width {
+    grid-template-columns: 1fr;
+}
+
+.main-content-grid .top-stories-section {
+    margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+    .main-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== INFLUENCER SPOTLIGHT ===== */
+.influencer-spotlight .section-header {
+    margin-bottom: 1rem;
+}
+
+.influencer-spotlight .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.influencer-card {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.influencer-card:hover {
+    border-color: #0A66C2;
+    transform: translateY(-2px);
+}
+
+.influencer-header {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.influencer-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.influencer-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.influencer-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-text);
+}
+
+.influencer-headline {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.influencer-excerpt {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    margin: 0.5rem 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
+.influencer-meta {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.influencer-engagement {
+    color: #0A66C2;
+    font-weight: 500;
+}
+
+.linkedin-icon {
+    color: #0A66C2;
+    flex-shrink: 0;
+}
+
+/* ===== TABBED CATEGORIES ===== */
+.tabbed-categories-section .section-header {
+    margin-bottom: 1rem;
+}
+
+.tab-bar {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 2px solid var(--color-border);
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.tab-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.tab-button {
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    color: var(--color-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    font-family: var(--font-secondary);
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.tab-button.active {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+    font-weight: 600;
+}
+
+.tab-button:hover {
+    color: var(--color-text);
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+.compact-story-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.compact-story-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+    text-decoration: none;
+    color: var(--color-text);
+    transition: background 0.15s ease;
+}
+
+.compact-story-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.compact-story-row:last-child {
+    border-bottom: none;
+}
+
+.compact-source-badge {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    background: var(--color-card-bg);
+    color: var(--color-muted);
+    white-space: nowrap;
+    min-width: 80px;
+    text-align: center;
+    border: 1px solid var(--color-border);
+}
+
+.compact-story-title {
+    flex: 1;
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.compact-story-time {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    white-space: nowrap;
+}
+
+/* Light mode adjustments */
+.light-mode .compact-story-row:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.light-mode .influencer-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile adjustments for tabs */
+@media (max-width: 768px) {
+    .tab-button {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .compact-story-row {
+        gap: 0.5rem;
+        padding: 0.5rem 0.25rem;
+    }
+
+    .compact-source-badge {
+        min-width: 60px;
+        font-size: 0.65rem;
+        padding: 0.1rem 0.35rem;
+    }
+
+    .compact-story-title {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .compact-source-badge {
+        display: none;
+    }
+
+    .compact-story-time {
+        font-size: 0.7rem;
+    }
+}
+
 /* ===== CROSS-BROWSER COMPATIBILITY ===== */
 /* Use modern CSS features with fallbacks where necessary */
 /* Flexbox and Grid are widely supported, but consider prefixes if targeting older browsers */

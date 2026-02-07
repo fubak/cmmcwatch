@@ -88,16 +88,8 @@ class WebsiteBuilder:
             layout_style = self.design.get("layout_style")
             hero_style = self.design.get("hero_style")
         else:
-            layout_style = (
-                self.design.layout_style
-                if self.design and hasattr(self.design, "layout_style")
-                else None
-            )
-            hero_style = (
-                self.design.hero_style
-                if self.design and hasattr(self.design, "hero_style")
-                else None
-            )
+            layout_style = self.design.layout_style if self.design and hasattr(self.design, "layout_style") else None
+            hero_style = self.design.hero_style if self.design and hasattr(self.design, "hero_style") else None
 
         self.layout = layout_style or self.rng.choice(LAYOUT_TEMPLATES)
         self.hero_style = hero_style or self.rng.choice(HERO_STYLES)
@@ -140,17 +132,17 @@ class WebsiteBuilder:
         Excludes stories already used in hero/top stories sections (prevents duplicates).
         """
         categories = []
-        sorted_groups = sorted(
-            self.grouped_trends.items(), key=lambda x: len(x[1]), reverse=True
-        )
+        sorted_groups = sorted(self.grouped_trends.items(), key=lambda x: len(x[1]), reverse=True)
         for title, stories in sorted_groups:
-            # Filter out already-used URLs and Reddit sources
+            # Filter out already-used URLs, Reddit sources, and LinkedIn sources
             # Reddit posts only appear in the dedicated Reddit section
+            # LinkedIn posts only appear in the dedicated Influencer Spotlight sidebar
             available_stories = [
                 s
                 for s in stories
                 if s.get("url") not in self._used_urls
                 and not self._is_reddit_source(s.get("source", ""))
+                and not self._is_linkedin_source(s.get("source", ""))
             ]
 
             if not available_stories:
@@ -168,9 +160,7 @@ class WebsiteBuilder:
             columns = self._choose_column_count(len(display_stories))
 
             # Use display-friendly title if available, otherwise clean up the raw title
-            display_title = self.CATEGORY_DISPLAY_MAP.get(
-                title, title.replace("_", " ").title()
-            )
+            display_title = self.CATEGORY_DISPLAY_MAP.get(title, title.replace("_", " ").title())
 
             categories.append(
                 {
@@ -218,11 +208,7 @@ class WebsiteBuilder:
         if source in self.SOURCE_DISPLAY_MAP:
             return self.SOURCE_DISPLAY_MAP[source]
         # Fallback: clean up the source name
-        name = (
-            source.replace("cmmc_rss_", "")
-            .replace("cmmc_reddit_", "r/")
-            .replace("cmmc_", "")
-        )
+        name = source.replace("cmmc_rss_", "").replace("cmmc_reddit_", "r/").replace("cmmc_", "")
         return name.replace("_", " ").title()
 
     def _find_relevant_hero_image(self) -> Optional[Dict]:
@@ -416,9 +402,7 @@ class WebsiteBuilder:
 
             # Set display-friendly category name for badge
             trend["category"] = category
-            trend["category_display"] = self.CATEGORY_DISPLAY_MAP.get(
-                category, category.replace("_", " ").title()
-            )
+            trend["category_display"] = self.CATEGORY_DISPLAY_MAP.get(category, category.replace("_", " ").title())
 
             # Set display-friendly source name
             trend["source_display"] = self._get_source_display_name(source)
@@ -494,9 +478,7 @@ class WebsiteBuilder:
         def get_timestamp(story: Dict) -> datetime:
             """Parse story timestamp, return epoch if invalid."""
             try:
-                return datetime.strptime(
-                    story.get("timestamp", ""), "%Y-%m-%d %H:%M:%S"
-                )
+                return datetime.strptime(story.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
             except (ValueError, TypeError):
                 return datetime(1970, 1, 1)
 
@@ -510,6 +492,9 @@ class WebsiteBuilder:
             source = story.get("source", "unknown")
             # Exclude Reddit sources - they go in dedicated section
             if self._is_reddit_source(source):
+                return False
+            # Exclude LinkedIn sources - they go in dedicated sidebar
+            if self._is_linkedin_source(source):
                 return False
             return source_counts[source] < MAX_PER_SOURCE
 
@@ -537,9 +522,7 @@ class WebsiteBuilder:
         other_stories.sort(key=lambda x: get_timestamp(x), reverse=True)
 
         # Check if we have any stories from today
-        has_todays_stories = any(
-            is_from_today(t) for t in relevant_stories + other_stories
-        )
+        has_todays_stories = any(is_from_today(t) for t in relevant_stories + other_stories)
 
         # Slot 1: Hero - CMMC-relevant story (with rotation)
         hero = self._get_hero_story()
@@ -574,21 +557,12 @@ class WebsiteBuilder:
                     add_story(story)
         else:
             # No fresh content - apply rotation to ensure variety across days
-            rotation_offset = (
-                day_of_year % max(1, len(relevant_stories) // 3)
-                if relevant_stories
-                else 0
-            )
+            rotation_offset = day_of_year % max(1, len(relevant_stories) // 3) if relevant_stories else 0
 
             # First fill with CMMC-relevant stories (rotated)
-            eligible_relevant = [
-                s for s in relevant_stories if s.get("url") not in selected_urls
-            ]
+            eligible_relevant = [s for s in relevant_stories if s.get("url") not in selected_urls]
             if eligible_relevant:
-                rotated = (
-                    eligible_relevant[rotation_offset:]
-                    + eligible_relevant[:rotation_offset]
-                )
+                rotated = eligible_relevant[rotation_offset:] + eligible_relevant[:rotation_offset]
                 for story in rotated:
                     if len(top_stories) >= 9:
                         break
@@ -598,12 +572,8 @@ class WebsiteBuilder:
                         add_story(story)
 
             # Fill remaining with other stories (rotated)
-            other_offset = (
-                day_of_year % max(1, len(other_stories) // 3) if other_stories else 0
-            )
-            eligible_other = [
-                s for s in other_stories if s.get("url") not in selected_urls
-            ]
+            other_offset = day_of_year % max(1, len(other_stories) // 3) if other_stories else 0
+            eligible_other = [s for s in other_stories if s.get("url") not in selected_urls]
             if eligible_other:
                 rotated = eligible_other[other_offset:] + eligible_other[:other_offset]
                 for story in rotated:
@@ -643,6 +613,32 @@ class WebsiteBuilder:
 
         # Limit to 12 stories (3 rows of 4)
         return result
+
+    def _get_linkedin_stories(self) -> List[Dict]:
+        """Get LinkedIn influencer posts for the dedicated sidebar.
+
+        Excludes LinkedIn stories already used elsewhere.
+        Returns LinkedIn stories sorted by score, limited to 10 items.
+        """
+        linkedin_stories = []
+        for trend in self.ctx.trends:
+            source = trend.get("source", "")
+            url = trend.get("url", "")
+            if source == "cmmc_linkedin" and url not in self._used_urls:
+                linkedin_stories.append(trend)
+
+        # Sort by score (highest first)
+        linkedin_stories.sort(key=lambda x: x.get("score", 0), reverse=True)
+
+        result = linkedin_stories[:10]
+        for s in result:
+            self._used_urls.add(s.get("url"))
+
+        return result
+
+    def _is_linkedin_source(self, source: str) -> bool:
+        """Check if a source is from LinkedIn."""
+        return source == "cmmc_linkedin"
 
     def _is_cmmc_relevant(self, story: Dict) -> bool:
         """Check if a story is relevant to CMMC, compliance, DIB, or federal contracts.
@@ -714,9 +710,7 @@ class WebsiteBuilder:
 
         def get_timestamp(story: Dict) -> datetime:
             try:
-                return datetime.strptime(
-                    story.get("timestamp", ""), "%Y-%m-%d %H:%M:%S"
-                )
+                return datetime.strptime(story.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
             except (ValueError, TypeError):
                 return datetime(1970, 1, 1)
 
@@ -730,41 +724,27 @@ class WebsiteBuilder:
 
         # First, try CMMC-relevant stories from today with images
         todays_relevant_with_image = [
-            s
-            for s in relevant_stories
-            if get_timestamp(s).date() == today and s.get("image_url")
+            s for s in relevant_stories if get_timestamp(s).date() == today and s.get("image_url")
         ]
         if todays_relevant_with_image:
-            return todays_relevant_with_image[
-                day_of_year % len(todays_relevant_with_image)
-            ]
+            return todays_relevant_with_image[day_of_year % len(todays_relevant_with_image)]
 
         # Second, try any CMMC-relevant story from today
-        todays_relevant = [
-            s for s in relevant_stories if get_timestamp(s).date() == today
-        ]
+        todays_relevant = [s for s in relevant_stories if get_timestamp(s).date() == today]
         if todays_relevant:
             return todays_relevant[day_of_year % len(todays_relevant)]
 
         # Third, use most recent CMMC-relevant stories with rotation
         if relevant_stories:
-            sorted_relevant = sorted(
-                relevant_stories, key=lambda x: get_timestamp(x), reverse=True
-            )
+            sorted_relevant = sorted(relevant_stories, key=lambda x: get_timestamp(x), reverse=True)
             # Rotate through top 15 relevant stories
             rotation_pool = sorted_relevant[:15]
             return rotation_pool[day_of_year % len(rotation_pool)]
 
         # Fallback: No CMMC-relevant stories - use any non-Reddit story
-        all_non_reddit = [
-            t
-            for t in self.ctx.trends
-            if not self._is_reddit_source(t.get("source", ""))
-        ]
+        all_non_reddit = [t for t in self.ctx.trends if not self._is_reddit_source(t.get("source", ""))]
         if all_non_reddit:
-            sorted_all = sorted(
-                all_non_reddit, key=lambda x: get_timestamp(x), reverse=True
-            )
+            sorted_all = sorted(all_non_reddit, key=lambda x: get_timestamp(x), reverse=True)
             rotation_pool = sorted_all[:15]
             return rotation_pool[day_of_year % len(rotation_pool)]
 
@@ -779,9 +759,7 @@ class WebsiteBuilder:
 
         description = ""
         try:
-            response = requests.get(
-                url, timeout=6, headers={"User-Agent": "DailyTrendingBot/1.0"}
-            )
+            response = requests.get(url, timeout=6, headers={"User-Agent": "DailyTrendingBot/1.0"})
             if response.status_code >= 400:
                 self._description_cache[url] = ""
                 return ""
@@ -883,9 +861,7 @@ class WebsiteBuilder:
                     freq[kw.lower()] += 1
             else:
                 # Extract keywords from title and description
-                text = (
-                    trend.get("title", "") + " " + trend.get("description", "")
-                ).lower()
+                text = (trend.get("title", "") + " " + trend.get("description", "")).lower()
                 words = re.findall(r"\b[a-zA-Z]{4,}\b", text)
                 for word in words:
                     if word not in stopwords:
@@ -1029,13 +1005,10 @@ class WebsiteBuilder:
                     "@type": "NewsArticle",
                     "headline": story.get("title", ""),
                     "url": story.get("url", ""),
-                    "datePublished": story.get(
-                        "timestamp_iso", datetime.now().isoformat()
-                    ),
+                    "datePublished": story.get("timestamp_iso", datetime.now().isoformat()),
                     "publisher": {
                         "@type": "Organization",
-                        "name": story.get("source_display")
-                        or story.get("source", "").replace("_", " ").title(),
+                        "name": story.get("source_display") or story.get("source", "").replace("_", " ").title(),
                     },
                 },
             }
@@ -1046,9 +1019,7 @@ class WebsiteBuilder:
 
             # Add description if available
             if story.get("summary") or story.get("description"):
-                item["item"]["description"] = story.get("summary") or story.get(
-                    "description"
-                )
+                item["item"]["description"] = story.get("summary") or story.get("description")
 
             item_list_elements.append(item)
 
@@ -1233,9 +1204,7 @@ class WebsiteBuilder:
         if self.ctx.images:
             for img in self.ctx.images:
                 alt_text = (img.get("alt_text", "") or "").lower()
-                if any(
-                    kw in alt_text for kw in ["hacker", "cyber", "security", "mask"]
-                ):
+                if any(kw in alt_text for kw in ["hacker", "cyber", "security", "mask"]):
                     return img.get("url_large") or img.get("url_original", "")
 
             # Fall back to first stock image
@@ -1244,9 +1213,7 @@ class WebsiteBuilder:
 
         # Fall back to hero image if no stock images
         if self._hero_image:
-            return self._hero_image.get("url_large") or self._hero_image.get(
-                "url_original", ""
-            )
+            return self._hero_image.get("url_large") or self._hero_image.get("url_original", "")
 
         return ""
 
@@ -1273,10 +1240,7 @@ class WebsiteBuilder:
 
         for img in self.ctx.images:
             alt_text = (img.get("alt_text", "") or "").lower()
-            if any(
-                kw in alt_text
-                for kw in ["hacker", "cyber", "security", "mask", "computer"]
-            ):
+            if any(kw in alt_text for kw in ["hacker", "cyber", "security", "mask", "computer"]):
                 cyber_images.append(img)
             else:
                 other_images.append(img)
@@ -1307,26 +1271,18 @@ class WebsiteBuilder:
                 alt_text = (img.get("alt_text", "") or "").lower()
                 if any(kw in alt_text for kw in keywords):
                     # Prefer least-used images
-                    if best_img is None or used_count[img.get("id")] < used_count.get(
-                        best_img.get("id"), 0
-                    ):
+                    if best_img is None or used_count[img.get("id")] < used_count.get(best_img.get("id"), 0):
                         best_img = img
 
             # If no category match, use least-used image
             if not best_img:
-                best_img = min(
-                    fallback_pool, key=lambda x: used_count.get(x.get("id"), 0)
-                )
+                best_img = min(fallback_pool, key=lambda x: used_count.get(x.get("id"), 0))
 
             # Assign the image
             if best_img:
-                trend["image_url"] = best_img.get("url_medium") or best_img.get(
-                    "url_large"
-                )
+                trend["image_url"] = best_img.get("url_medium") or best_img.get("url_large")
                 trend["image_source"] = "stock"  # Mark as stock image
-                used_count[best_img.get("id")] = (
-                    used_count.get(best_img.get("id"), 0) + 1
-                )
+                used_count[best_img.get("id")] = used_count.get(best_img.get("id"), 0) + 1
 
     def build(self) -> str:
         """Render the website using Jinja2 templates."""
@@ -1356,9 +1312,7 @@ class WebsiteBuilder:
         hero_bg_css = FallbackImageGenerator.get_gradient_css()
         hero_image_url = ""
         if self._hero_image:
-            url = self._hero_image.get("url_large") or self._hero_image.get(
-                "url_medium"
-            )
+            url = self._hero_image.get("url_large") or self._hero_image.get("url_medium")
             if url:
                 hero_image_url = url
                 hero_bg_css = f"url('{url}') center center / cover no-repeat #0a0a0a"
@@ -1370,10 +1324,10 @@ class WebsiteBuilder:
         animation_level = d.get("animation_level", "subtle")
         custom_styles = f"""
             .hero-content {{
-                text-align: { 'center' if d.get('hero_style') in ['minimal', 'centered'] else 'left' };
+                text-align: {"center" if d.get("hero_style") in ["minimal", "centered"] else "left"};
             }}
             .story-card {{
-                border-radius: {d.get('card_radius', '1rem')};
+                border-radius: {d.get("card_radius", "1rem")};
             }}
         """
 
@@ -1432,10 +1386,12 @@ class WebsiteBuilder:
         section_gap = section_gap_map.get(spacing, "3.5rem")
 
         # IMPORTANT: Order matters for deduplication!
-        # 1. First select hero and top stories (this populates _used_urls)
-        # 2. Then prepare categories (which excludes _used_urls)
+        # 1. Extract LinkedIn stories first (dedicated sidebar)
+        linkedin_stories = self._get_linkedin_stories()
+        # 2. Hero and top stories (this populates _used_urls further)
         hero_story = self._get_hero_story()
         top_stories = self._select_top_stories()
+        # 3. Categories (excludes all already-used URLs)
         categories = self._prepare_categories()
 
         # Build context variables for the template
@@ -1482,8 +1438,8 @@ class WebsiteBuilder:
             "top_stories": top_stories,
             "trends": self.ctx.trends,
             "reddit_stories": self._get_reddit_stories(),
+            "linkedin_stories": linkedin_stories,
             "total_trends_count": len(self.ctx.trends),
-            "word_cloud": self.keyword_freq,
             "categories": categories,
             # SEO - Dynamic OG image from stock collection for social sharing
             "og_image_url": self._get_og_image_url(),
