@@ -233,34 +233,25 @@ INSIDER_THREAT_KEYWORDS = [
 # ============================================================================
 
 # Key CMMC and national security influencers to track on LinkedIn
-# Reduced to 4 key profiles to stay within Apify free tier ($5/month)
-# Full list available but commented out to reduce API costs
+# Uses apimaestro/linkedin-profile-posts actor (~$0.01/profile/run)
 CMMC_LINKEDIN_PROFILES = [
-    # Katie Arrington - DoD CIO (former CISO, original CMMC architect)
-    "https://www.linkedin.com/in/katie-arrington-a6949425/",
-    # Stacy Bostjanick - DoD CIO Chief DIB Cybersecurity (CMMC implementation lead)
-    "https://www.linkedin.com/in/stacy-bostjanick-a3b67173/",
-    # Matthew Travis - Cyber-AB CEO (former CISA Deputy Director)
-    "https://www.linkedin.com/in/matthewtravisdc/",
-    # Amira Armond - Kieri Solutions (C3PAO), cmmcaudit.org editor
-    "https://www.linkedin.com/in/amira-armond/",
-    # Additional profiles (uncomment if API budget allows):
+    # Government / CMMC Leadership:
+    "https://www.linkedin.com/in/katie-arrington-a6949425/",  # Katie Arrington - DoD CIO
+    "https://www.linkedin.com/in/stacy-bostjanick-a3b67173/",  # Stacy Bostjanick - CMMC implementation lead
+    "https://www.linkedin.com/in/matthewtravisdc/",  # Matthew Travis - Cyber-AB CEO
     # CMMC Industry Experts:
-    # "https://www.linkedin.com/in/mscottedwards/",  # Scott Edwards - Summit 7 CEO
-    # "https://www.linkedin.com/in/jacob-evan-horne/",  # Jacob Horne - Summit 7
-    # "https://www.linkedin.com/in/danielakridge/",  # Daniel Akridge - "That CMMC Show"
-    # "https://www.linkedin.com/in/jacobrhill/",  # Jacob Hill - Summit 7
-    # "https://www.linkedin.com/in/joybeland/",  # Joy Beland - CMMC consultant
-    # Government/National Security:
-    # "https://www.linkedin.com/in/sean-plankey/",  # Sean Plankey - CISA nominee
-    # "https://www.linkedin.com/in/kreaborncisa/",  # Chris Krebs - former CISA director
-    # "https://www.linkedin.com/in/glenn-gerstell/",  # Glenn Gerstell - former NSA General Counsel
+    "https://www.linkedin.com/in/amira-armond/",  # Amira Armond - Kieri Solutions (C3PAO)
+    "https://www.linkedin.com/in/mscottedwards/",  # Scott Edwards - Summit 7 CEO
+    "https://www.linkedin.com/in/jacob-evan-horne/",  # Jacob Horne - Summit 7
+    "https://www.linkedin.com/in/danielakridge/",  # Daniel Akridge - "That CMMC Show"
+    "https://www.linkedin.com/in/jacobrhill/",  # Jacob Hill - Summit 7
+    "https://www.linkedin.com/in/joybeland/",  # Joy Beland - CMMC consultant
 ]
 
 # LinkedIn scraper limits (to stay within Apify free tier)
 # Uses apimaestro/linkedin-profile-posts actor on Apify
-LINKEDIN_MAX_PROFILES = 4  # Max profiles per run (reduced from 10)
-LINKEDIN_MAX_POSTS_PER_PROFILE = 3  # Max posts per profile (reduced from 5)
+LINKEDIN_MAX_PROFILES = 10  # Max profiles per run
+LINKEDIN_MAX_POSTS_PER_PROFILE = 5  # Max posts per profile
 
 # ============================================================================
 # CMMC WATCH KEYWORDS (COMPOSITE)
@@ -332,7 +323,9 @@ TIMEOUTS = {
 RETRY_MAX_ATTEMPTS = 3
 RETRY_BACKOFF_FACTOR = 2  # Exponential backoff: 1s, 2s, 4s
 RETRY_STATUS_CODES = [429, 500, 502, 503, 504]
-MAX_RETRY_WAIT_SECONDS = 10  # Cap retry waits to prevent long delays (e.g., 360s from Groq)
+MAX_RETRY_WAIT_SECONDS = (
+    10  # Cap retry waits to prevent long delays (e.g., 360s from Groq)
+)
 
 # Rate limiting delays (seconds)
 DELAYS = {
@@ -442,7 +435,9 @@ ARCHIVE_SUBDIR = "archive"
 # ============================================================================
 
 RSS_FEED_TITLE = "CMMC Watch"
-RSS_FEED_DESCRIPTION = "Daily CMMC, NIST 800-171, and federal cybersecurity compliance news aggregator"
+RSS_FEED_DESCRIPTION = (
+    "Daily CMMC, NIST 800-171, and federal cybersecurity compliance news aggregator"
+)
 RSS_FEED_LINK = "https://cmmcwatch.com"
 RSS_FEED_MAX_ITEMS = 50
 
