@@ -38,6 +38,22 @@ img {
     display: block;
 }
 
+/* Skip link */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--color-accent);
+    color: #ffffff;
+    padding: 8px;
+    z-index: 100;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
 /* ===== TYPOGRAPHY ===== */
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-primary);
@@ -202,6 +218,26 @@ body.density-spacious {
     }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+
+    .ticker {
+        animation: none !important;
+    }
+
+    .story-card:hover {
+        transform: none;
+    }
+}
+
 /* ===== LOADING STATES / SKELETON SCREENS ===== */
 .story-image {
     background: linear-gradient(
@@ -317,24 +353,8 @@ body.density-spacious {
 }
 
 /* ===== THEME TRANSITIONS ===== */
-body,
-body *,
-body *::before,
-body *::after {
-    transition:
-        background-color 0.3s ease,
-        color 0.3s ease,
-        border-color 0.3s ease,
-        box-shadow 0.3s ease;
-}
-
-/* Disable transitions for elements that shouldn't animate */
-img,
-video,
-.story-image,
-.ad-container,
-.adsbygoogle {
-    transition: none !important;
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ===== MODE OVERRIDES ===== */

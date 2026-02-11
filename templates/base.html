@@ -16,7 +16,7 @@
     <link rel="canonical" href="{{ canonical_url }}">
 
     <!-- Theme Color -->
-    <meta name="theme-color" content="#0a0a0a">
+    <meta name="theme-color" content="{{ colors.bg }}">
     <meta name="color-scheme" content="dark light">
 
     <!-- Open Graph / Facebook -->
@@ -110,31 +110,6 @@
 
             --hero-bg: {{ hero_bg_css | safe }};
         }
-
-        /* Base Styles */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; font-size: 16px; }
-        body {
-            font-family: var(--font-secondary);
-            line-height: 1.6;
-            color: var(--color-text);
-            background: var(--color-bg);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        a { color: inherit; text-decoration: none; }
-        img { max-width: 100%; height: auto; }
-
-        /* Typography */
-        .headline-xl { font-family: var(--font-primary); font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; }
-        .headline-lg { font-family: var(--font-primary); font-size: clamp(1.75rem, 4vw, 3rem); font-weight: 700; line-height: 1.1; }
-        .headline-md { font-family: var(--font-primary); font-size: clamp(1.25rem, 2.5vw, 1.75rem); font-weight: 600; line-height: 1.2; }
-        
-        /* Layout Utilities */
-        .container { max-width: var(--max-width); margin: 0 auto; padding: 0 2rem; }
-        .section { margin-bottom: var(--section-gap); }
-        .skip-link { position: absolute; top: -40px; left: 0; background: var(--color-accent); color: white; padding: 8px; z-index: 100; transition: top 0.2s; }
-        .skip-link:focus { top: 0; }
 
         /* Component Styles */
         {% include "css/base.css" %}
