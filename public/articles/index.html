@@ -4,27 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Analysis | CMMC Watch</title>
-    <meta name="description" content="Browse 3 daily editorial articles analyzing trending news and technology stories. Search, filter by mood, and explore our archive.">
+    <meta name="description" content="Browse 8 daily editorial articles analyzing trending news and technology stories. Search, filter by mood, and explore our archive.">
     <link rel="canonical" href="https://cmmcwatch.com/articles/">
 
     <meta property="og:title" content="Daily Analysis | CMMC Watch">
-    <meta property="og:description" content="Browse 3 daily editorial articles analyzing trending news and technology stories.">
+    <meta property="og:description" content="Browse 8 daily editorial articles analyzing trending news and technology stories.">
     <meta property="og:type" content="website">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&family=Work+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue:wght@600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #5F9EA0;
-            --accent: #D3D3D3;
-            --bg: #0a0a0a;
-            --text: #ffffff;
-            --text-muted: #a1a1aa;
-            --border: #27272a;
-            --card-bg: #18181b;
-            --font-primary: 'Work Sans', system-ui, sans-serif;
-            --font-secondary: 'Work Sans', system-ui, sans-serif;
+            --primary: #16A085;
+            --accent: #1ABC9C;
+            --bg: #0f0a1a;
+            --text: #f5f3ff;
+            --text-muted: #9c8fac;
+            --border: #2e1f4a;
+            --card-bg: #1a1025;
+            --font-primary: 'Bebas Neue', system-ui, sans-serif;
+            --font-secondary: 'Inter', system-ui, sans-serif;
             /* Shared component color mappings */
             --color-text: var(--text);
             --color-muted: var(--text-muted);
@@ -900,15 +900,15 @@
 
         <div class="stats-bar" aria-label="Article statistics">
             <div class="stat">
-                <div class="stat-value" id="stat-articles">3</div>
+                <div class="stat-value" id="stat-articles">8</div>
                 <div class="stat-label">Articles</div>
             </div>
             <div class="stat">
-                <div class="stat-value">3,073</div>
+                <div class="stat-value">7,186</div>
                 <div class="stat-label">Total Words</div>
             </div>
             <div class="stat">
-                <div class="stat-value">0.3h</div>
+                <div class="stat-value">0.6h</div>
                 <div class="stat-label">Reading Time</div>
             </div>
         </div>
@@ -939,7 +939,9 @@
                 <select id="mood-filter">
                     <option value="all">All Moods</option>
                     <option value="concerned">Concerned</option>
+<option value="skeptical">Skeptical</option>
 <option value="transformative">Transformative</option>
+<option value="analytical">Analytical</option>
                 </select>
             </div>
 
@@ -982,7 +984,7 @@
         </div>
 
         <div class="results-info">
-            <span id="results-count">Showing 3 articles</span>
+            <span id="results-count">Showing 8 articles</span>
             <button class="clear-filters" id="clear-filters" style="display:none;">Clear filters</button>
         </div>
 
@@ -1005,7 +1007,7 @@
         'use strict';
 
         // Article data (server-rendered, escaped)
-        const ARTICLES = [{"title": "Beyond the Breach: Security's Silent Symphony of Shifting Priorities", "date": "2026-01-19", "url": "/articles/2026/01/19/security-shifting-priorities-cmmc-nist-cyber/", "summary": "The constant drumbeat of security news, from CMMC compliance to major breaches, signals a fundamental shift in government and industry priorities, moving beyond reactive defense to proactive, integrated data governance.", "mood": "Transformative", "word_count": 1064, "keywords": ["CMMC compliance evolution", "Data governance and transparency", "Cybersecurity as a strategic imperative", "Professionalization of cybersecurity careers"]}, {"title": "Cyber Chaos: Are We Trading Defense for Digital Dust?", "date": "2026-01-17", "url": "/articles/2026/01/17/cyber-chaos-trading-defense-digital-dust/", "summary": "Despite a surge in cybersecurity news, the federal government appears to be fumbling its defenses, prioritizing short-term budget plays over critical leadership and infrastructure, revealing a dangerous disconnect between perceived and actual national security.", "mood": "Concerned", "word_count": 999, "keywords": ["cybersecurity leadership", "federal IT modernization", "legacy system vulnerabilities", "cyber workforce challenges", "budgetary priorities vs. security needs"]}, {"title": "Cyber's Shadow: The Unseen Price of Digital Defense", "date": "2026-01-16", "url": "/articles/2026/01/16/cybers-shadow-unseen-price-digital-defense/", "summary": "Today's news reveals a stark reality: our national cyber defense is a patchwork of urgent needs and underfunded priorities, with critical leadership vacuums threatening our digital future.", "mood": "Concerned", "word_count": 1010, "keywords": ["cybersecurity", "government technology", "leadership voids", "legacy systems", "national security"]}];
+        const ARTICLES = [{"title": "Security's Tight Grip: Beyond the Buzzwords, What's Truly Driving Our Digital World?", "date": "2026-02-11", "url": "/articles/2026/02/11/securitys-tight-grip-beyond-buzzwords-driving-digital-world/", "summary": "Today's news shows 'security' is the dominant force, not just a feature, shaping everything from military tech to compliance tools, demanding a critical look at its true cost.", "mood": "Skeptical", "word_count": 437, "keywords": ["Security as a primary driver", "AI in cybersecurity operations", "CMMC compliance and GRC tools", "Military technology acquisition", "Ransomware and cyber threats"]}, {"title": "Defense Tech's Great Acceleration: From Arctic Missions to Encrypted Keys", "date": "2026-01-25", "url": "/articles/2026/01/25/defense-tech-acceleration-arctic-keys/", "summary": "Today's stories reveal a defense technology sector in rapid, often contradictory, acceleration, driven by both bureaucratic overhaul and the ever-present threat of cyber exploitation.", "mood": "Transformative", "word_count": 914, "keywords": ["defense technology acceleration", "cybersecurity threats", "regulatory adaptation", "data access and privacy"]}, {"title": "CMMC's Shadow: Defense Readiness Hinges on Unseen Cybersecurity Foundations", "date": "2026-01-22", "url": "/articles/2026/01/22/cmmc-shadow-defense-readiness-cybersecurity-foundations/", "summary": "Today's news reveals CMMC isn't just about compliance; it's the bedrock of national defense, with cybersecurity workforce shortages and active exploits highlighting its critical, yet often overlooked, importance.", "mood": "Concerned", "word_count": 795, "keywords": ["CMMC as foundational defense security", "Cybersecurity workforce crisis impact", "Interconnectedness of defense tech and data security"]}, {"title": "Beyond Breaches: Security's Shadow Shapes Our Digital Future", "date": "2026-01-19", "url": "/articles/2026/01/19/beyond-breaches-securitys-shadow-shapes-digital-future/", "summary": "Today's news, from major data breaches to nuanced CMMC compliance, reveals that 'security' is no longer just a defensive posture, but a proactive, strategic driver shaping technology, careers, and national interests.", "mood": "analytical", "word_count": 771, "keywords": ["cmmc-compliance", "cybersecurity-breaches", "nist-standards", "data-governance", "career-development"]}, {"title": "Beyond the Breach: Security's Silent Symphony of Shifting Priorities", "date": "2026-01-19", "url": "/articles/2026/01/19/security-shifting-priorities-cmmc-nist-cyber/", "summary": "The constant drumbeat of security news, from CMMC compliance to major breaches, signals a fundamental shift in government and industry priorities, moving beyond reactive defense to proactive, integrated data governance.", "mood": "Transformative", "word_count": 1064, "keywords": ["CMMC compliance evolution", "Data governance and transparency", "Cybersecurity as a strategic imperative", "Professionalization of cybersecurity careers"]}, {"title": "Defense and Digital Transformation: A Tale of Two Paces", "date": "2026-01-18", "url": "/articles/2026/01/18/defense-digital-transformation-two-paces/", "summary": "While the Pentagon pushes for rapid AI innovation, CMMC compliance and EU defense mandates reveal a slower, more complex integration of technology in critical sectors.", "mood": "Skeptical", "word_count": 1196, "keywords": ["AI Innovation Pace", "Cybersecurity Compliance", "Industrial Policy", "Defense Sector Transformation"]}, {"title": "Cyber Chaos: Are We Trading Defense for Digital Dust?", "date": "2026-01-17", "url": "/articles/2026/01/17/cyber-chaos-trading-defense-digital-dust/", "summary": "Despite a surge in cybersecurity news, the federal government appears to be fumbling its defenses, prioritizing short-term budget plays over critical leadership and infrastructure, revealing a dangerous disconnect between perceived and actual national security.", "mood": "Concerned", "word_count": 999, "keywords": ["cybersecurity leadership", "federal IT modernization", "legacy system vulnerabilities", "cyber workforce challenges", "budgetary priorities vs. security needs"]}, {"title": "Cyber's Shadow: The Unseen Price of Digital Defense", "date": "2026-01-16", "url": "/articles/2026/01/16/cybers-shadow-unseen-price-digital-defense/", "summary": "Today's news reveals a stark reality: our national cyber defense is a patchwork of urgent needs and underfunded priorities, with critical leadership vacuums threatening our digital future.", "mood": "Concerned", "word_count": 1010, "keywords": ["cybersecurity", "government technology", "leadership voids", "legacy systems", "national security"]}];
 
         // State
         let state = {
@@ -1425,7 +1427,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>Generated on January 19, 2026</span>
+            <span>Generated on February 11, 2026</span>
             <span class="footer-separator">|</span>
             <span>Built on <a href="https://dailytrending.info" target="_blank" rel="noopener noreferrer">Daily Trending</a></span>
             <div class="footer-actions">

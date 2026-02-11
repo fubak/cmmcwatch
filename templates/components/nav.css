@@ -98,6 +98,20 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
     transition: transform 0.3s ease;
 }
 
+/* Light mode nav adjustments */
+body.light-mode .nav-links a:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode .nav-links a.active {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .theme-toggle:hover,
+body.light-mode .nav-github:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
 @media (max-width: 900px) {
     .mobile-menu-toggle {
         display: block;

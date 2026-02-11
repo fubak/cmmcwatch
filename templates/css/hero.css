@@ -174,12 +174,12 @@
 
 /* GLASSMORPHISM - Frosted glass effect */
 .hero-glassmorphism .hero-content {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(10, 10, 26, 0.65);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     padding: 3rem;
     border-radius: var(--radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
@@ -188,7 +188,12 @@
 }
 
 .hero-glassmorphism .hero::after {
-    background: transparent;
+    background: linear-gradient(
+        180deg,
+        rgba(10, 10, 26, 0.4) 0%,
+        rgba(10, 10, 26, 0.2) 40%,
+        rgba(10, 10, 26, 0.3) 100%
+    );
 }
 
 /* NEON - Cyberpunk neon glow */
@@ -424,20 +429,73 @@
     z-index: 1;
 }
 
-/* Light mode adjustments for hero styles */
+/* ===== LIGHT MODE HERO ===== */
 body.light-mode .hero::after {
     background: linear-gradient(
         180deg,
-        rgba(255, 255, 255, 0.7) 0%,
-        rgba(255, 255, 255, 0.3) 40%,
-        rgba(255, 255, 255, 0.4) 60%,
+        rgba(255, 255, 255, 0.75) 0%,
+        rgba(255, 255, 255, 0.4) 40%,
+        rgba(255, 255, 255, 0.5) 60%,
         rgba(255, 255, 255, 0.95) 100%
     );
 }
 
+body.light-mode .hero h1 {
+    color: #1a1a2e;
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
+}
+
+body.light-mode .hero-subtitle {
+    color: rgba(26, 26, 46, 0.85);
+}
+
+body.light-mode .hero-meta {
+    color: rgba(26, 26, 46, 0.75);
+    text-shadow: none;
+}
+
+body.light-mode .hero-content {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+body.light-mode .hero-cta {
+    background: rgba(0, 0, 0, 0.06);
+    color: #1a1a2e;
+    border-color: rgba(26, 26, 46, 0.3);
+    text-shadow: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .hero-cta:hover {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(26, 26, 46, 0.5);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+body.light-mode .hero-capsule {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(26, 26, 46, 0.12);
+    color: #1a1a2e;
+}
+
+body.light-mode .hero-eyebrow {
+    color: #ffffff;
+}
+
 body.light-mode .hero-glassmorphism .hero-content {
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.65);
     border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .hero-glassmorphism .hero::after {
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.4) 0%,
+        rgba(255, 255, 255, 0.2) 40%,
+        rgba(255, 255, 255, 0.3) 100%
+    );
 }
 
 body.light-mode .hero-neon .hero {
@@ -610,18 +668,3 @@ body.light-mode .hero-neon .hero-content {
     100% { background-position: 0; }
 }
 
-/* Light mode adjustments for hero styles */
-body.light-mode .hero::after {
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.7) 0%,
-        rgba(255, 255, 255, 0.3) 40%,
-        rgba(255, 255, 255, 0.4) 60%,
-        rgba(255, 255, 255, 0.95) 100%
-    );
-}
-
-body.light-mode .hero-glassmorphism .hero-content {
-    background: rgba(255, 255, 255, 0.6);
-    border-color: rgba(0, 0, 0, 0.1);
-}
