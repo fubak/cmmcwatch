@@ -10,11 +10,14 @@ Focused sources:
 
 import re
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import json
+import base64
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from difflib import SequenceMatcher
-from typing import Dict, List, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
+from urllib.parse import urlparse
 
 import feedparser
 import requests
@@ -23,7 +26,10 @@ from config import (
     CMMC_CORE_KEYWORDS,
     CMMC_KEYWORDS,
     CMMC_LINKEDIN_PROFILES,
-    CMMC_RSS_FEEDS,
+    DATA_DIR,
+    DEDUP_SEMANTIC_THRESHOLD,
+    DEDUP_SIMILARITY_THRESHOLD,
+    DELAYS,
     DIB_KEYWORDS,
     INSIDER_THREAT_KEYWORDS,
     INTELLIGENCE_KEYWORDS,
@@ -32,11 +38,17 @@ from config import (
     TIMEOUTS,
     setup_logging,
 )
-from tenacity import (
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_exponential,
+from source_catalog import (
+    DEFAULT_BROWSER_UA,
+    DOMAIN_FETCH_PROFILES,
+    HEADER_PROFILES,
+    SourceSpec,
+    get_collector_sources,
+)
+from source_registry import (
+    format_source_label,
+    source_metadata_dict,
+    source_quality_multiplier,
 )
 
 # Import story validator for AI-powered validation
@@ -46,6 +58,76 @@ except ImportError:
     StoryValidator = None
 
 logger = setup_logging("collect_trends")
+
+
+def _normalize_datetime(value: datetime) -> datetime:
+    """Normalize timezone-aware datetimes to naive UTC."""
+    if value.tzinfo:
+        return value.astimezone(timezone.utc).replace(tzinfo=None)
+    return value
+
+
+def parse_timestamp(value: Any) -> Optional[datetime]:
+    """Best-effort timestamp parser for API and feed values."""
+    if value is None:
+        return None
+
+    if isinstance(value, datetime):
+        return _normalize_datetime(value)
+
+    if isinstance(value, (int, float)):
+        ts_value = float(value)
+        if ts_value > 10_000_000_000:
+            ts_value = ts_value / 1000.0
+        try:
+            return datetime.fromtimestamp(ts_value, tz=timezone.utc).replace(
+                tzinfo=None
+            )
+        except (ValueError, OverflowError, OSError):
+            return None
+
+    if isinstance(value, str):
+        cleaned = value.strip()
+        if not cleaned:
+            return None
+
+        normalized = cleaned.replace("Z", "+00:00")
+        try:
+            return _normalize_datetime(datetime.fromisoformat(normalized))
+        except ValueError:
+            pass
+
+        try:
+            from email.utils import parsedate_to_datetime
+
+            return _normalize_datetime(parsedate_to_datetime(cleaned))
+        except (TypeError, ValueError):
+            pass
+
+        for fmt in ("%Y-%m-%d", "%Y/%m/%d"):
+            try:
+                return datetime.strptime(cleaned, fmt)
+            except ValueError:
+                continue
+
+    return None
+
+
+def parse_feed_entry_timestamp(entry: Any) -> Optional[datetime]:
+    """Extract timestamp from feedparser entry."""
+    for parsed_key in ("published_parsed", "updated_parsed", "created_parsed"):
+        parsed_value = entry.get(parsed_key)
+        if parsed_value:
+            try:
+                return datetime(*parsed_value[:6])
+            except Exception:
+                continue
+
+    for key in ("published", "updated", "created", "dc_date", "pubDate"):
+        parsed = parse_timestamp(entry.get(key))
+        if parsed:
+            return parsed
+    return None
 
 
 @dataclass
@@ -61,7 +143,55 @@ class Trend:
     keywords: List[str] = field(default_factory=list)
     timestamp: Optional[datetime] = None
     image_url: Optional[str] = None
-    metadata: Dict = field(default_factory=dict)
+    source_metadata: Dict[str, Optional[str]] = field(default_factory=dict)
+    source_label: Optional[str] = None
+    corroborating_sources: List[str] = field(default_factory=list)
+    corroborating_urls: List[str] = field(default_factory=list)
+    source_diversity: int = 1
+
+    def __post_init__(self):
+        parsed_timestamp = parse_timestamp(self.timestamp)
+        self.timestamp = parsed_timestamp or datetime.now()
+
+        if not self.source_metadata:
+            self.source_metadata = source_metadata_dict(self.source)
+
+        if not self.source_label:
+            self.source_label = format_source_label(self.source)
+
+        if not self.corroborating_sources:
+            self.corroborating_sources = [self.source]
+        elif self.source not in self.corroborating_sources:
+            self.corroborating_sources.append(self.source)
+
+        if not self.corroborating_urls:
+            self.corroborating_urls = [self.url] if self.url else []
+        elif self.url and self.url not in self.corroborating_urls:
+            self.corroborating_urls.append(self.url)
+
+        self.source_diversity = max(1, len(set(self.corroborating_sources)))
+
+    def register_corroboration(self, other: "Trend") -> None:
+        other_sources = other.corroborating_sources or [other.source]
+        for source in other_sources:
+            if source and source not in self.corroborating_sources:
+                self.corroborating_sources.append(source)
+
+        other_urls = other.corroborating_urls or ([other.url] if other.url else [])
+        for url in other_urls:
+            if url and url not in self.corroborating_urls:
+                self.corroborating_urls.append(url)
+
+        if other.description and len(other.description) > len(self.description or ""):
+            self.description = other.description
+
+        if not self.image_url and other.image_url:
+            self.image_url = other.image_url
+
+        if other.timestamp and (not self.timestamp or other.timestamp > self.timestamp):
+            self.timestamp = other.timestamp
+
+        self.source_diversity = max(1, len(set(self.corroborating_sources)))
 
 
 class TrendCollector:
@@ -71,15 +201,257 @@ class TrendCollector:
         self.trends: List[Trend] = []
         self.global_keywords: List[str] = []
         self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "Mozilla/5.0 (compatible; CMMCWatch/1.0; +https://cmmcwatch.com)"})
-        # Connection pooling for parallel RSS fetching
-        adapter = requests.adapters.HTTPAdapter(
-            pool_connections=10,
-            pool_maxsize=20,
-            max_retries=3,
+        self.session.headers.update(
+            {
+                "User-Agent": DEFAULT_BROWSER_UA
+            }
         )
-        self.session.mount("http://", adapter)
-        self.session.mount("https://", adapter)
+        self.default_timeout = float(TIMEOUTS.get("default", 15))
+        self.feed_timeout = float(TIMEOUTS.get("rss_feed", self.default_timeout))
+        self.request_delay = float(DELAYS.get("between_requests", 0.15))
+
+        self.feed_cache_ttl_seconds = 10 * 60
+        self.feed_persistent_ttl_seconds = 24 * 60 * 60
+        self.feed_cooldown_seconds = 5 * 60
+        self.feed_failure_threshold = 2
+        self.feed_failures: Dict[str, Dict[str, float]] = {}
+        self.feed_cache: Dict[str, Dict[str, Any]] = {}
+        self.feed_cache_file = Path(DATA_DIR) / "feed_runtime_cache.json"
+        self.persistent_feed_cache: Dict[str, Dict[str, Any]] = {}
+        self._persistent_cache_dirty = False
+        self._load_persistent_feed_cache()
+
+    def _collector_sources(self, group: str) -> List[SourceSpec]:
+        """Resolve collector feeds from canonical source catalog."""
+        return get_collector_sources(group)
+
+    def _load_persistent_feed_cache(self) -> None:
+        if not self.feed_cache_file.exists():
+            return
+        try:
+            with open(self.feed_cache_file, "r", encoding="utf-8") as f:
+                payload = json.load(f)
+            if isinstance(payload, dict):
+                self.persistent_feed_cache = payload
+        except Exception as exc:
+            logger.debug(f"Failed to load persistent feed cache: {exc}")
+            self.persistent_feed_cache = {}
+
+    def _flush_persistent_feed_cache(self) -> None:
+        if not self._persistent_cache_dirty:
+            return
+        try:
+            self.feed_cache_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.feed_cache_file, "w", encoding="utf-8") as f:
+                json.dump(self.persistent_feed_cache, f)
+            self._persistent_cache_dirty = False
+        except Exception as exc:
+            logger.debug(f"Failed to flush persistent feed cache: {exc}")
+
+    def _resolve_domain_profile(self, url: str) -> Dict[str, Any]:
+        hostname = urlparse(url).hostname or ""
+        return dict(DOMAIN_FETCH_PROFILES.get(hostname, {}))
+
+    def _resolve_headers(
+        self,
+        headers: Optional[Dict[str, str]],
+        headers_profile: str,
+        domain_profile: Dict[str, Any],
+    ) -> Dict[str, str]:
+        merged: Dict[str, str] = {}
+        merged.update(HEADER_PROFILES.get("default", {}))
+        merged.update(HEADER_PROFILES.get(headers_profile, {}))
+
+        profile_header_name = domain_profile.get("headers_profile")
+        if isinstance(profile_header_name, str):
+            merged.update(HEADER_PROFILES.get(profile_header_name, {}))
+
+        if headers:
+            merged.update(headers)
+        return merged
+
+    def _feed_scope(self, source_key: Optional[str], url: str) -> str:
+        return source_key or url
+
+    def _is_feed_on_cooldown(self, scope: str) -> bool:
+        state = self.feed_failures.get(scope)
+        if not state:
+            return False
+        cooldown_until = float(state.get("cooldown_until", 0))
+        if time.time() < cooldown_until:
+            return True
+        if cooldown_until > 0:
+            self.feed_failures.pop(scope, None)
+        return False
+
+    def _record_feed_failure(self, scope: str, error: str = "") -> None:
+        state = self.feed_failures.get(scope, {"count": 0, "cooldown_until": 0.0})
+        state["count"] = float(state.get("count", 0)) + 1
+        if state["count"] >= self.feed_failure_threshold:
+            state["cooldown_until"] = time.time() + self.feed_cooldown_seconds
+            logger.warning(
+                f"Feed {scope} on cooldown after {int(state['count'])} failures: {error}"
+            )
+        self.feed_failures[scope] = state
+
+    def _record_feed_success(self, scope: str) -> None:
+        self.feed_failures.pop(scope, None)
+
+    def _cache_feed_response(self, scope: str, response: requests.Response, url: str) -> None:
+        now = time.time()
+        headers = {k.lower(): v for k, v in response.headers.items()}
+        content_bytes = response.content or b""
+
+        self.feed_cache[scope] = {
+            "timestamp": now,
+            "content": content_bytes,
+            "headers": headers,
+            "status_code": response.status_code,
+            "url": url,
+        }
+        self.persistent_feed_cache[scope] = {
+            "timestamp": now,
+            "content_b64": base64.b64encode(content_bytes).decode("ascii"),
+            "headers": headers,
+            "status_code": response.status_code,
+            "url": url,
+        }
+        self._persistent_cache_dirty = True
+
+    def _response_from_cached(
+        self,
+        cached: Dict[str, Any],
+        fallback_url: Optional[str] = None,
+    ) -> Optional[requests.Response]:
+        content = cached.get("content")
+        if content is None:
+            content_b64 = cached.get("content_b64")
+            if not isinstance(content_b64, str):
+                return None
+            try:
+                content = base64.b64decode(content_b64.encode("ascii"))
+            except Exception:
+                return None
+
+        if not isinstance(content, (bytes, bytearray)):
+            return None
+
+        response = requests.Response()
+        response.status_code = int(cached.get("status_code", 200))
+        response._content = bytes(content)
+        response.headers = requests.structures.CaseInsensitiveDict(
+            cached.get("headers", {"content-type": "application/rss+xml"})
+        )
+        response.url = str(cached.get("url") or fallback_url or "")
+        return response
+
+    def _get_cached_feed_response(
+        self,
+        scope: str,
+        now_ts: Optional[float] = None,
+    ) -> Optional[requests.Response]:
+        now_ts = now_ts or time.time()
+
+        cached = self.feed_cache.get(scope)
+        if cached:
+            if now_ts - float(cached.get("timestamp", 0)) <= self.feed_cache_ttl_seconds:
+                response = self._response_from_cached(cached)
+                if response is not None:
+                    return response
+            else:
+                self.feed_cache.pop(scope, None)
+
+        persistent = self.persistent_feed_cache.get(scope)
+        if not persistent:
+            return None
+        if now_ts - float(persistent.get("timestamp", 0)) > self.feed_persistent_ttl_seconds:
+            self.persistent_feed_cache.pop(scope, None)
+            self._persistent_cache_dirty = True
+            return None
+        return self._response_from_cached(persistent)
+
+    def _is_feed_response(self, response: requests.Response) -> bool:
+        content_type = response.headers.get("content-type", "").lower()
+        if "xml" in content_type or "rss" in content_type:
+            return True
+        head = (response.content or b"")[:120].lower()
+        return b"<rss" in head or b"<?xml" in head or b"<feed" in head
+
+    def _fetch_rss(
+        self,
+        url: str,
+        timeout: Optional[float] = None,
+        allowed_status: Tuple[int, ...] = (200, 301, 302),
+        headers: Optional[Dict[str, str]] = None,
+        source_key: Optional[str] = None,
+        fallback_url: Optional[str] = None,
+        headers_profile: str = "default",
+        allow_fallback: bool = True,
+    ) -> Optional[requests.Response]:
+        scope = self._feed_scope(source_key, url)
+        now_ts = time.time()
+
+        if self._is_feed_on_cooldown(scope):
+            cached = self._get_cached_feed_response(scope, now_ts=now_ts)
+            if cached is not None:
+                return cached
+            return None
+
+        metadata_fallback = source_metadata_dict(source_key or "").get("fallback_url")
+        fallback_url = fallback_url or metadata_fallback
+
+        domain_profile = self._resolve_domain_profile(url)
+        effective_timeout = float(timeout or domain_profile.get("timeout") or self.feed_timeout)
+        attempts = max(1, int(domain_profile.get("attempts") or 1))
+        retry_delay = float(domain_profile.get("retry_delay") or 0.4)
+        request_headers = self._resolve_headers(headers, headers_profile, domain_profile)
+
+        errors: List[str] = []
+        for attempt in range(1, attempts + 1):
+            try:
+                response = self.session.get(
+                    url, timeout=effective_timeout, headers=request_headers or None
+                )
+                if response.status_code not in allowed_status:
+                    errors.append(f"HTTP {response.status_code}")
+                elif not self._is_feed_response(response):
+                    content_type = response.headers.get("content-type", "").lower()
+                    errors.append(f"non-feed response ({content_type or 'unknown'})")
+                else:
+                    self._record_feed_success(scope)
+                    self._cache_feed_response(scope, response, url)
+                    return response
+            except Exception as exc:
+                errors.append(str(exc))
+
+            if attempt < attempts:
+                time.sleep(retry_delay * attempt)
+
+        if allow_fallback and fallback_url and fallback_url != url:
+            logger.warning(f"RSS fetch fallback for {scope}: {url} -> {fallback_url}")
+            fallback_response = self._fetch_rss(
+                fallback_url,
+                timeout=timeout,
+                allowed_status=allowed_status,
+                headers=headers,
+                source_key=source_key,
+                fallback_url=None,
+                headers_profile=headers_profile,
+                allow_fallback=False,
+            )
+            if fallback_response is not None:
+                self._record_feed_success(scope)
+                return fallback_response
+
+        error_text = "; ".join(errors[-3:])
+        self._record_feed_failure(scope, error_text)
+        cached = self._get_cached_feed_response(scope, now_ts=now_ts)
+        if cached is not None:
+            logger.warning(f"RSS fetch failed for {scope}; using cached feed data")
+            return cached
+
+        logger.warning(f"RSS fetch error for {url}: {error_text}")
+        return None
 
     def collect_all(self, use_ai_validation: bool = True) -> List[Trend]:
         """Collect trends from all CMMC sources.
@@ -115,6 +487,7 @@ class TrendCollector:
         # Extract global keywords
         self._extract_global_keywords()
 
+        self._flush_persistent_feed_cache()
         logger.info(f"Total unique CMMC trends: {len(self.trends)}")
         return self.trends
 
@@ -128,20 +501,17 @@ class TrendCollector:
         # Convert Trend objects to dicts for the validator
         trend_dicts = []
         for t in self.trends:
-            trend_dicts.append(
-                {
-                    "title": t.title,
-                    "description": t.description,
-                    "category": t.category,
-                    "source": t.source,
-                    "url": t.url,
-                    "timestamp": t.timestamp.isoformat() if t.timestamp else None,
-                    "score": t.score,
-                    "keywords": t.keywords,
-                    "image_url": t.image_url,
-                    "metadata": t.metadata,
-                }
-            )
+            trend_dicts.append({
+                "title": t.title,
+                "description": t.description,
+                "category": t.category,
+                "source": t.source,
+                "url": t.url,
+                "timestamp": t.timestamp.isoformat() if t.timestamp else None,
+                "score": t.score,
+                "keywords": t.keywords,
+                "image_url": t.image_url,
+            })
 
         # Run validation
         validator = StoryValidator()
@@ -178,77 +548,61 @@ class TrendCollector:
                 keywords=td.get("keywords", []),
                 timestamp=timestamp,
                 image_url=td.get("image_url"),
-                metadata=td.get("metadata", {}),
             )
             self.trends.append(trend)
 
         logger.info(f"AI validation complete: {len(self.trends)} stories remaining")
 
-    @retry(
-        retry=retry_if_exception_type((requests.RequestException, requests.Timeout)),
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
-        reraise=True,
-    )
-    def _fetch_rss_with_retry(self, feed_url: str, timeout: int = 15) -> requests.Response:
-        """Fetch RSS feed with retry logic."""
-        response = self.session.get(feed_url, timeout=timeout)
-        response.raise_for_status()
-        return response
-
-    def _collect_single_rss_feed(self, feed_name: str, feed_url: str) -> List[Trend]:
-        """Collect trends from a single RSS feed. Thread-safe."""
-        trends = []
-        try:
-            response = self._fetch_rss_with_retry(feed_url, timeout=TIMEOUTS.get("rss_feed", 15))
-            feed = feedparser.parse(response.content)
-
-            for entry in feed.entries[: LIMITS.get("rss", 20)]:
-                title = entry.get("title", "").strip()
-                description = entry.get("summary", "") or entry.get("description", "")
-
-                if not title or len(title) < 10:
-                    continue
-
-                # Check if CMMC-related
-                content = (title + " " + description).lower()
-                is_cmmc = any(kw.lower() in content for kw in CMMC_KEYWORDS)
-
-                if is_cmmc:
-                    trend = Trend(
-                        title=title[:200],
-                        source=f"cmmc_rss_{feed_name.lower().replace(' ', '_')}",
-                        url=entry.get("link"),
-                        description=self._clean_html(description),
-                        category=self._categorize_trend(title, description),
-                        score=self._calculate_score(title, description),
-                        image_url=self._extract_image_from_entry(entry),
-                        timestamp=self._extract_timestamp(entry),
-                    )
-                    trends.append(trend)
-
-        except Exception as e:
-            logger.warning(f"RSS feed {feed_name} error: {e}")
-
-        return trends
-
     def _collect_rss_feeds(self):
-        """Collect from CMMC-related RSS feeds in parallel."""
+        """Collect from CMMC-related RSS feeds."""
         logger.info("Fetching from CMMC RSS feeds...")
         count = 0
 
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = {
-                executor.submit(self._collect_single_rss_feed, name, url): name for name, url in CMMC_RSS_FEEDS.items()
-            }
-            for future in as_completed(futures):
-                feed_name = futures[future]
-                try:
-                    trends = future.result()
-                    self.trends.extend(trends)
-                    count += len(trends)
-                except Exception as e:
-                    logger.warning(f"RSS feed {feed_name} error: {e}")
+        for source in self._collector_sources("cmmc_rss"):
+            try:
+                response = self._fetch_rss(
+                    source.url,
+                    timeout=source.timeout_seconds or self.feed_timeout,
+                    source_key=source.source_key or source.key,
+                    fallback_url=source.fallback_url,
+                    headers_profile=source.headers_profile,
+                )
+                if not response:
+                    continue
+                feed = feedparser.parse(response.content)
+
+                for entry in feed.entries[: LIMITS.get("cmmc_rss", 20)]:
+                    title = entry.get("title", "").strip()
+                    description = entry.get("summary", "") or entry.get(
+                        "description", ""
+                    )
+
+                    if not title or len(title) < 10:
+                        continue
+
+                    # Check if CMMC-related
+                    content = (title + " " + description).lower()
+                    is_cmmc = any(kw.lower() in content for kw in CMMC_KEYWORDS)
+
+                    if is_cmmc:
+                        trend = Trend(
+                            title=title[:200],
+                            source=source.source_key or source.key,
+                            url=entry.get("link"),
+                            description=self._clean_html(description),
+                            category=self._categorize_trend(title, description),
+                            score=self._calculate_score(title, description),
+                            image_url=self._extract_image_from_entry(entry),
+                            timestamp=parse_feed_entry_timestamp(entry),
+                        )
+                        self.trends.append(trend)
+                        count += 1
+
+                time.sleep(self.request_delay)
+
+            except Exception as e:
+                logger.warning(f"RSS feed {source.name} error: {e}")
+                continue
 
         logger.info(f"  Found {count} CMMC stories from RSS feeds")
 
@@ -256,23 +610,20 @@ class TrendCollector:
         """Collect from CMMC-related subreddits."""
         logger.info("Fetching from CMMC Reddit communities...")
 
-        subreddits = [
-            ("CMMC", "https://www.reddit.com/r/CMMC/.rss"),
-            ("NISTControls", "https://www.reddit.com/r/NISTControls/.rss"),
-            ("FederalEmployees", "https://www.reddit.com/r/FederalEmployees/.rss"),
-            ("cybersecurity", "https://www.reddit.com/r/cybersecurity/.rss"),
-            # r/GovContracting removed - subreddit returns 404
-        ]
+        subreddits = self._collector_sources("cmmc_reddit")
 
         count = 0
-        for name, url in subreddits:
+        for source in subreddits:
             try:
-                response = self.session.get(
-                    url,
-                    timeout=15,
-                    headers={"User-Agent": "Mozilla/5.0 (compatible; CMMCWatch/1.0)"},
+                response = self._fetch_rss(
+                    source.url,
+                    timeout=source.timeout_seconds or self.feed_timeout,
+                    source_key=source.source_key or source.key,
+                    fallback_url=source.fallback_url,
+                    headers_profile=source.headers_profile,
                 )
-                response.raise_for_status()
+                if not response:
+                    continue
                 feed = feedparser.parse(response.content)
 
                 for entry in feed.entries[:15]:
@@ -284,30 +635,32 @@ class TrendCollector:
 
                     # For CMMC/NISTControls, include all; others need keyword match
                     include_post = False
-                    if name in ["CMMC", "NISTControls"]:
+                    if source.key in ["cmmc_reddit_cmmc", "cmmc_reddit_nistcontrols"]:
                         include_post = True
                     else:
                         content = (title + " " + description).lower()
-                        include_post = any(kw.lower() in content for kw in CMMC_KEYWORDS)
+                        include_post = any(
+                            kw.lower() in content for kw in CMMC_KEYWORDS
+                        )
 
                     if include_post:
                         trend = Trend(
                             title=title,
-                            source=f"cmmc_reddit_{name.lower()}",
+                            source=source.source_key or source.key,
                             url=entry.get("link"),
                             description=self._clean_html(description),
                             category=self._categorize_trend(title, description),
                             score=1.4,
                             image_url=self._extract_image_from_entry(entry),
-                            timestamp=self._extract_timestamp(entry),
+                            timestamp=parse_feed_entry_timestamp(entry),
                         )
                         self.trends.append(trend)
                         count += 1
 
-                time.sleep(0.3)
+                time.sleep(self.request_delay)
 
             except Exception as e:
-                logger.warning(f"Reddit r/{name} error: {e}")
+                logger.warning(f"Reddit {source.name} error: {e}")
                 continue
 
         logger.info(f"  Found {count} stories from Reddit")
@@ -337,12 +690,8 @@ class TrendCollector:
                     category=td.get("category", "cmmc"),
                     score=td.get("score", 1.5),
                     keywords=td.get("keywords", []),
+                    timestamp=parse_timestamp(td.get("timestamp") or td.get("published_at")),
                     image_url=td.get("image_url"),
-                    metadata={
-                        "linkedin_author_picture": td.get("linkedin_author_picture"),
-                        "linkedin_author_headline": td.get("linkedin_author_headline"),
-                        "linkedin_engagement": td.get("linkedin_engagement", {}),
-                    },
                 )
                 self.trends.append(trend)
 
@@ -399,70 +748,40 @@ class TrendCollector:
         """Remove HTML tags from text and apply smart truncation."""
         if not text:
             return ""
-
-        # Limit input size to prevent DoS via malformed HTML
-        max_input_size = 1_000_000  # 1MB
-        if len(text) > max_input_size:
-            text = text[:max_input_size]
-
+        
         # Clean HTML if present
         if "<" in text:
             soup = BeautifulSoup(text, "html.parser")
             clean = soup.get_text(separator=" ").strip()
         else:
             clean = text.strip()
-
+        
         # Normalize whitespace
         clean = re.sub(r"\s+", " ", clean)
-
+        
         # Smart truncation at sentence boundaries (up to 1500 chars)
         max_length = 1500
         if len(clean) > max_length:
             truncated = clean[:max_length]
             # Find last sentence boundary
-            last_period = max(truncated.rfind(". "), truncated.rfind("! "), truncated.rfind("? "))
-
+            last_period = max(
+                truncated.rfind('. '),
+                truncated.rfind('! '),
+                truncated.rfind('? ')
+            )
+            
             # If found a good sentence boundary with reasonable content
             if last_period > 300:
-                return clean[: last_period + 1]
+                return clean[:last_period + 1]
             else:
                 # Fall back to word boundary
-                last_space = truncated.rfind(" ")
+                last_space = truncated.rfind(' ')
                 if last_space > 200:
                     return clean[:last_space] + "..."
                 else:
                     return clean[:max_length] + "..."
-
+        
         return clean
-
-    def _extract_timestamp(self, entry) -> Optional[datetime]:
-        """Extract publication timestamp from RSS entry."""
-        # Try published_parsed first (feedparser standard)
-        if hasattr(entry, "published_parsed") and entry.published_parsed:
-            try:
-                return datetime(*entry.published_parsed[:6])
-            except (TypeError, ValueError):
-                pass
-
-        # Try updated_parsed
-        if hasattr(entry, "updated_parsed") and entry.updated_parsed:
-            try:
-                return datetime(*entry.updated_parsed[:6])
-            except (TypeError, ValueError):
-                pass
-
-        # Try parsing published string
-        published = entry.get("published") or entry.get("updated")
-        if published:
-            try:
-                # Common RSS date format
-                from email.utils import parsedate_to_datetime
-
-                return parsedate_to_datetime(published)
-            except (TypeError, ValueError):
-                pass
-
-        return None
 
     def _extract_image_from_entry(self, entry) -> Optional[str]:
         """Extract image URL from RSS entry.
@@ -477,7 +796,9 @@ class TrendCollector:
         # Check media_content
         if hasattr(entry, "media_content") and entry.media_content:
             for media in entry.media_content:
-                if media.get("medium") == "image" or media.get("type", "").startswith("image"):
+                if media.get("medium") == "image" or media.get("type", "").startswith(
+                    "image"
+                ):
                     url = media.get("url")
                     if url and self._is_valid_image_url(url):
                         return url
@@ -572,7 +893,10 @@ class TrendCollector:
             "arcpublishing",
         ]
 
-        has_extension = any(url_lower.endswith(ext) or f"{ext}?" in url_lower for ext in image_extensions)
+        has_extension = any(
+            url_lower.endswith(ext) or f"{ext}?" in url_lower
+            for ext in image_extensions
+        )
         from_cdn = any(cdn in url_lower for cdn in image_cdns)
 
         return has_extension or from_cdn
@@ -584,17 +908,26 @@ class TrendCollector:
         Limited to prevent slowdown.
         """
         # Sources known to have og:image on article pages
-        sources_with_og_image = [
+        sources_with_og_image = {
+            "cmmc_fedscoop",
+            "cmmc_defensescoop",
+            "cmmc_securityweek",
+            "cmmc_executivegov",
+            "cmmc_cyberscoop",
+            "cmmc_fnn",
+            # Legacy keys kept for backward compatibility with archived data/tests.
             "cmmc_rss_fedscoop",
             "cmmc_rss_defensescoop",
             "cmmc_rss_securityweek",
             "cmmc_rss_executivegov",
             "cmmc_rss_cyberscoop",
             "cmmc_rss_federal_news_network",
-        ]
+        }
 
         trends_to_fetch = [
-            t for t in self.trends if not t.image_url and any(s in t.source for s in sources_with_og_image)
+            t
+            for t in self.trends
+            if not t.image_url and t.source in sources_with_og_image
         ]
 
         if not trends_to_fetch:
@@ -648,33 +981,135 @@ class TrendCollector:
         return None
 
     def _deduplicate(self):
-        """Remove duplicate trends based on title similarity."""
+        """Cluster and deduplicate trends using token overlap + semantic similarity."""
         if not self.trends:
             return
 
-        unique = []
-        seen_titles = set()
+        stop_words = {
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "to",
+            "of",
+            "in",
+            "for",
+            "on",
+            "with",
+            "from",
+            "after",
+            "before",
+            "about",
+            "update",
+            "latest",
+            "news",
+            "today",
+        }
 
-        for trend in self.trends:
-            # Normalize title for comparison
-            normalized = re.sub(r"[^\w\s]", "", trend.title.lower())
-            normalized = " ".join(normalized.split()[:8])  # First 8 words
+        normalized_titles: List[str] = []
+        token_sets: List[Set[str]] = []
+        inverted_index: Dict[str, List[int]] = {}
 
-            # Check for duplicates
-            is_dup = False
-            for seen in seen_titles:
-                if SequenceMatcher(None, normalized, seen).ratio() > 0.8:
-                    is_dup = True
-                    break
+        for idx, trend in enumerate(self.trends):
+            normalized = re.sub(r"[^\w\s]", " ", (trend.title or "").lower())
+            normalized = re.sub(r"\s+", " ", normalized).strip()
+            tokens = {
+                token
+                for token in normalized.split()
+                if len(token) >= 3 and not token.isdigit() and token not in stop_words
+            }
+            if not tokens:
+                tokens = {token for token in normalized.split() if token}
 
-            if not is_dup:
-                unique.append(trend)
-                seen_titles.add(normalized)
+            normalized_titles.append(normalized)
+            token_sets.append(tokens)
 
-        removed = len(self.trends) - len(unique)
-        if removed > 0:
-            logger.info(f"Removed {removed} duplicate trends")
-        self.trends = unique
+            for token in tokens:
+                inverted_index.setdefault(token, []).append(idx)
+
+        clusters: List[List[int]] = []
+        assigned = set()
+
+        for index, _trend in enumerate(self.trends):
+            if index in assigned:
+                continue
+
+            cluster = [index]
+            assigned.add(index)
+            tokens_i = token_sets[index]
+            normalized_i = normalized_titles[index]
+
+            candidate_indices = set()
+            for token in tokens_i:
+                for candidate_idx in inverted_index.get(token, []):
+                    if candidate_idx > index:
+                        candidate_indices.add(candidate_idx)
+
+            for candidate_idx in sorted(candidate_indices):
+                if candidate_idx in assigned:
+                    continue
+
+                tokens_j = token_sets[candidate_idx]
+                normalized_j = normalized_titles[candidate_idx]
+
+                if not tokens_i or not tokens_j:
+                    overlap_ratio = 0.0
+                    jaccard = 0.0
+                else:
+                    intersection = len(tokens_i & tokens_j)
+                    overlap_ratio = intersection / max(
+                        1, min(len(tokens_i), len(tokens_j))
+                    )
+                    jaccard = intersection / max(1, len(tokens_i | tokens_j))
+
+                semantic_ratio = SequenceMatcher(None, normalized_i, normalized_j).ratio()
+                token_semantic_ratio = SequenceMatcher(
+                    None,
+                    " ".join(sorted(tokens_i)),
+                    " ".join(sorted(tokens_j)),
+                ).ratio()
+
+                is_duplicate = (
+                    overlap_ratio >= DEDUP_SIMILARITY_THRESHOLD
+                    or jaccard >= max(0.55, DEDUP_SIMILARITY_THRESHOLD - 0.25)
+                    or semantic_ratio >= DEDUP_SEMANTIC_THRESHOLD
+                    or token_semantic_ratio >= DEDUP_SEMANTIC_THRESHOLD
+                )
+                if not is_duplicate:
+                    continue
+
+                cluster.append(candidate_idx)
+                assigned.add(candidate_idx)
+
+            clusters.append(cluster)
+
+        unique_trends: List[Trend] = []
+        for cluster in clusters:
+            if len(cluster) == 1:
+                unique_trends.append(self.trends[cluster[0]])
+                continue
+
+            def _quality(cluster_idx: int) -> Tuple[float, float]:
+                candidate = self.trends[cluster_idx]
+                quality = candidate.score * source_quality_multiplier(candidate.source)
+                quality *= 1.0 + min((candidate.source_diversity - 1) * 0.05, 0.25)
+                timestamp = candidate.timestamp.timestamp() if candidate.timestamp else 0.0
+                return quality, timestamp
+
+            canonical_idx = max(cluster, key=_quality)
+            canonical = self.trends[canonical_idx]
+            for cluster_idx in cluster:
+                if cluster_idx == canonical_idx:
+                    continue
+                canonical.register_corroboration(self.trends[cluster_idx])
+            unique_trends.append(canonical)
+
+        removed_count = len(self.trends) - len(unique_trends)
+        if removed_count > 0:
+            logger.info(f"Removed {removed_count} duplicate trends")
+
+        self.trends = unique_trends
 
     def _apply_recency_and_sort(self):
         """Apply recency boost to scores and sort trends by combined score.
@@ -682,7 +1117,7 @@ class TrendCollector:
         Recency boost ensures today's articles rank higher than older ones,
         even if older articles have slightly higher keyword relevance.
         """
-        now = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        now = datetime.now()
 
         for trend in self.trends:
             recency_boost = 0.0
@@ -708,8 +1143,17 @@ class TrendCollector:
                     recency_boost = 0.2
                 # Older articles get no recency boost (0.0)
 
-            # Store the combined score (original score + recency boost)
-            trend.score = trend.score + recency_boost
+            quality_multiplier = source_quality_multiplier(trend.source)
+            diversity_multiplier = 1.0
+            if trend.source_diversity > 1:
+                diversity_multiplier = 1.0 + min(
+                    (trend.source_diversity - 1) * 0.08, 0.35
+                )
+
+            # Store combined score with source quality calibration.
+            trend.score = (
+                trend.score * quality_multiplier * diversity_multiplier
+            ) + recency_boost
 
         # Sort by combined score (highest first)
         self.trends.sort(key=lambda t: t.score, reverse=True)
@@ -741,7 +1185,9 @@ class TrendCollector:
                     keyword_counts[word] = keyword_counts.get(word, 0) + 1
 
         # Sort by frequency
-        sorted_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)
+        sorted_keywords = sorted(
+            keyword_counts.items(), key=lambda x: x[1], reverse=True
+        )
         self.global_keywords = [kw for kw, _ in sorted_keywords[:100]]
 
         logger.info(f"Found {len(self.global_keywords)} global keywords")

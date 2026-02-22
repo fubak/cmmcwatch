@@ -1,151 +1,215 @@
 #!/usr/bin/env python3
-"""Tests for trend collector."""
+"""Tests for CMMC trend collection behaviors."""
+
+from __future__ import annotations
 
 import sys
+import time
+from datetime import datetime
 from pathlib import Path
+from unittest.mock import MagicMock
+
+import pytest
+import requests
 
 # Add scripts to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
-import pytest
 from collect_trends import Trend, TrendCollector
+
+
+def _mock_response(url: str, status: int, content: bytes, content_type: str):
+    response = requests.Response()
+    response.status_code = status
+    response._content = content
+    response.url = url
+    response.headers = requests.structures.CaseInsensitiveDict(
+        {"content-type": content_type}
+    )
+    return response
 
 
 class TestTrendCollector:
     """Test TrendCollector functionality."""
 
     def test_collector_initialization(self):
-        """Test that collector initializes correctly."""
         collector = TrendCollector()
         assert collector is not None
         assert collector.trends == []
         assert collector.global_keywords == []
 
     def test_categorize_trend(self):
-        """Test trend categorization logic."""
         collector = TrendCollector()
-
-        # Test CMMC program categorization
-        category = collector._categorize_trend(
-            "CMMC 2.0 certification requirements",
-            "New CMMC certification process announced"
+        assert (
+            collector._categorize_trend(
+                "CMMC 2.0 certification requirements",
+                "New CMMC certification process announced",
+            )
+            == "cmmc_program"
         )
-        assert category == "cmmc_program"
-
-        # Test NIST compliance categorization
-        category = collector._categorize_trend(
-            "NIST 800-171 update released",
-            "DFARS compliance requirements"
+        assert (
+            collector._categorize_trend(
+                "NIST 800-171 update released",
+                "DFARS compliance requirements",
+            )
+            == "nist_compliance"
         )
-        assert category == "nist_compliance"
-
-        # Test intelligence threats categorization
-        category = collector._categorize_trend(
-            "Chinese APT group targets defense contractors",
-            "Nation-state espionage campaign discovered"
+        assert (
+            collector._categorize_trend(
+                "Chinese APT group targets defense contractors",
+                "Nation-state espionage campaign discovered",
+            )
+            == "intelligence_threats"
         )
-        assert category == "intelligence_threats"
-
-        # Test insider threats categorization
-        category = collector._categorize_trend(
-            "Employee arrested for data exfiltration",
-            "Insider threat case at defense contractor"
+        assert (
+            collector._categorize_trend(
+                "Employee arrested for data exfiltration",
+                "Insider threat case at defense contractor",
+            )
+            == "insider_threats"
         )
-        assert category == "insider_threats"
 
     def test_calculate_score(self):
-        """Test score calculation."""
         collector = TrendCollector()
-
-        # Higher score for CMMC keywords
         score1 = collector._calculate_score(
             "CMMC certification for defense contractors",
-            "NIST 800-171 compliance required"
+            "NIST 800-171 compliance required",
         )
-
-        # Lower score for generic content
         score2 = collector._calculate_score(
             "General cybersecurity news",
-            "Random security update"
+            "Random security update",
         )
-
         assert score1 > score2
-        assert score1 <= 3.0  # Max score is capped at 3.0
+        assert score1 <= 3.0
 
     def test_clean_html(self):
-        """Test HTML cleaning."""
         collector = TrendCollector()
-
-        # Test basic HTML removal
-        html = "<p>This is <strong>bold</strong> text</p>"
-        clean = collector._clean_html(html)
+        clean = collector._clean_html("<p>This is <strong>bold</strong> text</p>")
         assert "<" not in clean
         assert "bold" in clean
-
-        # Test already clean text
-        text = "This is plain text"
-        clean = collector._clean_html(text)
-        assert clean == text
+        assert collector._clean_html("This is plain text") == "This is plain text"
 
     def test_is_valid_image_url(self):
-        """Test image URL validation."""
         collector = TrendCollector()
-
-        # Valid image URLs
         assert collector._is_valid_image_url("https://example.com/image.jpg")
         assert collector._is_valid_image_url("https://cdn.example.com/photo.png")
-
-        # Invalid image URLs
         assert not collector._is_valid_image_url("https://example.com/pixel.gif")
         assert not collector._is_valid_image_url("https://example.com/tracking.png")
         assert not collector._is_valid_image_url("http://example.com/1x1.gif")
         assert not collector._is_valid_image_url("")
 
-    def test_trend_dataclass(self):
-        """Test Trend dataclass."""
+    def test_trend_dataclass_enriches_source_metadata(self):
         trend = Trend(
-            title="Test Trend",
-            source="test_source",
+            title="NIST update",
+            source="cmmc_nist_csrc",
             url="https://example.com",
-            description="Test description",
-            category="cmmc_program",
-            score=1.5
+            score=1.5,
+        )
+        assert trend.source_metadata.get("tier") == 1
+        assert trend.source_label is not None
+        assert "NIST CSRC" in trend.source_label
+        assert trend.corroborating_sources == ["cmmc_nist_csrc"]
+        assert trend.corroborating_urls == ["https://example.com"]
+
+    def test_fetch_rss_uses_fallback_when_primary_fails(self):
+        collector = TrendCollector()
+        primary = "https://primary.test/feed"
+        fallback = "https://fallback.test/feed"
+        collector.session.get = MagicMock(
+            side_effect=[
+                _mock_response(primary, 403, b"<html>forbidden</html>", "text/html"),
+                _mock_response(
+                    fallback,
+                    200,
+                    b"<rss><channel><item><title>ok</title></item></channel></rss>",
+                    "application/rss+xml",
+                ),
+            ]
         )
 
-        assert trend.title == "Test Trend"
-        assert trend.source == "test_source"
-        assert trend.category == "cmmc_program"
-        assert trend.score == 1.5
+        response = collector._fetch_rss(
+            primary,
+            source_key="cmmc_breakingdefense",
+            fallback_url=fallback,
+        )
 
+        assert response is not None
+        assert response.status_code == 200
+        assert collector.session.get.call_count == 2
 
-class TestTrendCollectorIntegration:
-    """Integration tests for TrendCollector (may require API keys)."""
-
-    @pytest.mark.slow
-    def test_collect_rss_feeds(self):
-        """Test RSS feed collection (slow, requires network)."""
+    def test_fetch_rss_returns_cached_on_cooldown(self):
         collector = TrendCollector()
-        collector._collect_rss_feeds()
+        scope = "cmmc_wapo_test"
+        url = "https://feeds.washingtonpost.com/rss/national"
+        cached_response = _mock_response(
+            url,
+            200,
+            b"<rss><channel><item><title>cached</title></item></channel></rss>",
+            "application/rss+xml",
+        )
+        collector._cache_feed_response(scope, cached_response, url)
+        collector.feed_failures[scope] = {
+            "count": 2,
+            "cooldown_until": time.time() + 60,
+        }
+        collector.session.get = MagicMock(
+            side_effect=AssertionError("network call should not happen during cooldown")
+        )
 
-        # Should collect at least some trends
-        assert len(collector.trends) >= 0  # May be 0 if all filtered out
+        response = collector._fetch_rss(url, source_key=scope)
+        assert response is not None
+        assert b"cached" in response.content
 
-    @pytest.mark.slow
-    def test_deduplication(self):
-        """Test deduplication logic."""
+    def test_deduplicate_merges_corroborating_sources(self):
         collector = TrendCollector()
-
-        # Add duplicate trends
         collector.trends = [
-            Trend("Same news story", "source1", url="http://example.com/1"),
-            Trend("Same news story", "source2", url="http://example.com/2"),
-            Trend("Different story", "source3", url="http://example.com/3"),
+            Trend(
+                title="DoD releases final CMMC 2.0 requirements",
+                source="cmmc_nist_csrc",
+                score=1.6,
+                url="https://example.com/1",
+            ),
+            Trend(
+                title="Final CMMC 2.0 requirements released by DoD",
+                source="cmmc_fedscoop",
+                score=1.6,
+                url="https://example.com/2",
+            ),
+            Trend(
+                title="Separate unrelated compliance story",
+                source="cmmc_reddit_cmmc",
+                score=1.0,
+                url="https://example.com/3",
+            ),
         ]
 
         collector._deduplicate()
 
-        # Should remove one duplicate
         assert len(collector.trends) == 2
+        merged = next(t for t in collector.trends if "unrelated" not in t.title.lower())
+        assert merged.source_diversity >= 2
+        assert "cmmc_nist_csrc" in merged.corroborating_sources
+        assert "cmmc_fedscoop" in merged.corroborating_sources
+
+    def test_apply_recency_and_sort_uses_source_quality(self):
+        collector = TrendCollector()
+        now = datetime.now()
+        collector.trends = [
+            Trend(
+                title="Same topic social",
+                source="cmmc_reddit_cmmc",
+                score=1.0,
+                timestamp=now,
+            ),
+            Trend(
+                title="Same topic official",
+                source="cmmc_nist_csrc",
+                score=1.0,
+                timestamp=now,
+            ),
+        ]
+        collector._apply_recency_and_sort()
+        assert collector.trends[0].source == "cmmc_nist_csrc"
 
 
 if __name__ == "__main__":
