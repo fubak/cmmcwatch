@@ -8,6 +8,10 @@ Claude Code guidance for CMMC Watch - Daily CMMC/NIST compliance news aggregator
 
 **Run:** `cd scripts && python main.py` | **No archive:** `--no-archive` | **Dry run:** `--dry-run` | **Test:** `pytest` | **Format:** `ruff format scripts/`
 
+## Tool Usage
+
+Use `sg -l python` for code searches, `rg` for text/config, `fdfind` for file finding. See `~/.claude/CLAUDE.md`.
+
 ## Environment Variables
 
 Required in `.env` or GitHub Secrets:
