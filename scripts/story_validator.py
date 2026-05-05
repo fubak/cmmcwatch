@@ -651,7 +651,7 @@ if __name__ == "__main__":
             "category": "cmmc_program",
             "source": "cmmc_rss_fedscoop",
             "url": "https://example.com/1",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         },
         {
             "title": "Mentorship Monday - Career Questions Thread",
@@ -659,7 +659,7 @@ if __name__ == "__main__":
             "category": "nist_compliance",
             "source": "cmmc_reddit_cybersecurity",
             "url": "https://example.com/2",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         },
         {
             "title": "Denmark Bolsters Greenland Forces",
@@ -667,7 +667,7 @@ if __name__ == "__main__":
             "category": "nist_compliance",
             "source": "cmmc_rss_breaking_defense",
             "url": "https://example.com/3",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         },
         {
             "title": "CISA Director Vacancy Impacts Cyber Operations",
@@ -675,7 +675,7 @@ if __name__ == "__main__":
             "category": "federal_cybersecurity",
             "source": "cmmc_rss_fedscoop",
             "url": "https://example.com/4",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         },
     ]
 

@@ -21,7 +21,7 @@ import random
 import re
 import time
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -120,7 +120,7 @@ class DesignSpec:
 
     def __post_init__(self):
         if not self.generated_at:
-            self.generated_at = datetime.now().isoformat()
+            self.generated_at = datetime.now(timezone.utc).isoformat()
         if not self.design_seed:
             self.design_seed = datetime.now().strftime("%Y-%m-%d")
         if not self.cta_primary and self.cta_options:
@@ -2098,11 +2098,18 @@ Respond with ONLY a valid JSON object:
         try:
             with open(self.history_path, encoding="utf-8") as f:
                 data = json.load(f)
-            cutoff = datetime.now() - timedelta(days=days)
+            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+
+            def _is_recent(ts_str):
+                ts = datetime.fromisoformat(ts_str)
+                if ts.tzinfo is None:
+                    ts = ts.replace(tzinfo=timezone.utc)
+                return ts > cutoff
+
             recent = [
                 entry.get("theme", "").lower()
                 for entry in data
-                if entry.get("timestamp") and datetime.fromisoformat(entry["timestamp"]) > cutoff
+                if entry.get("timestamp") and _is_recent(entry["timestamp"])
             ]
             return [r for r in recent if r]
         except (OSError, json.JSONDecodeError, ValueError) as e:
@@ -2117,7 +2124,7 @@ Respond with ONLY a valid JSON object:
             if self.history_path.exists():
                 with open(self.history_path, encoding="utf-8") as f:
                     history = json.load(f)
-            history.append({"theme": theme, "timestamp": datetime.now().isoformat()})
+            history.append({"theme": theme, "timestamp": datetime.now(timezone.utc).isoformat()})
             history = history[-30:]  # keep compact
             with open(self.history_path, "w", encoding="utf-8") as f:
                 json.dump(history, f, indent=2)

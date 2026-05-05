@@ -11,7 +11,7 @@ import logging
 import time
 import uuid
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Optional
 
 
@@ -109,7 +109,7 @@ def log_operation(logger: StructuredLogger, operation: str, **context):
     metadata = {
         "operation": operation,
         "operation_id": operation_id,
-        "start_time": datetime.now().isoformat(),
+        "start_time": datetime.now(timezone.utc).isoformat(),
         **context,
     }
 
@@ -233,7 +233,8 @@ def log_performance_metrics(logger: StructuredLogger, metrics: Dict[str, Any]):
         metrics: Dictionary of metric name-value pairs
     """
     logger.info(
-        "Performance metrics", extra={"metric_type": "performance", "timestamp": datetime.now().isoformat(), **metrics}
+        "Performance metrics",
+        extra={"metric_type": "performance", "timestamp": datetime.now(timezone.utc).isoformat(), **metrics},
     )
 
 
@@ -254,7 +255,10 @@ def log_quality_metrics(logger: StructuredLogger, metrics: Dict[str, Any]):
         logger: StructuredLogger instance
         metrics: Dictionary of metric name-value pairs
     """
-    logger.info("Quality metrics", extra={"metric_type": "quality", "timestamp": datetime.now().isoformat(), **metrics})
+    logger.info(
+        "Quality metrics",
+        extra={"metric_type": "quality", "timestamp": datetime.now(timezone.utc).isoformat(), **metrics},
+    )
 
 
 class ErrorCollector:
@@ -296,7 +300,7 @@ class ErrorCollector:
                     "operation": operation,
                     "error_type": type(e).__name__,
                     "error_message": str(e),
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                     **context,
                 }
             )

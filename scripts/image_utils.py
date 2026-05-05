@@ -209,7 +209,8 @@ def get_image_quality_score(url: str) -> int:
         if any(ind in domain for ind in cdn_indicators):
             score += 10
 
-    except Exception:
+    except (AttributeError, TypeError, ValueError) as e:
+        logger.debug(f"Image quality scoring failed: {e}")
         score = 30  # Default low score on error
 
     return max(0, min(100, score))

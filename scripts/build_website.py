@@ -22,7 +22,10 @@ from typing import Dict, List, Optional, Tuple
 
 import requests
 from bs4 import BeautifulSoup
+from config import setup_logging
 from fetch_images import FallbackImageGenerator
+
+logger = setup_logging("pipeline")
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 LAYOUT_TEMPLATES = ["newspaper", "magazine", "bold", "mosaic"]
@@ -81,7 +84,7 @@ class WebsiteBuilder:
         )
 
         # Use timestamp as seed for unique randomization on each generation
-        timestamp_seed = datetime.now().isoformat()
+        timestamp_seed = datetime.now(timezone.utc).isoformat()
         self.rng = random.Random(timestamp_seed)
 
         if isinstance(self.design, dict):
@@ -784,7 +787,8 @@ class WebsiteBuilder:
                 if tag and tag.get("content"):
                     description = tag.get("content", "").strip()
                     break
-        except Exception:
+        except (AttributeError, TypeError, ValueError) as e:
+            logger.debug(f"Failed to extract meta description from {url}: {e}")
             description = ""
 
         description = re.sub(r"\s+", " ", description).strip()

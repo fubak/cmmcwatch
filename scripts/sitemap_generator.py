@@ -289,33 +289,33 @@ def save_sitemap(
     # Save as sitemap_main.xml
     main_sitemap_path = public_dir / "sitemap_main.xml"
     main_sitemap_path.write_text(sitemap_content)
-    print(f"  Created {main_sitemap_path}")
+    logger.info(f"  Created {main_sitemap_path}")
 
     # Generate and save Google News sitemap
     news_sitemap_content = generate_news_sitemap(base_url=base_url, public_dir=public_dir)
     news_sitemap_path = public_dir / "sitemap_news.xml"
     news_sitemap_path.write_text(news_sitemap_content)
-    print(f"  Created {news_sitemap_path} (Google News)")
+    logger.info(f"  Created {news_sitemap_path} (Google News)")
 
     # Also save as sitemap.xml (sitemap index pointing to all sitemaps)
     sitemap_index_content = generate_sitemap_index(base_url=base_url, include_news=True)
     sitemap_path = public_dir / "sitemap.xml"
     sitemap_path.write_text(sitemap_index_content)
-    print(f"  Created {sitemap_path} (index)")
+    logger.info(f"  Created {sitemap_path} (index)")
 
     # Create IndexNow API key file for search engine indexing
     indexnow_key = os.environ.get("INDEXNOW_KEY", "cmmcwatchcom12345")
     indexnow_path = public_dir / f"{indexnow_key}.txt"
     indexnow_path.write_text(indexnow_key)
-    print(f"  Created {indexnow_path} (IndexNow key)")
+    logger.info(f"  Created {indexnow_path} (IndexNow key)")
 
     # Generate and save robots.txt
     robots_content = generate_robots_txt(base_url=base_url)
     robots_path = public_dir / "robots.txt"
     robots_path.write_text(robots_content)
-    print(f"  Created {robots_path}")
+    logger.info(f"  Created {robots_path}")
 
-    print(f"SEO assets saved to {public_dir}")
+    logger.info(f"SEO assets saved to {public_dir}")
 
 
 def generate_news_sitemap(
@@ -410,7 +410,7 @@ def generate_news_sitemap(
     # Convert to string with declaration
     xml_string = ET.tostring(urlset, encoding="unicode", method="xml")
 
-    print(f"  Google News sitemap: {articles_found} articles from last {max_age_days} days")
+    logger.info(f"  Google News sitemap: {articles_found} articles from last {max_age_days} days")
 
     return f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_string}'
 

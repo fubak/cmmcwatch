@@ -45,19 +45,19 @@ class ArchiveManager:
         current_index = self.public_dir / "index.html"
 
         if not current_index.exists():
-            print("No current website to archive")
+            logger.info("No current website to archive")
             return None
 
         # Create dated archive folder with path validation
         today = datetime.now().strftime("%Y-%m-%d")
         archive_path = (self.archive_dir / today).resolve()
         if not str(archive_path).startswith(str(self.archive_dir.resolve())):
-            print(f"Invalid archive path: {archive_path}")
+            logger.error(f"Invalid archive path: {archive_path}")
             return None
 
         # Don't overwrite existing archive, but always regenerate index
         if archive_path.exists():
-            print(f"Archive for {today} already exists, skipping")
+            logger.info(f"Archive for {today} already exists, skipping")
             # Still regenerate the index in case template changed
             self.generate_index()
             return str(archive_path)
@@ -96,7 +96,7 @@ class ArchiveManager:
             tmp_path = Path(tmp.name)
         os.replace(tmp_path, metadata_path)
 
-        print(f"Archived current site to {archive_path}")
+        logger.info(f"Archived current site to {archive_path}")
 
         # Regenerate the archive index
         self.generate_index()
@@ -150,7 +150,7 @@ class ArchiveManager:
                     if folder_date < cutoff:
                         shutil.rmtree(item)
                         removed += 1
-                        print(f"Removed old archive: {item.name}")
+                        logger.info(f"Removed old archive: {item.name}")
                 except ValueError:
                     # Not a date-formatted folder, skip
                     continue
@@ -159,7 +159,7 @@ class ArchiveManager:
             # Regenerate index after cleanup
             self.generate_index()
 
-        print(f"Cleaned up {removed} old archives")
+        logger.info(f"Cleaned up {removed} old archives")
         return removed
 
     def generate_index(self) -> str:
@@ -477,7 +477,7 @@ class ArchiveManager:
         with open(index_path, "w", encoding="utf-8") as f:
             f.write(index_html)
 
-        print(f"Generated archive index with {len(archives)} entries")
+        logger.info(f"Generated archive index with {len(archives)} entries")
         return str(index_path)
 
     def _build_archive_content(self, cards_html: List[str]) -> str:

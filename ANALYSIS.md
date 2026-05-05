@@ -1,8 +1,16 @@
 # CMMC Watch - Repository Analysis Report
 
-**Date:** 2026-01-25  
-**Analyst:** Clawd AI  
+**Date:** 2026-01-25 (⚠️ outdated — superseded by sweep on branch `claude/review-project-cpQGY`, 2026-05-05)
+**Analyst:** Clawd AI
 **Repository:** https://github.com/fubak/cmmcwatch
+
+> **Note:** This report predates the May 2026 reliability/security/UX sweep. Items
+> since addressed: silent excepts narrowed and logged, naive `datetime.now()`
+> replaced with `datetime.now(timezone.utc)` in ISO storage paths, atomic JSON
+> writes, identity leaks (DailyTrending refs) removed, footer heading hierarchy
+> fixed, touch-target / contrast WCAG fixes applied, linkedin_fetch.py and
+> linkedin_oauth.py deleted, test coverage raised to 185 tests. See recent
+> commits on `claude/review-project-cpQGY` for current state.
 
 ---
 
