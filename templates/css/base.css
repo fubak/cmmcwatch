@@ -390,6 +390,10 @@ body.light-mode .footer {
     background: #f1f5f9;
 }
 
+body.light-mode .footer-links a {
+    color: #4b5563;
+}
+
 body.light-mode .section-header {
     border-bottom-color: var(--color-accent);
 }

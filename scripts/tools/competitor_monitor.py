@@ -58,9 +58,7 @@ class MonitoredItem:
     def __post_init__(self):
         if not self.item_hash:
             # Create a hash for deduplication
-            self.item_hash = hashlib.md5(
-                f"{self.source}:{self.url}".encode()
-            ).hexdigest()[:12]
+            self.item_hash = hashlib.md5(f"{self.source}:{self.url}".encode()).hexdigest()[:12]
 
 
 class CompetitorMonitor:
@@ -229,18 +227,14 @@ class CompetitorMonitor:
                     if self._is_new_item(item):
                         items.append(item)
                         self._mark_as_seen(item)
-                        logger.info(
-                            f"[Federal Register] New: {title[:60]}... (relevance: {relevance:.2f})"
-                        )
+                        logger.info(f"[Federal Register] New: {title[:60]}... (relevance: {relevance:.2f})")
 
         except Exception as e:
             logger.error(f"Federal Register monitor failed: {e}")
 
         return items
 
-    def monitor_rss_source(
-        self, source_key: str, filter_keywords: Optional[List[str]] = None
-    ) -> List[MonitoredItem]:
+    def monitor_rss_source(self, source_key: str, filter_keywords: Optional[List[str]] = None) -> List[MonitoredItem]:
         """Monitor an RSS feed source."""
         source_config = self.SOURCES[source_key]
         items = []
@@ -266,9 +260,7 @@ class CompetitorMonitor:
                 published = None
                 if hasattr(entry, "published_parsed") and entry.published_parsed:
                     try:
-                        published = datetime(*entry.published_parsed[:6]).strftime(
-                            "%Y-%m-%d"
-                        )
+                        published = datetime(*entry.published_parsed[:6]).strftime("%Y-%m-%d")
                     except Exception:
                         pass
 
@@ -284,9 +276,7 @@ class CompetitorMonitor:
                 if self._is_new_item(item):
                     items.append(item)
                     self._mark_as_seen(item)
-                    logger.info(
-                        f"[{source_config['name']}] New: {title[:60]}... (relevance: {relevance:.2f})"
-                    )
+                    logger.info(f"[{source_config['name']}] New: {title[:60]}... (relevance: {relevance:.2f})")
 
         except Exception as e:
             logger.error(f"{source_config['name']} monitor failed: {e}")
@@ -322,9 +312,7 @@ class CompetitorMonitor:
                 url = urljoin(source_config["url"], link_elem["href"])
 
                 # Extract summary if available
-                summary_elem = article.find(
-                    ["p", "div"], class_=re.compile(r"summary|excerpt|desc", re.I)
-                )
+                summary_elem = article.find(["p", "div"], class_=re.compile(r"summary|excerpt|desc", re.I))
                 summary = summary_elem.get_text(strip=True) if summary_elem else ""
 
                 # Check for keyword relevance
@@ -345,9 +333,7 @@ class CompetitorMonitor:
                 if self._is_new_item(item):
                     items.append(item)
                     self._mark_as_seen(item)
-                    logger.info(
-                        f"[White & Case] New: {title[:60]}... (relevance: {relevance:.2f})"
-                    )
+                    logger.info(f"[White & Case] New: {title[:60]}... (relevance: {relevance:.2f})")
 
         except Exception as e:
             logger.error(f"White & Case monitor failed: {e}")
@@ -382,9 +368,7 @@ class CompetitorMonitor:
         # NIST CSF News
         logger.info("Checking NIST CSF News...")
         all_items.extend(
-            self.monitor_rss_source(
-                "nist_csf", filter_keywords=self.SOURCES["nist_csf"]["filter_keywords"]
-            )
+            self.monitor_rss_source("nist_csf", filter_keywords=self.SOURCES["nist_csf"]["filter_keywords"])
         )
 
         # Cyberscoop
@@ -398,11 +382,7 @@ class CompetitorMonitor:
 
         # FCW
         logger.info("Checking FCW...")
-        all_items.extend(
-            self.monitor_rss_source(
-                "fcw", filter_keywords=["cmmc", "cybersecurity", "defense", "dod"]
-            )
-        )
+        all_items.extend(self.monitor_rss_source("fcw", filter_keywords=["cmmc", "cybersecurity", "defense", "dod"]))
 
         # Save seen items
         self._save_seen_items()
@@ -425,9 +405,7 @@ class CompetitorMonitor:
         elif source_key == "white_case":
             items = self.monitor_white_case()
         else:
-            items = self.monitor_rss_source(
-                source_key, filter_keywords=source_config.get("filter_keywords")
-            )
+            items = self.monitor_rss_source(source_key, filter_keywords=source_config.get("filter_keywords"))
 
         self._save_seen_items()
         return items
@@ -470,9 +448,7 @@ def save_results(items: List[MonitoredItem], output_format: str = "json"):
 
 def main():
     """Main entry point for competitor monitoring."""
-    parser = argparse.ArgumentParser(
-        description="Monitor competitor and industry sources for CMMC-related content"
-    )
+    parser = argparse.ArgumentParser(description="Monitor competitor and industry sources for CMMC-related content")
     parser.add_argument(
         "--source",
         choices=list(CompetitorMonitor.SOURCES.keys()),
@@ -506,18 +482,16 @@ def main():
         output_file = save_results(items, args.output)
 
         # Print summary
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("CMMC Watch - Competitor Monitor Summary")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"New items found: {len(items)}")
         print(f"Results saved to: {output_file}")
 
         if items:
             print("\nTop items by relevance:")
             for item in items[:5]:
-                print(
-                    f"  [{item.source}] {item.title[:50]}... ({item.relevance_score:.2f})"
-                )
+                print(f"  [{item.source}] {item.title[:50]}... ({item.relevance_score:.2f})")
     else:
         print("No new relevant items found.")
 

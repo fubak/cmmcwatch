@@ -6,9 +6,12 @@ Features: Daily snapshots, browsable index, retention policy.
 
 import html
 import json
+import logging
+import os
 import re
 import shutil
-from datetime import datetime, timedelta
+import tempfile
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -20,6 +23,10 @@ from shared_components import (
     get_header_styles,
     get_theme_script,
 )
+
+from config import setup_logging
+
+logger = setup_logging("pipeline")
 
 
 class ArchiveManager:
@@ -38,19 +45,19 @@ class ArchiveManager:
         current_index = self.public_dir / "index.html"
 
         if not current_index.exists():
-            print("No current website to archive")
+            logger.info("No current website to archive")
             return None
 
         # Create dated archive folder with path validation
         today = datetime.now().strftime("%Y-%m-%d")
         archive_path = (self.archive_dir / today).resolve()
         if not str(archive_path).startswith(str(self.archive_dir.resolve())):
-            print(f"Invalid archive path: {archive_path}")
+            logger.error(f"Invalid archive path: {archive_path}")
             return None
 
         # Don't overwrite existing archive, but always regenerate index
         if archive_path.exists():
-            print(f"Archive for {today} already exists, skipping")
+            logger.info(f"Archive for {today} already exists, skipping")
             # Still regenerate the index in case template changed
             self.generate_index()
             return str(archive_path)
@@ -67,14 +74,10 @@ class ArchiveManager:
 
         # Replace existing canonical or add new one
         if '<link rel="canonical"' in html_content:
-            html_content = re.sub(
-                r'<link rel="canonical"[^>]*>', canonical_tag, html_content
-            )
+            html_content = re.sub(r'<link rel="canonical"[^>]*>', canonical_tag, html_content)
         else:
             # Insert after <head>
-            html_content = html_content.replace(
-                "<head>", f"<head>\n    {canonical_tag}", 1
-            )
+            html_content = html_content.replace("<head>", f"<head>\n    {canonical_tag}", 1)
 
         # Write the modified HTML
         with open(archive_path / "index.html", "w", encoding="utf-8") as f:
@@ -83,14 +86,17 @@ class ArchiveManager:
         # Save metadata
         metadata = {
             "date": today,
-            "archived_at": datetime.now().isoformat(),
+            "archived_at": datetime.now(timezone.utc).isoformat(),
             "design": design or {},
         }
 
-        with open(archive_path / "metadata.json", "w") as f:
-            json.dump(metadata, f, indent=2)
+        metadata_path = archive_path / "metadata.json"
+        with tempfile.NamedTemporaryFile("w", dir=archive_path, suffix=".tmp", delete=False, encoding="utf-8") as tmp:
+            json.dump(metadata, tmp, indent=2)
+            tmp_path = Path(tmp.name)
+        os.replace(tmp_path, metadata_path)
 
-        print(f"Archived current site to {archive_path}")
+        logger.info(f"Archived current site to {archive_path}")
 
         # Regenerate the archive index
         self.generate_index()
@@ -108,10 +114,14 @@ class ArchiveManager:
                 metadata = {"date": item.name}
                 if metadata_file.exists():
                     try:
-                        with open(metadata_file) as f:
-                            metadata.update(json.load(f))
-                    except json.JSONDecodeError:
-                        pass
+                        with open(metadata_file, encoding="utf-8") as f:
+                            loaded = json.load(f)
+                        if isinstance(loaded, dict):
+                            metadata.update(loaded)
+                        else:
+                            logger.warning(f"Archive metadata at {metadata_file} is not a dict; ignoring")
+                    except (OSError, json.JSONDecodeError) as e:
+                        logger.warning(f"Could not read archive metadata {metadata_file}: {e}")
 
                 archives.append(
                     {
@@ -140,7 +150,7 @@ class ArchiveManager:
                     if folder_date < cutoff:
                         shutil.rmtree(item)
                         removed += 1
-                        print(f"Removed old archive: {item.name}")
+                        logger.info(f"Removed old archive: {item.name}")
                 except ValueError:
                     # Not a date-formatted folder, skip
                     continue
@@ -149,7 +159,7 @@ class ArchiveManager:
             # Regenerate index after cleanup
             self.generate_index()
 
-        print(f"Cleaned up {removed} old archives")
+        logger.info(f"Cleaned up {removed} old archives")
         return removed
 
     def generate_index(self) -> str:
@@ -435,7 +445,7 @@ class ArchiveManager:
     </style>
 </head>
 <body class="dark-mode">
-    {build_header(active_page='archive', date_str=date_str)}
+    {build_header(active_page="archive", date_str=date_str)}
 
     <main class="archive-container">
         <div class="archive-header">
@@ -444,7 +454,7 @@ class ArchiveManager:
             <div class="archive-stats">
                 <div class="archive-stat">
                     <div class="archive-stat-value">{len(archives)}</div>
-                    <div class="archive-stat-label">{'Snapshot' if len(archives) == 1 else 'Snapshots'}</div>
+                    <div class="archive-stat-label">{"Snapshot" if len(archives) == 1 else "Snapshots"}</div>
                 </div>
                 <div class="archive-stat">
                     <div class="archive-stat-value">30</div>
@@ -467,7 +477,7 @@ class ArchiveManager:
         with open(index_path, "w", encoding="utf-8") as f:
             f.write(index_html)
 
-        print(f"Generated archive index with {len(archives)} entries")
+        logger.info(f"Generated archive index with {len(archives)} entries")
         return str(index_path)
 
     def _build_archive_content(self, cards_html: List[str]) -> str:
@@ -486,7 +496,7 @@ class ArchiveManager:
 
         return f"""
         <div class="archive-grid">
-            {''.join(cards_html)}
+            {"".join(cards_html)}
         </div>"""
 
 
@@ -510,9 +520,7 @@ def main():
             archives = manager.list_archives()
             print(f"\nFound {len(archives)} archives:")
             for arch in archives:
-                print(
-                    f"  {arch['folder']}: {arch.get('design', {}).get('theme_name', 'Unknown')}"
-                )
+                print(f"  {arch['folder']}: {arch.get('design', {}).get('theme_name', 'Unknown')}")
         elif command == "cleanup":
             days = int(sys.argv[2]) if len(sys.argv) > 2 else 30
             manager.cleanup_old(keep_days=days)
@@ -530,9 +538,7 @@ def main():
 
         if archives:
             print(f"  Latest: {archives[0]['folder']}")
-            oldest = (
-                archives[-1]["folder"] if len(archives) > 1 else archives[0]["folder"]
-            )
+            oldest = archives[-1]["folder"] if len(archives) > 1 else archives[0]["folder"]
             print(f"  Oldest: {oldest}")
 
 

@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from archive_manager import ArchiveManager
@@ -193,9 +193,7 @@ class TestArchiveManager:
         recent_date = (datetime.now() - timedelta(days=10)).strftime("%Y-%m-%d")
         recent_archive_dir = manager.archive_dir / recent_date
         recent_archive_dir.mkdir(parents=True, exist_ok=True)
-        (recent_archive_dir / "index.html").write_text(
-            "<html><body>Recent</body></html>"
-        )
+        (recent_archive_dir / "index.html").write_text("<html><body>Recent</body></html>")
 
         # Cleanup (keep 30 days)
         removed = manager.cleanup_old(keep_days=30)
@@ -324,9 +322,9 @@ class TestArchiveManager:
         """Test that archive metadata includes archived_at timestamp."""
         manager = ArchiveManager(public_dir=str(temp_public_dir))
 
-        before = datetime.now()
+        before = datetime.now(timezone.utc)
         manager.archive_current()
-        after = datetime.now()
+        after = datetime.now(timezone.utc)
 
         today = datetime.now().strftime("%Y-%m-%d")
         metadata_file = manager.archive_dir / today / "metadata.json"

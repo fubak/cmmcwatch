@@ -23,9 +23,7 @@ def _mock_response(url: str, status: int, content: bytes, content_type: str):
     response.status_code = status
     response._content = content
     response.url = url
-    response.headers = requests.structures.CaseInsensitiveDict(
-        {"content-type": content_type}
-    )
+    response.headers = requests.structures.CaseInsensitiveDict({"content-type": content_type})
     return response
 
 
@@ -152,9 +150,7 @@ class TestTrendCollector:
             "count": 2,
             "cooldown_until": time.time() + 60,
         }
-        collector.session.get = MagicMock(
-            side_effect=AssertionError("network call should not happen during cooldown")
-        )
+        collector.session.get = MagicMock(side_effect=AssertionError("network call should not happen during cooldown"))
 
         response = collector._fetch_rss(url, source_key=scope)
         assert response is not None

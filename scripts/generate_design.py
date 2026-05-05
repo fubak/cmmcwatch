@@ -15,16 +15,21 @@ Design Dimensions:
 
 import hashlib
 import json
+import logging
 import os
 import random
 import re
 import time
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import requests
+
+from config import setup_logging
+
+logger = setup_logging("pipeline")
 
 try:
     from rate_limiter import (
@@ -95,19 +100,11 @@ class DesignSpec:
     use_float_animation: bool = False
 
     # New design dimensions
-    image_treatment: str = (
-        "none"  # none, grayscale, sepia, saturate, contrast, vignette
-    )
-    typography_scale: Dict[str, str] = field(
-        default_factory=dict
-    )  # headline sizes per personality
-    section_divider: str = (
-        "none"  # none, line, thick_line, gradient_line, dots, fade, wave
-    )
+    image_treatment: str = "none"  # none, grayscale, sepia, saturate, contrast, vignette
+    typography_scale: Dict[str, str] = field(default_factory=dict)  # headline sizes per personality
+    section_divider: str = "none"  # none, line, thick_line, gradient_line, dots, fade, wave
     card_aspect_ratio: str = "auto"  # auto, landscape, portrait, square, wide, classic
-    content_sentiment: str = (
-        "neutral"  # breaking, positive, negative, entertainment, neutral
-    )
+    content_sentiment: str = "neutral"  # breaking, positive, negative, entertainment, neutral
     contrast_validated: bool = True  # Whether colors pass WCAG AA
 
     # Content
@@ -123,7 +120,7 @@ class DesignSpec:
 
     def __post_init__(self):
         if not self.generated_at:
-            self.generated_at = datetime.now().isoformat()
+            self.generated_at = datetime.now(timezone.utc).isoformat()
         if not self.design_seed:
             self.design_seed = datetime.now().strftime("%Y-%m-%d")
         if not self.cta_primary and self.cta_options:
@@ -717,9 +714,7 @@ IMAGE_TREATMENTS = {
     "saturate": {"filter": "saturate(1.3)"},
     "contrast": {"filter": "contrast(1.1)"},
     "vignette": {"box-shadow": "inset 0 0 100px rgba(0,0,0,0.5)"},
-    "blur_edges": {
-        "mask-image": "radial-gradient(ellipse, black 50%, transparent 100%)"
-    },
+    "blur_edges": {"mask-image": "radial-gradient(ellipse, black 50%, transparent 100%)"},
     "duotone_warm": {"filter": "sepia(20%) saturate(1.2) hue-rotate(-10deg)"},
     "duotone_cool": {"filter": "saturate(0.8) hue-rotate(20deg)"},
 }
@@ -889,11 +884,7 @@ def get_relative_luminance(rgb: tuple) -> float:
         return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
 
     r, g, b = rgb
-    return (
-        0.2126 * channel_luminance(r)
-        + 0.7152 * channel_luminance(g)
-        + 0.0722 * channel_luminance(b)
-    )
+    return 0.2126 * channel_luminance(r) + 0.7152 * channel_luminance(g) + 0.0722 * channel_luminance(b)
 
 
 def calculate_contrast_ratio(color1: str, color2: str) -> float:
@@ -908,17 +899,13 @@ def calculate_contrast_ratio(color1: str, color2: str) -> float:
         return 1.0  # Return lowest ratio if calculation fails
 
 
-def validate_color_contrast(
-    text_color: str, bg_color: str, min_ratio: float = 4.5
-) -> bool:
+def validate_color_contrast(text_color: str, bg_color: str, min_ratio: float = 4.5) -> bool:
     """Check if text color has sufficient contrast against background (WCAG AA)."""
     ratio = calculate_contrast_ratio(text_color, bg_color)
     return ratio >= min_ratio
 
 
-def adjust_color_for_contrast(
-    text_color: str, bg_color: str, min_ratio: float = 4.5
-) -> str:
+def adjust_color_for_contrast(text_color: str, bg_color: str, min_ratio: float = 4.5) -> str:
     """Adjust text color to meet minimum contrast ratio if needed."""
     if validate_color_contrast(text_color, bg_color, min_ratio):
         return text_color
@@ -1006,23 +993,15 @@ def analyze_content_sentiment(trends: list, keywords: list) -> str:
     return "neutral"
 
 
-def get_content_aware_animation(
-    trends: list, keywords: list, base_animation: str
-) -> str:
+def get_content_aware_animation(trends: list, keywords: list, base_animation: str) -> str:
     """Get animation level adjusted for content sentiment."""
     sentiment = analyze_content_sentiment(trends, keywords)
     suggested = SENTIMENT_ANIMATION_MAP.get(sentiment, "subtle")
 
     # Balance between personality preference and content sentiment
     animation_levels = ["none", "subtle", "moderate", "playful", "energetic"]
-    base_idx = (
-        animation_levels.index(base_animation)
-        if base_animation in animation_levels
-        else 1
-    )
-    suggested_idx = (
-        animation_levels.index(suggested) if suggested in animation_levels else 1
-    )
+    base_idx = animation_levels.index(base_animation) if base_animation in animation_levels else 1
+    suggested_idx = animation_levels.index(suggested) if suggested in animation_levels else 1
 
     # Average the two, rounding toward the suggested
     final_idx = (base_idx + suggested_idx + 1) // 2
@@ -1046,18 +1025,14 @@ class DesignGenerator:
         self.groq_key = groq_key or os.getenv("GROQ_API_KEY")
         self.openrouter_key = openrouter_key or os.getenv("OPENROUTER_API_KEY")
         self.google_key = google_key or os.getenv("GOOGLE_AI_API_KEY")
-        self.ollama_url = ollama_url or os.getenv(
-            "OLLAMA_URL", "http://localhost:11434"
-        )
+        self.ollama_url = ollama_url or os.getenv("OLLAMA_URL", "http://localhost:11434")
         self.session = requests.Session()
-        self.history_path = (
-            Path(__file__).parent.parent / "data" / "design_history.json"
-        )
+        self.history_path = Path(__file__).parent.parent / "data" / "design_history.json"
         self._last_call_time = 0.0  # Track last API call for rate limiting
 
     def generate(self, trends: List[Dict], keywords: List[str]) -> DesignSpec:
         """Generate a unique design based on trends and timestamp."""
-        print("Generating design specification...")
+        logger.info("Generating design specification...")
 
         # Use a stable daily seed so rebuilds are deterministic for the day
         day_seed = datetime.now().strftime("%Y-%m-%d")
@@ -1069,10 +1044,10 @@ class DesignGenerator:
         # Generate the combinatorial design
         spec = self._generate_combinatorial(rng, trends, keywords, ai_enhancements)
 
-        print(f"  Personality: {spec.personality}")
-        print(f"  Theme: {spec.theme_name}")
-        print(f"  Layout: {spec.layout_style} / Hero: {spec.hero_style}")
-        print(f"  Card style: {spec.card_style} / Radius: {spec.card_radius}")
+        logger.info(f"  Personality: {spec.personality}")
+        logger.info(f"  Theme: {spec.theme_name}")
+        logger.info(f"  Layout: {spec.layout_style} / Hero: {spec.hero_style}")
+        logger.info(f"  Card style: {spec.card_style} / Radius: {spec.card_radius}")
 
         return spec
 
@@ -1093,9 +1068,7 @@ class DesignGenerator:
         personality = PERSONALITIES[personality_name]
 
         # 2. Select color scheme that matches personality
-        matching_schemes = [
-            s for s in COLOR_SCHEMES if personality_name in s.get("personalities", [])
-        ]
+        matching_schemes = [s for s in COLOR_SCHEMES if personality_name in s.get("personalities", [])]
         if not matching_schemes:
             matching_schemes = COLOR_SCHEMES
 
@@ -1121,16 +1094,10 @@ class DesignGenerator:
 
         # Select hero style aligned with personality for visual consistency
         # Use only hero styles that have CSS implementations
-        personality_heroes = PERSONALITY_HERO_ALIGNMENT.get(
-            personality_name, HERO_STYLES_WITH_CSS
-        )
+        personality_heroes = PERSONALITY_HERO_ALIGNMENT.get(personality_name, HERO_STYLES_WITH_CSS)
         # Filter to only include valid hero styles with CSS
         valid_heroes = [h for h in personality_heroes if h in HERO_STYLES_WITH_CSS]
-        hero_style = (
-            rng.choice(valid_heroes)
-            if valid_heroes
-            else rng.choice(HERO_STYLES_WITH_CSS)
-        )
+        hero_style = rng.choice(valid_heroes) if valid_heroes else rng.choice(HERO_STYLES_WITH_CSS)
 
         # 5b. Select creative flourishes based on personality
         bg_pattern = self._select_background_pattern(personality_name, rng)
@@ -1144,9 +1111,7 @@ class DesignGenerator:
         image_treatment = rng.choice(image_treatments)
 
         # Typography scale based on personality
-        typography_scale = TYPOGRAPHY_SCALES.get(
-            personality_name, TYPOGRAPHY_SCALES["editorial"]
-        )
+        typography_scale = TYPOGRAPHY_SCALES.get(personality_name, TYPOGRAPHY_SCALES["editorial"])
 
         # Section divider based on personality
         section_dividers = PERSONALITY_SECTION_DIVIDERS.get(personality_name, ["line"])
@@ -1176,20 +1141,14 @@ class DesignGenerator:
         if ai_data:
             variants = ai_data.get("variants") or []
             if variants:
-                selected_variant = self._select_ai_variant(
-                    variants, keywords, recent_themes
-                )
+                selected_variant = self._select_ai_variant(variants, keywords, recent_themes)
             story_capsules = ai_data.get("story_capsules") or []
             cta_options = ai_data.get("ctas") or []
 
         # 7. Generate headline and subheadline
         if selected_variant:
-            headline = selected_variant.get("headline") or self._create_headline(
-                trends, rng
-            )
-            subheadline = selected_variant.get(
-                "subheadline"
-            ) or self._create_subheadline(keywords, rng)
+            headline = selected_variant.get("headline") or self._create_headline(trends, rng)
+            subheadline = selected_variant.get("subheadline") or self._create_subheadline(keywords, rng)
             # Override scheme with AI colors/theme
             if selected_variant.get("color_accent"):
                 scheme = {**scheme}
@@ -1307,9 +1266,7 @@ class DesignGenerator:
         options = accent_weights.get(personality, ["none"])
         return rng.choice(options)
 
-    def _select_special_mode(
-        self, personality: str, scheme: Dict, rng: random.Random
-    ) -> str:
+    def _select_special_mode(self, personality: str, scheme: Dict, rng: random.Random) -> str:
         """Select a special visual mode for dramatic variation."""
         mode_weights = {
             "brutalist": ["standard", "high_contrast", "monochrome", "duotone"],
@@ -1325,17 +1282,13 @@ class DesignGenerator:
         options = mode_weights.get(personality, ["standard"])
         return rng.choice(options)
 
-    def _select_ai_variant(
-        self, variants: List[Dict], keywords: List[str], recent_themes: List[str]
-    ) -> Optional[Dict]:
+    def _select_ai_variant(self, variants: List[Dict], keywords: List[str], recent_themes: List[str]) -> Optional[Dict]:
         """Choose an AI variant deterministically while avoiding recent repeats."""
         if not variants:
             return None
 
         # Deterministic index based on date + top keyword
-        seed_basis = datetime.now().strftime("%Y-%m-%d") + (
-            keywords[0] if keywords else ""
-        )
+        seed_basis = datetime.now().strftime("%Y-%m-%d") + (keywords[0] if keywords else "")
         idx = int(hashlib.sha256(seed_basis.encode()).hexdigest(), 16) % len(variants)
 
         # Try to avoid recent theme reuse
@@ -1368,7 +1321,7 @@ class DesignGenerator:
             desc = (t.get("description", "") or "")[:120]
 
             # Format: [Source] Title
-            trend_lines.append(f"{i+1}. [{source}] {title}")
+            trend_lines.append(f"{i + 1}. [{source}] {title}")
             if desc and len(desc) > 20:
                 # Add truncated description for context
                 trend_lines.append(f"   → {desc}...")
@@ -1389,38 +1342,25 @@ class DesignGenerator:
             sources[category] = sources.get(category, 0) + 1
 
         # Sort by count descending
-        distribution = ", ".join(
-            f"{count} {cat}"
-            for cat, count in sorted(sources.items(), key=lambda x: -x[1])[:5]
-        )
+        distribution = ", ".join(f"{count} {cat}" for cat, count in sorted(sources.items(), key=lambda x: -x[1])[:5])
 
         # Detect breaking news / urgency signals
         urgency_keywords = ["breaking", "urgent", "just in", "developing", "alert"]
-        breaking_count = sum(
-            1
-            for t in trends
-            if any(kw in t.get("title", "").lower() for kw in urgency_keywords)
-        )
-        urgency_note = (
-            f"BREAKING NEWS DETECTED: {breaking_count} urgent stories"
-            if breaking_count > 0
-            else ""
-        )
+        breaking_count = sum(1 for t in trends if any(kw in t.get("title", "").lower() for kw in urgency_keywords))
+        urgency_note = f"BREAKING NEWS DETECTED: {breaking_count} urgent stories" if breaking_count > 0 else ""
 
         context = f"""TODAY'S TRENDING STORIES ({len(trends)} total):
 {chr(10).join(trend_lines)}
 
 SOURCE DISTRIBUTION: {distribution}
-TOP KEYWORDS: {', '.join(keywords[:25])}"""
+TOP KEYWORDS: {", ".join(keywords[:25])}"""
 
         if urgency_note:
             context += f"\n{urgency_note}"
 
         return context
 
-    def _try_ai_generation(
-        self, trends: List[Dict], keywords: List[str]
-    ) -> Optional[Dict]:
+    def _try_ai_generation(self, trends: List[Dict], keywords: List[str]) -> Optional[Dict]:
         """Try to get AI-generated design elements with rich context."""
         # Build rich context with expanded trend information
         rich_context = self._build_rich_context(trends, keywords)
@@ -1473,12 +1413,12 @@ Respond with ONLY a valid JSON object:
         for name, caller in providers:
             if self._has_key_for(name):
                 try:
-                    print(f"  Trying {name} for creative elements...")
+                    logger.info(f"  Trying {name} for creative elements...")
                     response = caller(prompt)
                     if response:
                         return self._parse_ai_response(response)
                 except Exception as e:
-                    print(f"    {name} error: {e}")
+                    logger.warning(f"    {name} error: {e}")
                     continue
 
         return None
@@ -1562,7 +1502,7 @@ Respond with ONLY a valid JSON object:
     def _call_ollama(self, prompt: str, max_tokens: int = 1000) -> Optional[str]:
         """Call local Ollama for LLM inference (free, fast, private)."""
         try:
-            print("    Trying Ollama (local)...")
+            logger.info("    Trying Ollama (local)...")
             response = self.session.post(
                 f"{self.ollama_url}/api/generate",
                 json={
@@ -1579,18 +1519,16 @@ Respond with ONLY a valid JSON object:
             response.raise_for_status()
             result = response.json().get("response", "")
             if result:
-                print("    Ollama success")
+                logger.info("    Ollama success")
                 return result
         except Exception as e:
-            print(f"    Ollama not available: {e}")
+            logger.info(f"    Ollama not available: {e}")
         return None
 
-    def _call_google_ai(
-        self, prompt: str, max_tokens: int = 1000, max_retries: int = 1
-    ) -> Optional[str]:
+    def _call_google_ai(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
         """Call Google AI (Gemini) API - primary provider with generous free tier."""
         if not self.google_key:
-            print("    No Google AI API key available")
+            logger.info("    No Google AI API key available")
             return None
 
         # Check rate limits before calling
@@ -1598,11 +1536,11 @@ Respond with ONLY a valid JSON object:
         status = check_before_call("google")
 
         if not status.is_available:
-            print(f"    Google AI not available: {status.error}")
+            logger.warning(f"    Google AI not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            print(f"    Waiting {status.wait_seconds:.1f}s for Google AI rate limit...")
+            logger.info(f"    Waiting {status.wait_seconds:.1f}s for Google AI rate limit...")
             time.sleep(status.wait_seconds)
 
         # Use Gemini 2.5 Flash Lite - highest RPM (10) among free models
@@ -1611,9 +1549,7 @@ Respond with ONLY a valid JSON object:
 
         for attempt in range(max_retries):
             try:
-                print(
-                    f"    Trying Google AI {model} (attempt {attempt + 1}/{max_retries})"
-                )
+                logger.info(f"    Trying Google AI {model} (attempt {attempt + 1}/{max_retries})")
                 response = self.session.post(
                     url,
                     headers={
@@ -1643,7 +1579,7 @@ Respond with ONLY a valid JSON object:
                     if parts:
                         text = parts[0].get("text", "")
                         if text:
-                            print(f"    Google AI success with {model}")
+                            logger.info(f"    Google AI success with {model}")
                             return text
 
             except requests.exceptions.HTTPError as e:
@@ -1652,16 +1588,12 @@ Respond with ONLY a valid JSON object:
                     try:
                         error_data = response.json()
                         error_msg = str(error_data).lower()
-                        if (
-                            "quota" in error_msg
-                            or "exhausted" in error_msg
-                            or "daily" in error_msg
-                        ):
+                        if "quota" in error_msg or "exhausted" in error_msg or "daily" in error_msg:
                             # This is a quota exhaustion - mark provider as exhausted
                             mark_provider_exhausted("google", "daily quota exceeded")
                             return None
-                    except Exception:
-                        pass
+                    except (ValueError, requests.exceptions.JSONDecodeError) as parse_err:
+                        logger.debug(f"Could not parse 429 error body as JSON: {parse_err}")
 
                     # Temporary rate limit - wait and retry
                     retry_after = response.headers.get("Retry-After", "10")
@@ -1669,26 +1601,24 @@ Respond with ONLY a valid JSON object:
                         wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                     except ValueError:
                         wait_time = self.MAX_RETRY_WAIT
-                    print(
+                    logger.info(
                         f"    Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
                     )
                     time.sleep(wait_time)
                     continue
-                print(f"    Google AI failed: {e}")
+                logger.warning(f"    Google AI failed: {e}")
                 return None
             except Exception as e:
-                print(f"    Google AI failed: {e}")
+                logger.warning(f"    Google AI failed: {e}")
                 return None
 
-        print("    Google AI: Max retries exceeded")
+        logger.warning("    Google AI: Max retries exceeded")
         return None
 
-    def _call_openrouter(
-        self, prompt: str, max_tokens: int = 1000, max_retries: int = 1
-    ) -> Optional[str]:
+    def _call_openrouter(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
         """Call OpenRouter API with free models (primary)."""
         if not self.openrouter_key:
-            print("    No OpenRouter API key available")
+            logger.info("    No OpenRouter API key available")
             return None
 
         # Check rate limits before calling
@@ -1696,13 +1626,11 @@ Respond with ONLY a valid JSON object:
         status = check_before_call("openrouter")
 
         if not status.is_available:
-            print(f"    OpenRouter not available: {status.error}")
+            logger.warning(f"    OpenRouter not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            print(
-                f"    Waiting {status.wait_seconds:.1f}s for OpenRouter rate limit..."
-            )
+            logger.info(f"    Waiting {status.wait_seconds:.1f}s for OpenRouter rate limit...")
             time.sleep(status.wait_seconds)
 
         # Free models to try in order of preference
@@ -1715,16 +1643,14 @@ Respond with ONLY a valid JSON object:
         for model in free_models:
             for attempt in range(max_retries):
                 try:
-                    print(
-                        f"    Trying OpenRouter {model} (attempt {attempt + 1}/{max_retries})"
-                    )
+                    logger.info(f"    Trying OpenRouter {model} (attempt {attempt + 1}/{max_retries})")
                     response = self.session.post(
                         "https://openrouter.ai/api/v1/chat/completions",
                         headers={
                             "Authorization": f"Bearer {self.openrouter_key}",
                             "Content-Type": "application/json",
-                            "HTTP-Referer": "https://dailytrending.info",
-                            "X-Title": "DailyTrending.info",
+                            "HTTP-Referer": "https://cmmcwatch.com",
+                            "X-Title": "CMMC Watch",
                         },
                         json={
                             "model": model,
@@ -1737,18 +1663,11 @@ Respond with ONLY a valid JSON object:
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers(
-                        "openrouter", dict(response.headers)
-                    )
+                    rate_limiter.update_from_response_headers("openrouter", dict(response.headers))
 
-                    result = (
-                        response.json()
-                        .get("choices", [{}])[0]
-                        .get("message", {})
-                        .get("content")
-                    )
+                    result = response.json().get("choices", [{}])[0].get("message", {}).get("content")
                     if result:
-                        print(f"    OpenRouter success with {model}")
+                        logger.info(f"    OpenRouter success with {model}")
                         return result
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
@@ -1758,23 +1677,21 @@ Respond with ONLY a valid JSON object:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        print(
+                        logger.info(
                             f"    OpenRouter {model} rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
                         )
                         time.sleep(wait_time)
                         continue
-                    print(f"    OpenRouter {model} failed: {e}")
+                    logger.warning(f"    OpenRouter {model} failed: {e}")
                     break  # Try next model
                 except Exception as e:
-                    print(f"    OpenRouter {model} failed: {e}")
+                    logger.warning(f"    OpenRouter {model} failed: {e}")
                     break  # Try next model
 
-        print("    All OpenRouter models failed")
+        logger.warning("    All OpenRouter models failed")
         return None
 
-    def _call_groq_direct(
-        self, prompt: str, max_tokens: int = 1000, max_retries: int = 1
-    ) -> Optional[str]:
+    def _call_groq_direct(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
         """Call Groq API directly (fallback)."""
         if not self.groq_key:
             return None
@@ -1784,11 +1701,11 @@ Respond with ONLY a valid JSON object:
         status = check_before_call("groq")
 
         if not status.is_available:
-            print(f"    Groq not available: {status.error}")
+            logger.warning(f"    Groq not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            print(f"    Waiting {status.wait_seconds:.1f}s for Groq rate limit...")
+            logger.info(f"    Waiting {status.wait_seconds:.1f}s for Groq rate limit...")
             time.sleep(status.wait_seconds)
 
         # Proactive rate limiting
@@ -1816,16 +1733,9 @@ Respond with ONLY a valid JSON object:
                 response.raise_for_status()
 
                 # Update rate limiter from response headers
-                rate_limiter.update_from_response_headers(
-                    "groq", dict(response.headers)
-                )
+                rate_limiter.update_from_response_headers("groq", dict(response.headers))
 
-                return (
-                    response.json()
-                    .get("choices", [{}])[0]
-                    .get("message", {})
-                    .get("content")
-                )
+                return response.json().get("choices", [{}])[0].get("message", {}).get("content")
             except requests.exceptions.HTTPError as e:
                 if response.status_code == 429:
                     # Parse retry-after header if available
@@ -1834,23 +1744,19 @@ Respond with ONLY a valid JSON object:
                         wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                     except ValueError:
                         wait_time = self.MAX_RETRY_WAIT
-                    print(
-                        f"    Groq rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
-                    )
+                    logger.info(f"    Groq rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
                     time.sleep(wait_time)
                     continue
-                print(f"    Groq API error: {e}")
+                logger.warning(f"    Groq API error: {e}")
                 return None
             except Exception as e:
-                print(f"    Groq API error: {e}")
+                logger.warning(f"    Groq API error: {e}")
                 return None
 
-        print("    Groq API: Max retries exceeded")
+        logger.warning("    Groq API: Max retries exceeded")
         return None
 
-    def _call_opencode(
-        self, prompt: str, max_tokens: int = 1000, max_retries: int = 1
-    ) -> Optional[str]:
+    def _call_opencode(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
         """Call OpenCode API with free models (glm-4.7-free, minimax-m2.1-free)."""
         opencode_key = os.getenv("OPENCODE_API_KEY")
         if not opencode_key:
@@ -1861,11 +1767,11 @@ Respond with ONLY a valid JSON object:
         status = check_before_call("opencode")
 
         if not status.is_available:
-            print(f"    OpenCode not available: {status.error}")
+            logger.warning(f"    OpenCode not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            print(f"    Waiting {status.wait_seconds:.1f}s for OpenCode rate limit...")
+            logger.info(f"    Waiting {status.wait_seconds:.1f}s for OpenCode rate limit...")
             time.sleep(status.wait_seconds)
 
         # Proactive rate limiting
@@ -1880,9 +1786,7 @@ Respond with ONLY a valid JSON object:
             for attempt in range(max_retries):
                 try:
                     self._last_call_time = time.time()
-                    print(
-                        f"    Trying OpenCode {model} (attempt {attempt + 1}/{max_retries})"
-                    )
+                    logger.info(f"    Trying OpenCode {model} (attempt {attempt + 1}/{max_retries})")
                     response = self.session.post(
                         "https://opencode.ai/zen/v1/chat/completions",
                         headers={
@@ -1900,19 +1804,12 @@ Respond with ONLY a valid JSON object:
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers(
-                        "opencode", dict(response.headers)
-                    )
+                    rate_limiter.update_from_response_headers("opencode", dict(response.headers))
                     rate_limiter._last_call_time["opencode"] = time.time()
 
-                    result = (
-                        response.json()
-                        .get("choices", [{}])[0]
-                        .get("message", {})
-                        .get("content")
-                    )
+                    result = response.json().get("choices", [{}])[0].get("message", {}).get("content")
                     if result:
-                        print(f"    OpenCode success with {model}")
+                        logger.info(f"    OpenCode success with {model}")
                         return result
 
                 except requests.exceptions.HTTPError as e:
@@ -1922,23 +1819,21 @@ Respond with ONLY a valid JSON object:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        print(
+                        logger.info(
                             f"    OpenCode rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
                         )
                         time.sleep(wait_time)
                         continue
-                    print(f"    OpenCode API error with {model}: {e}")
+                    logger.warning(f"    OpenCode API error with {model}: {e}")
                     break  # Try next model
                 except Exception as e:
-                    print(f"    OpenCode API error with {model}: {e}")
+                    logger.warning(f"    OpenCode API error with {model}: {e}")
                     break  # Try next model
 
-        print("    All OpenCode models failed")
+        logger.warning("    All OpenCode models failed")
         return None
 
-    def _call_huggingface(
-        self, prompt: str, max_tokens: int = 1000, max_retries: int = 1
-    ) -> Optional[str]:
+    def _call_huggingface(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
         """Call Hugging Face Inference API with free models."""
         huggingface_key = os.getenv("HUGGINGFACE_API_KEY")
         if not huggingface_key:
@@ -1949,13 +1844,11 @@ Respond with ONLY a valid JSON object:
         status = check_before_call("huggingface")
 
         if not status.is_available:
-            print(f"    Hugging Face not available: {status.error}")
+            logger.warning(f"    Hugging Face not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            print(
-                f"    Waiting {status.wait_seconds:.1f}s for Hugging Face rate limit..."
-            )
+            logger.info(f"    Waiting {status.wait_seconds:.1f}s for Hugging Face rate limit...")
             time.sleep(status.wait_seconds)
 
         # Proactive rate limiting
@@ -1974,9 +1867,7 @@ Respond with ONLY a valid JSON object:
             for attempt in range(max_retries):
                 try:
                     self._last_call_time = time.time()
-                    print(
-                        f"    Trying Hugging Face {model} (attempt {attempt + 1}/{max_retries})"
-                    )
+                    logger.info(f"    Trying Hugging Face {model} (attempt {attempt + 1}/{max_retries})")
                     response = self.session.post(
                         f"https://api-inference.huggingface.co/models/{model}",
                         headers={
@@ -1996,16 +1887,14 @@ Respond with ONLY a valid JSON object:
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers(
-                        "huggingface", dict(response.headers)
-                    )
+                    rate_limiter.update_from_response_headers("huggingface", dict(response.headers))
                     rate_limiter._last_call_time["huggingface"] = time.time()
 
                     result = response.json()
                     if isinstance(result, list) and len(result) > 0:
                         text = result[0].get("generated_text", "")
                         if text:
-                            print(f"    Hugging Face success with {model}")
+                            logger.info(f"    Hugging Face success with {model}")
                             return text
 
                 except requests.exceptions.HTTPError as e:
@@ -2015,30 +1904,26 @@ Respond with ONLY a valid JSON object:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        print(
+                        logger.info(
                             f"    Hugging Face rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
                         )
                         time.sleep(wait_time)
                         continue
                     elif response.status_code == 503:
                         # Model is loading, wait and retry
-                        print(
-                            f"    Hugging Face model {model} is loading, waiting {self.MAX_RETRY_WAIT}s..."
-                        )
+                        logger.info(f"    Hugging Face model {model} is loading, waiting {self.MAX_RETRY_WAIT}s...")
                         time.sleep(self.MAX_RETRY_WAIT)
                         continue
-                    print(f"    Hugging Face API error with {model}: {e}")
+                    logger.warning(f"    Hugging Face API error with {model}: {e}")
                     break  # Try next model
                 except Exception as e:
-                    print(f"    Hugging Face API error with {model}: {e}")
+                    logger.warning(f"    Hugging Face API error with {model}: {e}")
                     break  # Try next model
 
-        print("    All Hugging Face models failed")
+        logger.warning("    All Hugging Face models failed")
         return None
 
-    def _call_mistral(
-        self, prompt: str, max_tokens: int = 1000, max_retries: int = 1
-    ) -> Optional[str]:
+    def _call_mistral(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
         """Call Mistral AI API - high quality free tier models."""
         mistral_key = os.getenv("MISTRAL_API_KEY")
         if not mistral_key:
@@ -2049,11 +1934,11 @@ Respond with ONLY a valid JSON object:
         status = check_before_call("mistral")
 
         if not status.is_available:
-            print(f"    Mistral not available: {status.error}")
+            logger.warning(f"    Mistral not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            print(f"    Waiting {status.wait_seconds:.1f}s for Mistral rate limit...")
+            logger.info(f"    Waiting {status.wait_seconds:.1f}s for Mistral rate limit...")
             time.sleep(status.wait_seconds)
 
         # Proactive rate limiting
@@ -2069,9 +1954,7 @@ Respond with ONLY a valid JSON object:
             for attempt in range(max_retries):
                 try:
                     self._last_call_time = time.time()
-                    print(
-                        f"    Trying Mistral {model} (attempt {attempt + 1}/{max_retries})"
-                    )
+                    logger.info(f"    Trying Mistral {model} (attempt {attempt + 1}/{max_retries})")
                     response = self.session.post(
                         "https://api.mistral.ai/v1/chat/completions",
                         headers={
@@ -2089,19 +1972,12 @@ Respond with ONLY a valid JSON object:
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers(
-                        "mistral", dict(response.headers)
-                    )
+                    rate_limiter.update_from_response_headers("mistral", dict(response.headers))
                     rate_limiter._last_call_time["mistral"] = time.time()
 
-                    result = (
-                        response.json()
-                        .get("choices", [{}])[0]
-                        .get("message", {})
-                        .get("content")
-                    )
+                    result = response.json().get("choices", [{}])[0].get("message", {}).get("content")
                     if result:
-                        print(f"    Mistral success with {model}")
+                        logger.info(f"    Mistral success with {model}")
                         return result
 
                 except requests.exceptions.HTTPError as e:
@@ -2111,18 +1987,18 @@ Respond with ONLY a valid JSON object:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        print(
+                        logger.info(
                             f"    Mistral rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
                         )
                         time.sleep(wait_time)
                         continue
-                    print(f"    Mistral API error with {model}: {e}")
+                    logger.warning(f"    Mistral API error with {model}: {e}")
                     break  # Try next model
                 except Exception as e:
-                    print(f"    Mistral API error with {model}: {e}")
+                    logger.warning(f"    Mistral API error with {model}: {e}")
                     break  # Try next model
 
-        print("    All Mistral models failed")
+        logger.warning("    All Mistral models failed")
         return None
 
     def _parse_ai_response(self, response: str) -> Optional[Dict]:
@@ -2150,9 +2026,7 @@ Respond with ONLY a valid JSON object:
                     return f'"{inner}"'
 
                 try:
-                    sanitized = re.sub(
-                        r'"(?:[^"\\]|\\.)*"', escape_string_contents, payload
-                    )
+                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, payload)
                     data = json.loads(sanitized)
                 except (json.JSONDecodeError, Exception):
                     # Last resort: strip all control chars except structural whitespace
@@ -2168,16 +2042,14 @@ Respond with ONLY a valid JSON object:
                             "headline": data.get("headline"),
                             "subheadline": data.get("subheadline"),
                             "color_accent": data.get("color_accent"),
-                            "color_accent_secondary": data.get(
-                                "color_accent_secondary"
-                            ),
+                            "color_accent_secondary": data.get("color_accent_secondary"),
                             "cta": data.get("cta") or data.get("cta_primary"),
                         }
                     ]
                 }
             return data
         except (json.JSONDecodeError, Exception) as e:
-            print(f"    Parse error: {e}")
+            logger.warning(f"    Parse error: {e}")
         return None
 
     def _create_headline(self, trends: List[Dict], rng: random.Random) -> str:
@@ -2215,26 +2087,33 @@ Respond with ONLY a valid JSON object:
 
     def save(self, spec: DesignSpec, filepath: str):
         """Save design spec to JSON."""
-        with open(filepath, "w") as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(asdict(spec), f, indent=2)
-        print(f"Saved design spec to {filepath}")
+        logger.info(f"Saved design spec to {filepath}")
 
     def _load_recent_themes(self, days: int = 7) -> List[str]:
         """Load theme history and return recent theme names."""
         if not self.history_path.exists():
             return []
         try:
-            with open(self.history_path) as f:
+            with open(self.history_path, encoding="utf-8") as f:
                 data = json.load(f)
-            cutoff = datetime.now() - timedelta(days=days)
+            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+
+            def _is_recent(ts_str):
+                ts = datetime.fromisoformat(ts_str)
+                if ts.tzinfo is None:
+                    ts = ts.replace(tzinfo=timezone.utc)
+                return ts > cutoff
+
             recent = [
                 entry.get("theme", "").lower()
                 for entry in data
-                if entry.get("timestamp")
-                and datetime.fromisoformat(entry["timestamp"]) > cutoff
+                if entry.get("timestamp") and _is_recent(entry["timestamp"])
             ]
             return [r for r in recent if r]
-        except Exception:
+        except (OSError, json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"Could not read theme history at {self.history_path}: {e}")
             return []
 
     def _store_theme(self, theme: str):
@@ -2243,14 +2122,14 @@ Respond with ONLY a valid JSON object:
             self.history_path.parent.mkdir(parents=True, exist_ok=True)
             history = []
             if self.history_path.exists():
-                with open(self.history_path) as f:
+                with open(self.history_path, encoding="utf-8") as f:
                     history = json.load(f)
-            history.append({"theme": theme, "timestamp": datetime.now().isoformat()})
+            history.append({"theme": theme, "timestamp": datetime.now(timezone.utc).isoformat()})
             history = history[-30:]  # keep compact
-            with open(self.history_path, "w") as f:
+            with open(self.history_path, "w", encoding="utf-8") as f:
                 json.dump(history, f, indent=2)
-        except Exception:
-            pass
+        except (OSError, json.JSONDecodeError) as e:
+            logger.warning(f"Could not persist theme history to {self.history_path}: {e}")
 
 
 def calculate_combinations():

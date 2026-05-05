@@ -19,8 +19,9 @@ import argparse
 import json
 import os
 import sys
+import tempfile
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 # Add scripts directory to path for imports
@@ -53,6 +54,40 @@ def _to_dict(obj):
 def _to_dict_list(items):
     """Convert a list of dataclass instances or dicts to a list of dicts."""
     return [_to_dict(item) for item in items]
+
+
+def _safe_write_json(path: Path, data, **json_kwargs) -> None:
+    """Write JSON to path atomically via a temp file in the same directory."""
+    path = Path(path)
+    with tempfile.NamedTemporaryFile("w", dir=path.parent, suffix=".tmp", delete=False, encoding="utf-8") as tmp:
+        json.dump(data, tmp, **json_kwargs)
+        tmp_path = Path(tmp.name)
+    os.replace(tmp_path, path)
+
+
+def _load_json_dict(path: Path, required_keys: set = None) -> dict:
+    """Load a JSON file expected to be a dict.
+
+    Returns the dict on success. Returns None and logs a warning if the file
+    is missing, unreadable, malformed, not a dict, or missing any required key.
+    """
+    required_keys = required_keys or set()
+    if not path.exists():
+        return None
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError) as e:
+        logger.warning(f"Failed to load JSON from {path}: {e}")
+        return None
+    if not isinstance(data, dict):
+        logger.warning(f"Expected dict in {path}, got {type(data).__name__}")
+        return None
+    missing = required_keys - data.keys()
+    if missing:
+        logger.warning(f"{path} missing required keys: {sorted(missing)}")
+        return None
+    return data
 
 
 class CMMCWatchPipeline:
@@ -88,7 +123,7 @@ class CMMCWatchPipeline:
         """Run the complete pipeline."""
         logger.info("=" * 60)
         logger.info("CMMC WATCH - Daily Compliance News")
-        logger.info(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info(f"Started at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
         logger.info("=" * 60)
 
         # Validate environment variables
@@ -101,14 +136,7 @@ class CMMCWatchPipeline:
             if archive:
                 logger.info("[1/10] Archiving previous website...")
                 # Load previous design to save with archive
-                prev_design = None
-                design_file = self.data_dir / "design.json"
-                if design_file.exists():
-                    try:
-                        with open(design_file) as f:
-                            prev_design = json.load(f)
-                    except Exception:
-                        pass
+                prev_design = _load_json_dict(self.data_dir / "design.json")
                 self.archive_manager.archive_current(design=prev_design)
 
             # Step 2: Collect trends
@@ -127,9 +155,7 @@ class CMMCWatchPipeline:
 
             # Step 3: Fetch images
             logger.info("[3/10] Fetching images...")
-            image_keywords = (
-                self.keywords[:5] if self.keywords else ["cybersecurity", "compliance"]
-            )
+            image_keywords = self.keywords[:5] if self.keywords else ["cybersecurity", "compliance"]
             self.images = self.image_fetcher.fetch_for_keywords(image_keywords)
             logger.info(f"Fetched {len(self.images)} images")
 
@@ -171,11 +197,8 @@ class CMMCWatchPipeline:
             logger.info("=" * 60)
             return True
 
-        except Exception as e:
-            logger.error(f"Pipeline failed: {e}")
-            import traceback
-
-            traceback.print_exc()
+        except Exception:
+            logger.exception("Pipeline failed")
             return False
 
     def _load_environment(self):
@@ -239,14 +262,9 @@ class CMMCWatchPipeline:
         today = datetime.now().strftime("%Y-%m-%d")
 
         # Check for existing today's design
-        if design_file.exists():
-            try:
-                with open(design_file) as f:
-                    design = json.load(f)
-                if design.get("design_seed") == today:
-                    return design
-            except Exception:
-                pass
+        existing = _load_json_dict(design_file, required_keys={"design_seed"})
+        if existing and existing.get("design_seed") == today:
+            return existing
 
         # Generate new design - convert trends to dicts first
         design = self.design_generator.generate(
@@ -270,18 +288,14 @@ class CMMCWatchPipeline:
             )
 
             if self.editorial_article:
-                logger.info(
-                    f"Editorial article generated: {self.editorial_article.title}"
-                )
+                logger.info(f"Editorial article generated: {self.editorial_article.title}")
             else:
-                logger.error(
-                    "Editorial article generation returned None - check logs above for details"
-                )
+                logger.error("Editorial article generation returned None - check logs above for details")
 
             # Generate articles index page (always regenerate to keep index current)
             self.editorial_generator.generate_articles_index(design=self.design)
-        except Exception as e:
-            logger.error(f"Editorial generation failed with exception: {e}")
+        except Exception:
+            logger.exception("Editorial generation failed")
             self.editorial_article = None
 
     def _build_website(self):
@@ -293,9 +307,7 @@ class CMMCWatchPipeline:
             images=_to_dict_list(self.images),
             design=self.design,
             keywords=self.keywords,
-            editorial_article=(
-                _to_dict(self.editorial_article) if self.editorial_article else None
-            ),
+            editorial_article=(_to_dict(self.editorial_article) if self.editorial_article else None),
         )
 
         builder = WebsiteBuilder(context)
@@ -319,19 +331,10 @@ class CMMCWatchPipeline:
         logger.info(f"RSS feed saved to {self.public_dir / 'feed.xml'}")
 
     def _save_data(self):
-        """Save pipeline data to JSON files."""
-        # Save trends
-        with open(self.data_dir / "trends.json", "w") as f:
-            json.dump(_to_dict_list(self.trends), f, indent=2, default=str)
-
-        # Save images
-        with open(self.data_dir / "images.json", "w") as f:
-            json.dump(_to_dict_list(self.images), f, indent=2, default=str)
-
-        # Save design
-        with open(self.data_dir / "design.json", "w") as f:
-            json.dump(self.design, f, indent=2, default=str)
-
+        """Save pipeline data to JSON files atomically."""
+        _safe_write_json(self.data_dir / "trends.json", _to_dict_list(self.trends), indent=2, default=str)
+        _safe_write_json(self.data_dir / "images.json", _to_dict_list(self.images), indent=2, default=str)
+        _safe_write_json(self.data_dir / "design.json", self.design, indent=2, default=str)
         logger.info(f"Pipeline data saved to {self.data_dir}")
 
 

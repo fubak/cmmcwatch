@@ -25,6 +25,7 @@ SITE_NAME = "CMMC Watch"
 SITE_URL = "https://cmmcwatch.com"
 
 try:
+    from config import setup_logging
     from rate_limiter import (
         check_before_call,
         get_rate_limiter,
@@ -38,6 +39,7 @@ try:
         get_theme_script,
     )
 except ImportError:
+    from scripts.config import setup_logging
     from scripts.rate_limiter import (
         check_before_call,
         get_rate_limiter,
@@ -51,7 +53,7 @@ except ImportError:
         get_theme_script,
     )
 
-logger = logging.getLogger("pipeline")
+logger = setup_logging("pipeline")
 
 # JSON Schemas for Gemini Structured Outputs
 EDITORIAL_SCHEMA = {
@@ -239,7 +241,7 @@ class EditorialGenerator:
             if existing_articles:
                 try:
                     metadata_path = existing_articles[0]
-                    with open(metadata_path) as f:
+                    with open(metadata_path, encoding="utf-8") as f:
                         metadata = json.load(f)
 
                     # Check if existing article is truncated (missing Conclusion)
@@ -1266,7 +1268,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
         try:
             response = self.session.get(f"{self.ollama_url}/api/tags", timeout=5)
             return response.status_code == 200
-        except Exception:
+        except requests.exceptions.RequestException:
             return False
 
     def _call_ollama(self, prompt: str, max_tokens: int = 800) -> Optional[str]:
@@ -1362,8 +1364,8 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
                             # This is a quota exhaustion - mark provider as exhausted
                             mark_provider_exhausted("google", "daily quota exceeded")
                             return None
-                    except Exception:
-                        pass
+                    except (ValueError, requests.exceptions.JSONDecodeError) as parse_err:
+                        logger.debug(f"Could not parse 429 error body as JSON: {parse_err}")
 
                     # Temporary rate limit - wait and retry
                     retry_after = response.headers.get("Retry-After", "10")
@@ -1477,8 +1479,8 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
                             # This is a quota exhaustion - mark provider as exhausted
                             mark_provider_exhausted("google", "daily quota exceeded")
                             return None
-                    except Exception:
-                        pass
+                    except (ValueError, requests.exceptions.JSONDecodeError) as parse_err:
+                        logger.debug(f"Could not parse 429 error body as JSON: {parse_err}")
 
                     # Temporary rate limit - wait and retry
                     retry_after = response.headers.get("Retry-After", "10")
@@ -2042,7 +2044,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
         # Walk through year/month/day/slug directories
         for metadata_file in self.articles_dir.rglob("metadata.json"):
             try:
-                with open(metadata_file) as f:
+                with open(metadata_file, encoding="utf-8") as f:
                     articles.append(json.load(f))
             except Exception as e:
                 logger.warning(f"Failed to load {metadata_file}: {e}")
@@ -2078,7 +2080,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
 
         for metadata_file in self.articles_dir.rglob("metadata.json"):
             try:
-                with open(metadata_file) as f:
+                with open(metadata_file, encoding="utf-8") as f:
                     metadata = json.load(f)
 
                 content = metadata.get("content", "")
@@ -2140,7 +2142,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
                     logger.warning(f"Metadata file not found: {metadata_file}")
                     continue
 
-                with open(metadata_file) as f:
+                with open(metadata_file, encoding="utf-8") as f:
                     metadata = json.load(f)
 
                 logger.info(f"Attempting to fix: {article_id}")
@@ -2199,7 +2201,7 @@ Respond with ONLY a valid JSON object:
                 metadata["word_count"] = len(new_content.split())
 
                 # Save updated metadata
-                with open(metadata_file, "w") as f:
+                with open(metadata_file, "w", encoding="utf-8") as f:
                     json.dump(metadata, f, indent=2)
 
                 # Reconstruct article and regenerate HTML
@@ -2295,7 +2297,7 @@ Respond with ONLY a valid JSON object:
         count = 0
         for metadata_file in self.articles_dir.rglob("metadata.json"):
             try:
-                with open(metadata_file) as f:
+                with open(metadata_file, encoding="utf-8") as f:
                     metadata = json.load(f)
 
                 # Reconstruct EditorialArticle from metadata

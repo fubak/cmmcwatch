@@ -223,9 +223,7 @@ def check_source(
         try:
             fallback_profile = _resolve_domain_profile(source.fallback_url)
             fallback_headers = _resolve_headers(source, fallback_profile)
-            fallback_timeout = float(
-                fallback_profile.get("timeout") or source.timeout_seconds or timeout
-            )
+            fallback_timeout = float(fallback_profile.get("timeout") or source.timeout_seconds or timeout)
             fallback_result = _run_single_check(
                 session=session,
                 source=source,
@@ -264,23 +262,13 @@ def check_source(
 
 def run_health_check(timeout: float, workers: int, attempts: int) -> Dict[str, Any]:
     session = requests.Session()
-    session.headers.update(
-        {
-            "User-Agent": (
-                DEFAULT_BROWSER_UA
-                + " CMMCWatchHealthCheck/1.0"
-            )
-        }
-    )
+    session.headers.update({"User-Agent": (DEFAULT_BROWSER_UA + " CMMCWatchHealthCheck/1.0")})
 
     sources = get_health_sources()
     results: List[Dict[str, Any]] = []
 
     with ThreadPoolExecutor(max_workers=max(1, workers)) as executor:
-        futures = {
-            executor.submit(check_source, session, source, timeout, attempts): source
-            for source in sources
-        }
+        futures = {executor.submit(check_source, session, source, timeout, attempts): source for source in sources}
         for future in as_completed(futures):
             source = futures[future]
             try:
@@ -312,9 +300,7 @@ def run_health_check(timeout: float, workers: int, attempts: int) -> Dict[str, A
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Check source health for CMMC Watch collectors"
-    )
+    parser = argparse.ArgumentParser(description="Check source health for CMMC Watch collectors")
     parser.add_argument(
         "--output",
         type=Path,

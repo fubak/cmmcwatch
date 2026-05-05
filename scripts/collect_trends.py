@@ -80,9 +80,7 @@ def parse_timestamp(value: Any) -> Optional[datetime]:
         if ts_value > 10_000_000_000:
             ts_value = ts_value / 1000.0
         try:
-            return datetime.fromtimestamp(ts_value, tz=timezone.utc).replace(
-                tzinfo=None
-            )
+            return datetime.fromtimestamp(ts_value, tz=timezone.utc).replace(tzinfo=None)
         except (ValueError, OverflowError, OSError):
             return None
 
@@ -201,11 +199,7 @@ class TrendCollector:
         self.trends: List[Trend] = []
         self.global_keywords: List[str] = []
         self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": DEFAULT_BROWSER_UA
-            }
-        )
+        self.session.headers.update({"User-Agent": DEFAULT_BROWSER_UA})
         self.default_timeout = float(TIMEOUTS.get("default", 15))
         self.feed_timeout = float(TIMEOUTS.get("rss_feed", self.default_timeout))
         self.request_delay = float(DELAYS.get("between_requests", 0.15))
@@ -289,9 +283,7 @@ class TrendCollector:
         state["count"] = float(state.get("count", 0)) + 1
         if state["count"] >= self.feed_failure_threshold:
             state["cooldown_until"] = time.time() + self.feed_cooldown_seconds
-            logger.warning(
-                f"Feed {scope} on cooldown after {int(state['count'])} failures: {error}"
-            )
+            logger.warning(f"Feed {scope} on cooldown after {int(state['count'])} failures: {error}")
         self.feed_failures[scope] = state
 
     def _record_feed_success(self, scope: str) -> None:
@@ -409,9 +401,7 @@ class TrendCollector:
         errors: List[str] = []
         for attempt in range(1, attempts + 1):
             try:
-                response = self.session.get(
-                    url, timeout=effective_timeout, headers=request_headers or None
-                )
+                response = self.session.get(url, timeout=effective_timeout, headers=request_headers or None)
                 if response.status_code not in allowed_status:
                     errors.append(f"HTTP {response.status_code}")
                 elif not self._is_feed_response(response):
@@ -501,17 +491,19 @@ class TrendCollector:
         # Convert Trend objects to dicts for the validator
         trend_dicts = []
         for t in self.trends:
-            trend_dicts.append({
-                "title": t.title,
-                "description": t.description,
-                "category": t.category,
-                "source": t.source,
-                "url": t.url,
-                "timestamp": t.timestamp.isoformat() if t.timestamp else None,
-                "score": t.score,
-                "keywords": t.keywords,
-                "image_url": t.image_url,
-            })
+            trend_dicts.append(
+                {
+                    "title": t.title,
+                    "description": t.description,
+                    "category": t.category,
+                    "source": t.source,
+                    "url": t.url,
+                    "timestamp": t.timestamp.isoformat() if t.timestamp else None,
+                    "score": t.score,
+                    "keywords": t.keywords,
+                    "image_url": t.image_url,
+                }
+            )
 
         # Run validation
         validator = StoryValidator()
@@ -573,9 +565,7 @@ class TrendCollector:
 
                 for entry in feed.entries[: LIMITS.get("cmmc_rss", 20)]:
                     title = entry.get("title", "").strip()
-                    description = entry.get("summary", "") or entry.get(
-                        "description", ""
-                    )
+                    description = entry.get("summary", "") or entry.get("description", "")
 
                     if not title or len(title) < 10:
                         continue
@@ -639,9 +629,7 @@ class TrendCollector:
                         include_post = True
                     else:
                         content = (title + " " + description).lower()
-                        include_post = any(
-                            kw.lower() in content for kw in CMMC_KEYWORDS
-                        )
+                        include_post = any(kw.lower() in content for kw in CMMC_KEYWORDS)
 
                     if include_post:
                         trend = Trend(
@@ -748,39 +736,35 @@ class TrendCollector:
         """Remove HTML tags from text and apply smart truncation."""
         if not text:
             return ""
-        
+
         # Clean HTML if present
         if "<" in text:
             soup = BeautifulSoup(text, "html.parser")
             clean = soup.get_text(separator=" ").strip()
         else:
             clean = text.strip()
-        
+
         # Normalize whitespace
         clean = re.sub(r"\s+", " ", clean)
-        
+
         # Smart truncation at sentence boundaries (up to 1500 chars)
         max_length = 1500
         if len(clean) > max_length:
             truncated = clean[:max_length]
             # Find last sentence boundary
-            last_period = max(
-                truncated.rfind('. '),
-                truncated.rfind('! '),
-                truncated.rfind('? ')
-            )
-            
+            last_period = max(truncated.rfind(". "), truncated.rfind("! "), truncated.rfind("? "))
+
             # If found a good sentence boundary with reasonable content
             if last_period > 300:
-                return clean[:last_period + 1]
+                return clean[: last_period + 1]
             else:
                 # Fall back to word boundary
-                last_space = truncated.rfind(' ')
+                last_space = truncated.rfind(" ")
                 if last_space > 200:
                     return clean[:last_space] + "..."
                 else:
                     return clean[:max_length] + "..."
-        
+
         return clean
 
     def _extract_image_from_entry(self, entry) -> Optional[str]:
@@ -796,9 +780,7 @@ class TrendCollector:
         # Check media_content
         if hasattr(entry, "media_content") and entry.media_content:
             for media in entry.media_content:
-                if media.get("medium") == "image" or media.get("type", "").startswith(
-                    "image"
-                ):
+                if media.get("medium") == "image" or media.get("type", "").startswith("image"):
                     url = media.get("url")
                     if url and self._is_valid_image_url(url):
                         return url
@@ -893,10 +875,7 @@ class TrendCollector:
             "arcpublishing",
         ]
 
-        has_extension = any(
-            url_lower.endswith(ext) or f"{ext}?" in url_lower
-            for ext in image_extensions
-        )
+        has_extension = any(url_lower.endswith(ext) or f"{ext}?" in url_lower for ext in image_extensions)
         from_cdn = any(cdn in url_lower for cdn in image_cdns)
 
         return has_extension or from_cdn
@@ -924,11 +903,7 @@ class TrendCollector:
             "cmmc_rss_federal_news_network",
         }
 
-        trends_to_fetch = [
-            t
-            for t in self.trends
-            if not t.image_url and t.source in sources_with_og_image
-        ]
+        trends_to_fetch = [t for t in self.trends if not t.image_url and t.source in sources_with_og_image]
 
         if not trends_to_fetch:
             return
@@ -1058,9 +1033,7 @@ class TrendCollector:
                     jaccard = 0.0
                 else:
                     intersection = len(tokens_i & tokens_j)
-                    overlap_ratio = intersection / max(
-                        1, min(len(tokens_i), len(tokens_j))
-                    )
+                    overlap_ratio = intersection / max(1, min(len(tokens_i), len(tokens_j)))
                     jaccard = intersection / max(1, len(tokens_i | tokens_j))
 
                 semantic_ratio = SequenceMatcher(None, normalized_i, normalized_j).ratio()
@@ -1146,14 +1119,10 @@ class TrendCollector:
             quality_multiplier = source_quality_multiplier(trend.source)
             diversity_multiplier = 1.0
             if trend.source_diversity > 1:
-                diversity_multiplier = 1.0 + min(
-                    (trend.source_diversity - 1) * 0.08, 0.35
-                )
+                diversity_multiplier = 1.0 + min((trend.source_diversity - 1) * 0.08, 0.35)
 
             # Store combined score with source quality calibration.
-            trend.score = (
-                trend.score * quality_multiplier * diversity_multiplier
-            ) + recency_boost
+            trend.score = (trend.score * quality_multiplier * diversity_multiplier) + recency_boost
 
         # Sort by combined score (highest first)
         self.trends.sort(key=lambda t: t.score, reverse=True)
@@ -1185,9 +1154,7 @@ class TrendCollector:
                     keyword_counts[word] = keyword_counts.get(word, 0) + 1
 
         # Sort by frequency
-        sorted_keywords = sorted(
-            keyword_counts.items(), key=lambda x: x[1], reverse=True
-        )
+        sorted_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)
         self.global_keywords = [kw for kw, _ in sorted_keywords[:100]]
 
         logger.info(f"Found {len(self.global_keywords)} global keywords")

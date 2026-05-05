@@ -29,9 +29,7 @@ ET.register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
 ET.register_namespace("dc", "http://purl.org/dc/elements/1.1/")
 
 
-def _build_content_html(
-    title: str, description: str, source: str, url: str, why_matters: str = ""
-) -> str:
+def _build_content_html(title: str, description: str, source: str, url: str, why_matters: str = "") -> str:
     """
     Build rich HTML content for RSS content:encoded element.
 
@@ -53,9 +51,7 @@ def _build_content_html(
         html_parts.append(f"<p>{description}</p>")
 
     if why_matters:
-        html_parts.append(
-            f"<blockquote><strong>Why This Matters:</strong> {why_matters}</blockquote>"
-        )
+        html_parts.append(f"<blockquote><strong>Why This Matters:</strong> {why_matters}</blockquote>")
 
     html_parts.append(f"<p><small>Source: {source_formatted}</small></p>")
 
@@ -156,9 +152,7 @@ def generate_rss_feed(
         if len(desc) > max_length:
             # Try to find last sentence boundary within limit
             truncated = desc[:max_length]
-            last_period = max(
-                truncated.rfind(". "), truncated.rfind("! "), truncated.rfind("? ")
-            )
+            last_period = max(truncated.rfind(". "), truncated.rfind("! "), truncated.rfind("? "))
 
             # If we found a good sentence boundary with reasonable length
             if last_period > 200:
@@ -191,11 +185,7 @@ def generate_rss_feed(
                 else:
                     dt = timestamp
                 pub_date = dt.strftime("%a, %d %b %Y %H:%M:%S %z")
-                if (
-                    not pub_date.endswith("+0000")
-                    and "+" not in pub_date
-                    and "-" not in pub_date[-5:]
-                ):
+                if not pub_date.endswith("+0000") and "+" not in pub_date and "-" not in pub_date[-5:]:
                     pub_date += " +0000"
                 ET.SubElement(item, "pubDate").text = pub_date
             except (ValueError, AttributeError):
@@ -204,19 +194,13 @@ def generate_rss_feed(
             ET.SubElement(item, "pubDate").text = build_date
 
         # Dublin Core creator
-        ET.SubElement(item, "{http://purl.org/dc/elements/1.1/}creator").text = (
-            "CMMC Watch"
-        )
+        ET.SubElement(item, "{http://purl.org/dc/elements/1.1/}creator").text = "CMMC Watch"
 
         # Full content (content:encoded) with rich HTML
         full_desc = trend.get("description") or trend.get("title", "")
         why_matters = trend.get("why_this_matters", "")
-        content_html = _build_content_html(
-            title_text, full_desc, source, url, why_matters
-        )
-        content_encoded = ET.SubElement(
-            item, "{http://purl.org/rss/1.0/modules/content/}encoded"
-        )
+        content_html = _build_content_html(title_text, full_desc, source, url, why_matters)
+        content_encoded = ET.SubElement(item, "{http://purl.org/rss/1.0/modules/content/}encoded")
         content_encoded.text = content_html
 
         items_added += 1
@@ -231,7 +215,8 @@ def generate_rss_feed(
         # Remove extra blank lines and fix declaration
         lines = [line for line in pretty_xml.split("\n") if line.strip()]
         pretty_xml = "\n".join(lines)
-    except Exception:
+    except (ValueError, OSError) as e:
+        logger.debug(f"XML pretty-print failed, using raw XML: {e}")
         pretty_xml = f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_string}'
 
     logger.info(f"Generated RSS feed with {items_added} items")
@@ -283,9 +268,7 @@ def generate_cmmc_rss_feed(
     )
 
 
-def generate_cmmc_from_data_file(
-    trends_file: Path = None, output_path: Path = None
-) -> str:
+def generate_cmmc_from_data_file(trends_file: Path = None, output_path: Path = None) -> str:
     """
     Generate CMMC RSS feed from the saved trends.json data file.
 
@@ -304,7 +287,7 @@ def generate_cmmc_from_data_file(
         return ""
 
     try:
-        with open(trends_file) as f:
+        with open(trends_file, encoding="utf-8") as f:
             trends = json.load(f)
     except (json.JSONDecodeError, IOError) as e:
         logger.error(f"Failed to load trends: {e}")
@@ -332,7 +315,7 @@ def generate_from_data_file(trends_file: Path = None, output_path: Path = None) 
         return ""
 
     try:
-        with open(trends_file) as f:
+        with open(trends_file, encoding="utf-8") as f:
             trends = json.load(f)
     except (json.JSONDecodeError, IOError) as e:
         logger.error(f"Failed to load trends: {e}")

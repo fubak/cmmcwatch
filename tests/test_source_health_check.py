@@ -17,9 +17,7 @@ def _mock_response(url: str, status: int, content: bytes, content_type: str):
     response.status_code = status
     response._content = content
     response.url = url
-    response.headers = requests.structures.CaseInsensitiveDict(
-        {"content-type": content_type}
-    )
+    response.headers = requests.structures.CaseInsensitiveDict({"content-type": content_type})
     return response
 
 

@@ -12,6 +12,10 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+from config import setup_logging
+
+logger = setup_logging("pipeline")
+
 
 def generate_manifest() -> str:
     """
@@ -26,7 +30,7 @@ def generate_manifest() -> str:
         "description": "Daily CMMC, NIST 800-171, and federal cybersecurity compliance news aggregator",
         "start_url": "/",
         "display": "standalone",
-        "background_color": "#0a0a0a",
+        "background_color": "#ffffff",
         "theme_color": "#6366f1",
         "orientation": "portrait-primary",
         "categories": ["news", "social"],
@@ -265,21 +269,21 @@ def save_pwa_assets(public_dir: Path):
     # Save manifest
     manifest_path = public_dir / "manifest.json"
     manifest_path.write_text(generate_manifest())
-    print(f"  Created {manifest_path}")
+    logger.info(f"  Created {manifest_path}")
 
     # Save service worker
     sw_path = public_dir / "sw.js"
     sw_path.write_text(generate_service_worker())
-    print(f"  Created {sw_path}")
+    logger.info(f"  Created {sw_path}")
 
     # Save offline page
     offline_path = public_dir / "offline.html"
     offline_path.write_text(generate_offline_page())
-    print(f"  Created {offline_path}")
+    logger.info(f"  Created {offline_path}")
 
     # Save placeholder icon SVG
     icon_svg_path = public_dir / "icons" / "icon.svg"
     icon_svg_path.write_text(generate_pwa_icon_placeholder())
-    print(f"  Created {icon_svg_path}")
+    logger.info(f"  Created {icon_svg_path}")
 
-    print(f"PWA assets saved to {public_dir}")
+    logger.info(f"PWA assets saved to {public_dir}")

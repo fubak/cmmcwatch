@@ -32,7 +32,8 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.45rem 0.9rem;
+    padding: 0.6rem 0.9rem;
+    min-height: 44px;
     border-radius: 999px;
     border: 1px solid var(--color-border);
     background: transparent;
@@ -325,8 +326,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: var(--radius-sm);
