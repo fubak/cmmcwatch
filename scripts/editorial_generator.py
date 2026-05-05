@@ -25,6 +25,7 @@ SITE_NAME = "CMMC Watch"
 SITE_URL = "https://cmmcwatch.com"
 
 try:
+    from config import setup_logging
     from rate_limiter import (
         check_before_call,
         get_rate_limiter,
@@ -38,6 +39,7 @@ try:
         get_theme_script,
     )
 except ImportError:
+    from scripts.config import setup_logging
     from scripts.rate_limiter import (
         check_before_call,
         get_rate_limiter,
@@ -51,7 +53,7 @@ except ImportError:
         get_theme_script,
     )
 
-logger = logging.getLogger("pipeline")
+logger = setup_logging("pipeline")
 
 # JSON Schemas for Gemini Structured Outputs
 EDITORIAL_SCHEMA = {

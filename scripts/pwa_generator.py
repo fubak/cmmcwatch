@@ -26,7 +26,7 @@ def generate_manifest() -> str:
         "description": "Daily CMMC, NIST 800-171, and federal cybersecurity compliance news aggregator",
         "start_url": "/",
         "display": "standalone",
-        "background_color": "#0a0a0a",
+        "background_color": "#ffffff",
         "theme_color": "#6366f1",
         "orientation": "portrait-primary",
         "categories": ["news", "social"],

@@ -24,7 +24,9 @@ from shared_components import (
     get_theme_script,
 )
 
-logger = logging.getLogger("pipeline")
+from config import setup_logging
+
+logger = setup_logging("pipeline")
 
 
 class ArchiveManager:

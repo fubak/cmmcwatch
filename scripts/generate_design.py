@@ -27,7 +27,9 @@ from typing import Dict, List, Optional
 
 import requests
 
-logger = logging.getLogger("pipeline")
+from config import setup_logging
+
+logger = setup_logging("pipeline")
 
 try:
     from rate_limiter import (
