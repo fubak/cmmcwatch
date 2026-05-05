@@ -125,9 +125,7 @@ class OAuthHandler(BaseHTTPRequestHandler):
             response.raise_for_status()
             token_data = response.json()
 
-            print(
-                f"✅ Access token received (expires in {token_data.get('expires_in', 0)} seconds)"
-            )
+            print(f"✅ Access token received (expires in {token_data.get('expires_in', 0)} seconds)")
             return token_data
 
         except requests.exceptions.RequestException as e:
@@ -166,21 +164,13 @@ def start_oauth_flow():
     """Start the OAuth authorization flow"""
     # Check for required credentials
     if not CLIENT_ID or not CLIENT_SECRET:
-        print(
-            "❌ Error: LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET must be set in .env"
-        )
+        print("❌ Error: LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET must be set in .env")
         print("\nSee scripts/linkedin_api_setup.md for instructions.")
         sys.exit(1)
 
     # Build authorization URL
     scope_str = " ".join(SCOPES)
-    auth_url = (
-        f"{AUTHORIZE_URL}?"
-        f"response_type=code&"
-        f"client_id={CLIENT_ID}&"
-        f"redirect_uri={REDIRECT_URI}&"
-        f"scope={scope_str}"
-    )
+    auth_url = f"{AUTHORIZE_URL}?response_type=code&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope={scope_str}"
 
     print("=" * 60)
     print("LinkedIn OAuth 2.0 Authorization")

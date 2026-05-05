@@ -1266,7 +1266,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
         try:
             response = self.session.get(f"{self.ollama_url}/api/tags", timeout=5)
             return response.status_code == 200
-        except Exception:
+        except requests.exceptions.RequestException:
             return False
 
     def _call_ollama(self, prompt: str, max_tokens: int = 800) -> Optional[str]:
@@ -1362,8 +1362,8 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
                             # This is a quota exhaustion - mark provider as exhausted
                             mark_provider_exhausted("google", "daily quota exceeded")
                             return None
-                    except Exception:
-                        pass
+                    except (ValueError, requests.exceptions.JSONDecodeError) as parse_err:
+                        logger.debug(f"Could not parse 429 error body as JSON: {parse_err}")
 
                     # Temporary rate limit - wait and retry
                     retry_after = response.headers.get("Retry-After", "10")
@@ -1477,8 +1477,8 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
                             # This is a quota exhaustion - mark provider as exhausted
                             mark_provider_exhausted("google", "daily quota exceeded")
                             return None
-                    except Exception:
-                        pass
+                    except (ValueError, requests.exceptions.JSONDecodeError) as parse_err:
+                        logger.debug(f"Could not parse 429 error body as JSON: {parse_err}")
 
                     # Temporary rate limit - wait and retry
                     retry_after = response.headers.get("Retry-After", "10")

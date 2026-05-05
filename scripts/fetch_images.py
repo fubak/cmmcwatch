@@ -104,9 +104,7 @@ class KeyRotator:
                 return None
 
         if old_index != self.current_index:
-            logger.info(
-                f"{self.service_name}: Rotated to key {self.current_index + 1}/{len(self.keys)}"
-            )
+            logger.info(f"{self.service_name}: Rotated to key {self.current_index + 1}/{len(self.keys)}")
 
         return self.keys[self.current_index]
 
@@ -116,10 +114,7 @@ class KeyRotator:
             key = self.keys[self.current_index]
             self.exhausted_keys.add(key)
             remaining = len(self.keys) - len(self.exhausted_keys)
-            logger.warning(
-                f"{self.service_name}: Key {self.current_index + 1} exhausted. "
-                f"{remaining} keys remaining."
-            )
+            logger.warning(f"{self.service_name}: Key {self.current_index + 1} exhausted. {remaining} keys remaining.")
 
     def reset(self) -> None:
         """Reset all exhausted keys (for new pipeline runs)."""
@@ -271,9 +266,7 @@ class ImageCache:
         """Save the cache index to disk using atomic file operations."""
         try:
             # Write to temporary file first, then rename for atomicity
-            fd, tmp_path = tempfile.mkstemp(
-                dir=self.cache_dir, prefix=".cache_index_", suffix=".tmp"
-            )
+            fd, tmp_path = tempfile.mkstemp(dir=self.cache_dir, prefix=".cache_index_", suffix=".tmp")
             try:
                 with os.fdopen(fd, "w") as f:
                     json.dump(self.index, f, indent=2)
@@ -356,9 +349,7 @@ class ImageCache:
 
         # Sort queries by timestamp and remove oldest
         queries = self.index.get("queries", {})
-        sorted_queries = sorted(
-            queries.items(), key=lambda x: x[1].get("timestamp", ""), reverse=True
-        )
+        sorted_queries = sorted(queries.items(), key=lambda x: x[1].get("timestamp", ""), reverse=True)
 
         # Keep only the newest entries
         keep_queries = dict(sorted_queries[: CACHE_MAX_ENTRIES // 5])
@@ -416,11 +407,7 @@ class ImageFetcher:
                 (
                     PEXELS_KEYS
                     if PEXELS_KEYS
-                    else (
-                        [os.getenv("PEXELS_API_KEY")]
-                        if os.getenv("PEXELS_API_KEY")
-                        else []
-                    )
+                    else ([os.getenv("PEXELS_API_KEY")] if os.getenv("PEXELS_API_KEY") else [])
                 ),
                 "Pexels",
             )
@@ -432,11 +419,7 @@ class ImageFetcher:
                 (
                     UNSPLASH_KEYS
                     if UNSPLASH_KEYS
-                    else (
-                        [os.getenv("UNSPLASH_ACCESS_KEY")]
-                        if os.getenv("UNSPLASH_ACCESS_KEY")
-                        else []
-                    )
+                    else ([os.getenv("UNSPLASH_ACCESS_KEY")] if os.getenv("UNSPLASH_ACCESS_KEY") else [])
                 ),
                 "Unsplash",
             )
@@ -448,11 +431,7 @@ class ImageFetcher:
                 (
                     PIXABAY_KEYS
                     if PIXABAY_KEYS
-                    else (
-                        [os.getenv("PIXABAY_API_KEY")]
-                        if os.getenv("PIXABAY_API_KEY")
-                        else []
-                    )
+                    else ([os.getenv("PIXABAY_API_KEY")] if os.getenv("PIXABAY_API_KEY") else [])
                 ),
                 "Pixabay",
             )
@@ -491,9 +470,7 @@ class ImageFetcher:
             if rotator.has_keys:
                 key_count = len(rotator.keys)
                 if key_count > 1:
-                    logger.info(
-                        f"{name}: {key_count} API keys configured (rotation enabled)"
-                    )
+                    logger.info(f"{name}: {key_count} API keys configured (rotation enabled)")
                 else:
                     logger.debug(f"{name}: 1 API key configured")
             else:
@@ -569,9 +546,7 @@ class ImageFetcher:
         for attempt in range(RETRY_MAX_ATTEMPTS):
             try:
                 self._rate_limit()
-                response = self.session.get(
-                    url, headers=headers, params=params, timeout=timeout
-                )
+                response = self.session.get(url, headers=headers, params=params, timeout=timeout)
 
                 # Success
                 if response.status_code == 200:
@@ -593,21 +568,16 @@ class ImageFetcher:
             except requests.exceptions.Timeout:
                 wait_time = RETRY_BACKOFF_FACTOR**attempt
                 logger.warning(
-                    f"{service_name} timeout, retrying in {wait_time}s "
-                    f"(attempt {attempt + 1}/{RETRY_MAX_ATTEMPTS})"
+                    f"{service_name} timeout, retrying in {wait_time}s (attempt {attempt + 1}/{RETRY_MAX_ATTEMPTS})"
                 )
                 time.sleep(wait_time)
             except requests.exceptions.RequestException as e:
                 if attempt < RETRY_MAX_ATTEMPTS - 1:
                     wait_time = RETRY_BACKOFF_FACTOR**attempt
-                    logger.warning(
-                        f"{service_name} error: {e}, retrying in {wait_time}s"
-                    )
+                    logger.warning(f"{service_name} error: {e}, retrying in {wait_time}s")
                     time.sleep(wait_time)
                 else:
-                    logger.error(
-                        f"{service_name} failed after {RETRY_MAX_ATTEMPTS} attempts: {e}"
-                    )
+                    logger.error(f"{service_name} failed after {RETRY_MAX_ATTEMPTS} attempts: {e}")
                     return None
 
         return None
@@ -667,9 +637,7 @@ class ImageFetcher:
                     url_large=src.get("large", src.get("large2x", "")),
                     url_original=src.get("original", src.get("large2x", "")),
                     photographer=photo.get("photographer", "Unknown"),
-                    photographer_url=photo.get(
-                        "photographer_url", "https://pexels.com"
-                    ),
+                    photographer_url=photo.get("photographer_url", "https://pexels.com"),
                     source="pexels",
                     alt_text=alt_text,
                     color=photo.get("avg_color"),
@@ -729,9 +697,7 @@ class ImageFetcher:
                 urls = photo.get("urls", {})
                 user = photo.get("user", {})
 
-                alt_text = (
-                    photo.get("alt_description") or photo.get("description") or query
-                )
+                alt_text = photo.get("alt_description") or photo.get("description") or query
 
                 # Filter out text-heavy images
                 if is_text_heavy_image(alt_text):
@@ -745,9 +711,7 @@ class ImageFetcher:
                     url_large=urls.get("full", urls.get("raw", "")),
                     url_original=urls.get("raw", urls.get("full", "")),
                     photographer=user.get("name", "Unknown"),
-                    photographer_url=user.get("links", {}).get(
-                        "html", "https://unsplash.com"
-                    ),
+                    photographer_url=user.get("links", {}).get("html", "https://unsplash.com"),
                     source="unsplash",
                     alt_text=alt_text,
                     color=photo.get("color"),
@@ -825,9 +789,7 @@ class ImageFetcher:
                 image = Image(
                     id=f"pixabay_{photo['id']}",
                     url_small=photo.get("previewURL", photo.get("webformatURL", "")),
-                    url_medium=photo.get(
-                        "webformatURL", photo.get("largeImageURL", "")
-                    ),
+                    url_medium=photo.get("webformatURL", photo.get("largeImageURL", "")),
                     url_large=photo.get("largeImageURL", photo.get("fullHDURL", "")),
                     url_original=photo.get("fullHDURL", photo.get("largeImageURL", "")),
                     photographer=photo.get("user", "Unknown"),
@@ -894,9 +856,7 @@ class ImageFetcher:
             cached_images = self.cache.get_cached(query)
             if cached_images:
                 # Filter out already used images
-                cached_images = [
-                    img for img in cached_images if img.id not in self.used_ids
-                ]
+                cached_images = [img for img in cached_images if img.id not in self.used_ids]
                 if cached_images:
                     logger.debug(f"Found {len(cached_images)} images (cached)")
                     return cached_images
@@ -922,17 +882,13 @@ class ImageFetcher:
         logger.debug(f"Found {len(images)} images")
         return images
 
-    def fetch_for_keywords(
-        self, keywords: List[str], images_per_keyword: int = 3
-    ) -> List[Image]:
+    def fetch_for_keywords(self, keywords: List[str], images_per_keyword: int = 3) -> List[Image]:
         """Fetch images for a list of keywords."""
         logger.info("Fetching images for keywords...")
 
         if self.use_cache and self.cache:
             stats = self.cache.get_stats()
-            logger.info(
-                f"Cache stats: {stats['total_images']} images, {stats['total_queries']} queries"
-            )
+            logger.info(f"Cache stats: {stats['total_images']} images, {stats['total_queries']} queries")
 
         all_images = []
 
@@ -948,12 +904,8 @@ class ImageFetcher:
 
         # If we got very few images, supplement with cached fallback
         if len(all_images) < MIN_IMAGES_REQUIRED and self.use_cache and self.cache:
-            logger.info(
-                f"Only {len(all_images)} images found, using cached fallback..."
-            )
-            fallback = self.cache.get_random_cached(
-                MIN_IMAGES_REQUIRED - len(all_images)
-            )
+            logger.info(f"Only {len(all_images)} images found, using cached fallback...")
+            fallback = self.cache.get_random_cached(MIN_IMAGES_REQUIRED - len(all_images))
             # Filter out duplicates
             fallback = [img for img in fallback if img.id not in self.used_ids]
             all_images.extend(fallback)
@@ -963,15 +915,9 @@ class ImageFetcher:
 
         # Last resort: Lorem Picsum random images (better than gradients)
         if len(all_images) < MIN_IMAGES_REQUIRED:
-            logger.info(
-                f"Still only {len(all_images)} images, trying Lorem Picsum fallback..."
-            )
-            picsum_images = self.get_lorem_picsum_images(
-                MIN_IMAGES_REQUIRED - len(all_images)
-            )
-            picsum_images = [
-                img for img in picsum_images if img.id not in self.used_ids
-            ]
+            logger.info(f"Still only {len(all_images)} images, trying Lorem Picsum fallback...")
+            picsum_images = self.get_lorem_picsum_images(MIN_IMAGES_REQUIRED - len(all_images))
+            picsum_images = [img for img in picsum_images if img.id not in self.used_ids]
             all_images.extend(picsum_images)
             for img in picsum_images:
                 self.used_ids.add(img.id)
@@ -984,9 +930,7 @@ class ImageFetcher:
     def get_hero_image(self) -> Optional[Image]:
         """Get a high-quality image suitable for hero section."""
         # Prefer larger images
-        candidates = [
-            img for img in self.images if img.width >= 1200 or "large" in img.url_large
-        ]
+        candidates = [img for img in self.images if img.width >= 1200 or "large" in img.url_large]
 
         if candidates:
             return random.choice(candidates)
@@ -1156,9 +1100,7 @@ class ImageFetcher:
                 logger.debug(f"Cached {len(images)} images for '{term}'")
             time.sleep(DELAYS.get("between_images", 0.3) * 2)  # Extra delay for warming
 
-        logger.info(
-            f"Cache warming complete: {cached_count}/{len(terms_to_fetch)} terms cached"
-        )
+        logger.info(f"Cache warming complete: {cached_count}/{len(terms_to_fetch)} terms cached")
         return cached_count
 
     def to_json(self) -> str:

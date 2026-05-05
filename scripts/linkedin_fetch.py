@@ -51,9 +51,7 @@ class LinkedInAPI:
     def get_profile_info(self) -> Dict:
         """Get authenticated user's profile info"""
         try:
-            response = requests.get(
-                USERINFO_URL, headers=self.headers, timeout=TIMEOUTS["default"]
-            )
+            response = requests.get(USERINFO_URL, headers=self.headers, timeout=TIMEOUTS["default"])
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -107,9 +105,7 @@ class LinkedInAPI:
             # Extract text content
             text = ""
             if "specificContent" in element:
-                share_content = element["specificContent"].get(
-                    "com.linkedin.ugc.ShareContent", {}
-                )
+                share_content = element["specificContent"].get("com.linkedin.ugc.ShareContent", {})
                 share_commentary = share_content.get("shareCommentary", {})
                 text = share_commentary.get("text", "")
 
@@ -118,16 +114,8 @@ class LinkedInAPI:
             modified_ts = element.get("lastModified", {}).get("time", 0)
 
             # Convert timestamps to ISO format
-            created_at = (
-                datetime.fromtimestamp(created_ts / 1000).isoformat()
-                if created_ts
-                else None
-            )
-            modified_at = (
-                datetime.fromtimestamp(modified_ts / 1000).isoformat()
-                if modified_ts
-                else None
-            )
+            created_at = datetime.fromtimestamp(created_ts / 1000).isoformat() if created_ts else None
+            modified_at = datetime.fromtimestamp(modified_ts / 1000).isoformat() if modified_ts else None
 
             # Extract post ID
             post_id = element.get("id", "")
@@ -162,9 +150,7 @@ def get_profile_username_from_url(profile_url: str) -> str:
     return ""
 
 
-def fetch_posts_for_profiles(
-    profiles: List[str], max_posts_per_profile: int = 3
-) -> List[Dict]:
+def fetch_posts_for_profiles(profiles: List[str], max_posts_per_profile: int = 3) -> List[Dict]:
     """
     Fetch posts from a list of LinkedIn profile URLs.
 
@@ -204,9 +190,7 @@ def fetch_posts_for_profiles(
     # or use a different approach for personal profiles
 
     logger.warning("LinkedIn API has limited access to personal profile posts.")
-    logger.warning(
-        "For production, consider using RSSHub or keeping Apify for personal profiles."
-    )
+    logger.warning("For production, consider using RSSHub or keeping Apify for personal profiles.")
     logger.warning("This script works best for organization/company pages.")
 
     return all_posts
@@ -214,12 +198,8 @@ def fetch_posts_for_profiles(
 
 def main():
     """Main entry point"""
-    parser = argparse.ArgumentParser(
-        description="Fetch LinkedIn posts via official API"
-    )
-    parser.add_argument(
-        "--test", action="store_true", help="Test API connection and credentials"
-    )
+    parser = argparse.ArgumentParser(description="Fetch LinkedIn posts via official API")
+    parser.add_argument("--test", action="store_true", help="Test API connection and credentials")
     parser.add_argument(
         "--profiles",
         nargs="+",

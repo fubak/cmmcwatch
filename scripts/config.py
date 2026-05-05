@@ -323,9 +323,7 @@ TIMEOUTS = {
 RETRY_MAX_ATTEMPTS = 3
 RETRY_BACKOFF_FACTOR = 2  # Exponential backoff: 1s, 2s, 4s
 RETRY_STATUS_CODES = [429, 500, 502, 503, 504]
-MAX_RETRY_WAIT_SECONDS = (
-    10  # Cap retry waits to prevent long delays (e.g., 360s from Groq)
-)
+MAX_RETRY_WAIT_SECONDS = 10  # Cap retry waits to prevent long delays (e.g., 360s from Groq)
 
 # Rate limiting delays (seconds)
 DELAYS = {
@@ -435,9 +433,7 @@ ARCHIVE_SUBDIR = "archive"
 # ============================================================================
 
 RSS_FEED_TITLE = "CMMC Watch"
-RSS_FEED_DESCRIPTION = (
-    "Daily CMMC, NIST 800-171, and federal cybersecurity compliance news aggregator"
-)
+RSS_FEED_DESCRIPTION = "Daily CMMC, NIST 800-171, and federal cybersecurity compliance news aggregator"
 RSS_FEED_LINK = "https://cmmcwatch.com"
 RSS_FEED_MAX_ITEMS = 50
 

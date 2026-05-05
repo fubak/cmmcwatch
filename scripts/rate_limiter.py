@@ -102,9 +102,7 @@ class RateLimiter:
             RateLimitStatus with availability info
         """
         if not self.google_key:
-            return RateLimitStatus(
-                is_available=False, error="No Google AI API key configured"
-            )
+            return RateLimitStatus(is_available=False, error="No Google AI API key configured")
 
         # Check cache
         cache_key = "google"
@@ -134,9 +132,7 @@ class RateLimiter:
             RateLimitStatus with availability and wait time info
         """
         if not self.openrouter_key:
-            return RateLimitStatus(
-                is_available=False, error="No OpenRouter API key configured"
-            )
+            return RateLimitStatus(is_available=False, error="No OpenRouter API key configured")
 
         # Check cache
         cache_key = "openrouter"
@@ -168,24 +164,18 @@ class RateLimiter:
                 usage = data.get("usage", 0)
                 limit = data.get("limit", None)
 
-                status = RateLimitStatus(
-                    requests_remaining=requests_remaining, is_available=True
-                )
+                status = RateLimitStatus(requests_remaining=requests_remaining, is_available=True)
 
                 # Check if we're running low on requests
                 if requests_remaining is not None and requests_remaining < 5:
                     status.wait_seconds = self.MAX_RETRY_WAIT
-                    logger.warning(
-                        f"OpenRouter: Only {requests_remaining} requests remaining"
-                    )
+                    logger.warning(f"OpenRouter: Only {requests_remaining} requests remaining")
 
                 # Check if usage is approaching limit
                 if limit is not None and usage is not None:
                     usage_percent = (usage / limit) * 100 if limit > 0 else 0
                     if usage_percent > 90:
-                        logger.warning(
-                            f"OpenRouter: {usage_percent:.1f}% of credit limit used"
-                        )
+                        logger.warning(f"OpenRouter: {usage_percent:.1f}% of credit limit used")
                         status.is_available = False
                         status.error = f"Usage at {usage_percent:.1f}% of limit"
 
@@ -201,16 +191,12 @@ class RateLimiter:
                 except ValueError:
                     wait_seconds = self.MAX_RETRY_WAIT
 
-                status = RateLimitStatus(
-                    is_available=False, wait_seconds=wait_seconds, error="Rate limited"
-                )
+                status = RateLimitStatus(is_available=False, wait_seconds=wait_seconds, error="Rate limited")
                 self._rate_limit_cache[cache_key] = (status, time.time())
                 return status
 
             else:
-                logger.warning(
-                    f"OpenRouter rate limit check failed: {response.status_code}"
-                )
+                logger.warning(f"OpenRouter rate limit check failed: {response.status_code}")
                 # Assume available but unknown status
                 return RateLimitStatus(is_available=True)
 
@@ -229,9 +215,7 @@ class RateLimiter:
             RateLimitStatus with availability info
         """
         if not self.groq_key:
-            return RateLimitStatus(
-                is_available=False, error="No Groq API key configured"
-            )
+            return RateLimitStatus(is_available=False, error="No Groq API key configured")
 
         # Check cache
         cache_key = "groq"
@@ -264,9 +248,7 @@ class RateLimiter:
             RateLimitStatus with availability info
         """
         if not self.opencode_key:
-            return RateLimitStatus(
-                is_available=False, error="No OpenCode API key configured"
-            )
+            return RateLimitStatus(is_available=False, error="No OpenCode API key configured")
 
         # Check cache
         cache_key = "opencode"
@@ -295,9 +277,7 @@ class RateLimiter:
             RateLimitStatus with availability info
         """
         if not self.huggingface_key:
-            return RateLimitStatus(
-                is_available=False, error="No Hugging Face API key configured"
-            )
+            return RateLimitStatus(is_available=False, error="No Hugging Face API key configured")
 
         # Check cache
         cache_key = "huggingface"
@@ -326,9 +306,7 @@ class RateLimiter:
             RateLimitStatus with availability info
         """
         if not self.anthropic_key:
-            return RateLimitStatus(
-                is_available=False, error="No Anthropic API key configured"
-            )
+            return RateLimitStatus(is_available=False, error="No Anthropic API key configured")
 
         # Check cache
         cache_key = "anthropic"
@@ -359,9 +337,7 @@ class RateLimiter:
             RateLimitStatus with availability info
         """
         if not self.mistral_key:
-            return RateLimitStatus(
-                is_available=False, error="No Mistral API key configured"
-            )
+            return RateLimitStatus(is_available=False, error="No Mistral API key configured")
 
         # Check cache
         cache_key = "mistral"
@@ -430,9 +406,7 @@ class RateLimiter:
         except Exception as e:
             return OpenRouterCredits(error=str(e))
 
-    def mark_provider_exhausted(
-        self, provider: str, reason: str = "daily limit"
-    ) -> None:
+    def mark_provider_exhausted(self, provider: str, reason: str = "daily limit") -> None:
         """
         Mark a provider as exhausted for this pipeline run.
 
@@ -446,8 +420,7 @@ class RateLimiter:
         if provider not in self._exhausted_providers:
             self._exhausted_providers.add(provider)
             logger.warning(
-                f"Provider '{provider}' marked as EXHAUSTED ({reason}). "
-                f"Will not retry until next pipeline run."
+                f"Provider '{provider}' marked as EXHAUSTED ({reason}). Will not retry until next pipeline run."
             )
 
     def is_provider_exhausted(self, provider: str) -> bool:
@@ -471,9 +444,7 @@ class RateLimiter:
         self._exhausted_providers.clear()
         logger.info("Reset exhausted providers list")
 
-    def update_from_response_headers(
-        self, provider: str, headers: Dict[str, str]
-    ) -> None:
+    def update_from_response_headers(self, provider: str, headers: Dict[str, str]) -> None:
         """
         Update rate limit status from API response headers.
 
@@ -516,9 +487,7 @@ class RateLimiter:
         # Check if we're running low
         if status.requests_remaining is not None and status.requests_limit is not None:
             if status.requests_limit > 0:
-                remaining_percent = (
-                    status.requests_remaining / status.requests_limit
-                ) * 100
+                remaining_percent = (status.requests_remaining / status.requests_limit) * 100
                 if remaining_percent < self.REQUEST_THRESHOLD_PERCENT:
                     logger.warning(
                         f"{provider}: Only {status.requests_remaining}/{status.requests_limit} "
@@ -528,9 +497,7 @@ class RateLimiter:
 
         if status.tokens_remaining is not None and status.tokens_limit is not None:
             if status.tokens_limit > 0:
-                remaining_percent = (
-                    status.tokens_remaining / status.tokens_limit
-                ) * 100
+                remaining_percent = (status.tokens_remaining / status.tokens_limit) * 100
                 if remaining_percent < self.TOKEN_THRESHOLD_PERCENT:
                     logger.warning(
                         f"{provider}: Only {status.tokens_remaining}/{status.tokens_limit} "
@@ -566,9 +533,7 @@ class RateLimiter:
             status = self.check_groq_limits()
 
         if status.wait_seconds > 0:
-            logger.info(
-                f"Waiting {status.wait_seconds:.1f}s for {provider} rate limit..."
-            )
+            logger.info(f"Waiting {status.wait_seconds:.1f}s for {provider} rate limit...")
             time.sleep(status.wait_seconds)
 
     def get_best_provider(self, task_complexity: str = "simple") -> Optional[str]:
@@ -618,11 +583,7 @@ class RateLimiter:
             ]
 
         # Filter out exhausted providers
-        priority = [
-            (name, status)
-            for name, status in priority
-            if not self.is_provider_exhausted(name)
-        ]
+        priority = [(name, status) for name, status in priority if not self.is_provider_exhausted(name)]
 
         if not priority:
             logger.error("All providers are exhausted! No API available.")
@@ -693,9 +654,7 @@ class RateLimiter:
 
         # Summary
         logger.info("-" * 50)
-        logger.info(
-            f"Summary: {available_count}/{configured_count} providers available"
-        )
+        logger.info(f"Summary: {available_count}/{configured_count} providers available")
 
         # Exhausted providers
         exhausted = self.get_exhausted_providers()
@@ -711,19 +670,11 @@ class RateLimiter:
                 logger.warning(f"  Could not fetch credits: {credits.error}")
             else:
                 if credits.limit is not None:
-                    usage_pct = (
-                        (credits.usage / credits.limit * 100)
-                        if credits.limit > 0
-                        else 0
-                    )
-                    logger.info(
-                        f"  Usage: ${credits.usage:.4f} / ${credits.limit:.2f} ({usage_pct:.1f}%)"
-                    )
+                    usage_pct = (credits.usage / credits.limit * 100) if credits.limit > 0 else 0
+                    logger.info(f"  Usage: ${credits.usage:.4f} / ${credits.limit:.2f} ({usage_pct:.1f}%)")
                     logger.info(f"  Remaining: ${credits.remaining:.4f}")
                     if credits.is_low:
-                        logger.warning(
-                            "  WARNING: Credit balance is LOW! Consider adding credits."
-                        )
+                        logger.warning("  WARNING: Credit balance is LOW! Consider adding credits.")
                 else:
                     logger.info(f"  Usage: ${credits.usage:.4f} (no limit set)")
 

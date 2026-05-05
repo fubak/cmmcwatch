@@ -8,9 +8,7 @@ from typing import Dict, List, Optional
 
 
 DEFAULT_BROWSER_UA = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/120.0.0.0 Safari/537.36"
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
 
 HEADER_PROFILES: Dict[str, Dict[str, str]] = {
@@ -107,7 +105,14 @@ COLLECTOR_SOURCES: List[SourceSpec] = [
         "cmmc_rss",
         tier=2,
     ),
-    _rss("cmmc_nextgov", "Nextgov Cybersecurity", "https://www.nextgov.com/rss/cybersecurity/", "cmmc", "cmmc_rss", tier=2),
+    _rss(
+        "cmmc_nextgov",
+        "Nextgov Cybersecurity",
+        "https://www.nextgov.com/rss/cybersecurity/",
+        "cmmc",
+        "cmmc_rss",
+        tier=2,
+    ),
     _rss("cmmc_govcon", "GovCon Wire", "https://www.govconwire.com/feed/", "cmmc", "cmmc_rss", tier=2),
     _rss("cmmc_securityweek", "SecurityWeek", "https://www.securityweek.com/feed/", "cmmc", "cmmc_rss", tier=2),
     _rss("cmmc_cyberscoop", "Cyberscoop", "https://cyberscoop.com/feed/", "cmmc", "cmmc_rss", tier=2),

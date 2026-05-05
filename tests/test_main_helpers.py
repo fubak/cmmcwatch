@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Tests for main.py helper functions."""
 
+import json
+import logging
 import sys
 from pathlib import Path
 
@@ -10,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 from dataclasses import dataclass
 
 import pytest
-from main import _to_dict, _to_dict_list
+from main import _load_json_dict, _to_dict, _to_dict_list
 
 
 @dataclass
@@ -329,6 +331,61 @@ class TestEdgeCases:
         # Order should be preserved
         for i, item in enumerate(result):
             assert item["value"] == 10 - i
+
+
+class TestLoadJsonDict:
+    """Test _load_json_dict helper for safe state-file loading."""
+
+    def test_returns_none_for_missing_file(self, tmp_path):
+        result = _load_json_dict(tmp_path / "does_not_exist.json")
+        assert result is None
+
+    def test_loads_valid_dict(self, tmp_path):
+        path = tmp_path / "ok.json"
+        path.write_text(json.dumps({"design_seed": "2024-01-01", "theme_name": "x"}))
+
+        result = _load_json_dict(path)
+
+        assert result == {"design_seed": "2024-01-01", "theme_name": "x"}
+
+    def test_returns_none_and_logs_for_malformed_json(self, tmp_path, caplog):
+        path = tmp_path / "broken.json"
+        path.write_text("{not json")
+
+        with caplog.at_level(logging.WARNING, logger="pipeline"):
+            result = _load_json_dict(path)
+
+        assert result is None
+        assert any("Failed to load JSON" in r.message for r in caplog.records)
+
+    def test_returns_none_and_logs_when_not_a_dict(self, tmp_path, caplog):
+        path = tmp_path / "list.json"
+        path.write_text(json.dumps([1, 2, 3]))
+
+        with caplog.at_level(logging.WARNING, logger="pipeline"):
+            result = _load_json_dict(path)
+
+        assert result is None
+        assert any("Expected dict" in r.message for r in caplog.records)
+
+    def test_returns_none_and_logs_when_required_key_missing(self, tmp_path, caplog):
+        path = tmp_path / "incomplete.json"
+        path.write_text(json.dumps({"theme_name": "x"}))
+
+        with caplog.at_level(logging.WARNING, logger="pipeline"):
+            result = _load_json_dict(path, required_keys={"design_seed"})
+
+        assert result is None
+        assert any("missing required keys" in r.message for r in caplog.records)
+
+    def test_passes_when_required_keys_present(self, tmp_path):
+        path = tmp_path / "ok.json"
+        path.write_text(json.dumps({"design_seed": "2024-01-01", "extra": True}))
+
+        result = _load_json_dict(path, required_keys={"design_seed"})
+
+        assert result is not None
+        assert result["design_seed"] == "2024-01-01"
 
 
 if __name__ == "__main__":

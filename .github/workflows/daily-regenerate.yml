@@ -75,12 +75,14 @@ jobs:
       - name: Clean up orphaned articles (metadata without HTML)
         run: |
           cd scripts
-          python editorial_generator.py --cleanup-orphans || echo "Cleanup complete"
+          python editorial_generator.py --cleanup-orphans || \
+            echo "::warning::Orphan cleanup exited non-zero"
 
       - name: Regenerate article HTML (apply latest navigation/footer)
         run: |
           cd scripts
-          python editorial_generator.py --regenerate-html || echo "No articles to regenerate"
+          python editorial_generator.py --regenerate-html || \
+            echo "::warning::Article HTML regeneration exited non-zero"
 
       - name: Run website generation pipeline
         env:

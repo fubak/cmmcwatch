@@ -6,6 +6,7 @@ Features: Daily snapshots, browsable index, retention policy.
 
 import html
 import json
+import logging
 import re
 import shutil
 from datetime import datetime, timedelta
@@ -20,6 +21,8 @@ from shared_components import (
     get_header_styles,
     get_theme_script,
 )
+
+logger = logging.getLogger("pipeline")
 
 
 class ArchiveManager:
@@ -67,14 +70,10 @@ class ArchiveManager:
 
         # Replace existing canonical or add new one
         if '<link rel="canonical"' in html_content:
-            html_content = re.sub(
-                r'<link rel="canonical"[^>]*>', canonical_tag, html_content
-            )
+            html_content = re.sub(r'<link rel="canonical"[^>]*>', canonical_tag, html_content)
         else:
             # Insert after <head>
-            html_content = html_content.replace(
-                "<head>", f"<head>\n    {canonical_tag}", 1
-            )
+            html_content = html_content.replace("<head>", f"<head>\n    {canonical_tag}", 1)
 
         # Write the modified HTML
         with open(archive_path / "index.html", "w", encoding="utf-8") as f:
@@ -109,9 +108,13 @@ class ArchiveManager:
                 if metadata_file.exists():
                     try:
                         with open(metadata_file) as f:
-                            metadata.update(json.load(f))
-                    except json.JSONDecodeError:
-                        pass
+                            loaded = json.load(f)
+                        if isinstance(loaded, dict):
+                            metadata.update(loaded)
+                        else:
+                            logger.warning(f"Archive metadata at {metadata_file} is not a dict; ignoring")
+                    except (OSError, json.JSONDecodeError) as e:
+                        logger.warning(f"Could not read archive metadata {metadata_file}: {e}")
 
                 archives.append(
                     {
@@ -435,7 +438,7 @@ class ArchiveManager:
     </style>
 </head>
 <body class="dark-mode">
-    {build_header(active_page='archive', date_str=date_str)}
+    {build_header(active_page="archive", date_str=date_str)}
 
     <main class="archive-container">
         <div class="archive-header">
@@ -444,7 +447,7 @@ class ArchiveManager:
             <div class="archive-stats">
                 <div class="archive-stat">
                     <div class="archive-stat-value">{len(archives)}</div>
-                    <div class="archive-stat-label">{'Snapshot' if len(archives) == 1 else 'Snapshots'}</div>
+                    <div class="archive-stat-label">{"Snapshot" if len(archives) == 1 else "Snapshots"}</div>
                 </div>
                 <div class="archive-stat">
                     <div class="archive-stat-value">30</div>
@@ -486,7 +489,7 @@ class ArchiveManager:
 
         return f"""
         <div class="archive-grid">
-            {''.join(cards_html)}
+            {"".join(cards_html)}
         </div>"""
 
 
@@ -510,9 +513,7 @@ def main():
             archives = manager.list_archives()
             print(f"\nFound {len(archives)} archives:")
             for arch in archives:
-                print(
-                    f"  {arch['folder']}: {arch.get('design', {}).get('theme_name', 'Unknown')}"
-                )
+                print(f"  {arch['folder']}: {arch.get('design', {}).get('theme_name', 'Unknown')}")
         elif command == "cleanup":
             days = int(sys.argv[2]) if len(sys.argv) > 2 else 30
             manager.cleanup_old(keep_days=days)
@@ -530,9 +531,7 @@ def main():
 
         if archives:
             print(f"  Latest: {archives[0]['folder']}")
-            oldest = (
-                archives[-1]["folder"] if len(archives) > 1 else archives[0]["folder"]
-            )
+            oldest = archives[-1]["folder"] if len(archives) > 1 else archives[0]["folder"]
             print(f"  Oldest: {oldest}")
 
 

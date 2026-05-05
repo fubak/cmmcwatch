@@ -46,10 +46,7 @@ class StructuredLogger:
         Returns:
             Combined context dictionary
         """
-        combined = {
-            'correlation_id': self.correlation_id,
-            **self.context
-        }
+        combined = {"correlation_id": self.correlation_id, **self.context}
         if extra:
             combined.update(extra)
         return combined
@@ -110,16 +107,13 @@ def log_operation(logger: StructuredLogger, operation: str, **context):
     operation_id = str(uuid.uuid4())
 
     metadata = {
-        'operation': operation,
-        'operation_id': operation_id,
-        'start_time': datetime.now().isoformat(),
-        **context
+        "operation": operation,
+        "operation_id": operation_id,
+        "start_time": datetime.now().isoformat(),
+        **context,
     }
 
-    logger.info(
-        f"Starting operation: {operation}",
-        extra=metadata
-    )
+    logger.info(f"Starting operation: {operation}", extra=metadata)
 
     try:
         yield metadata
@@ -127,11 +121,7 @@ def log_operation(logger: StructuredLogger, operation: str, **context):
 
         logger.info(
             f"Completed operation: {operation}",
-            extra={
-                **metadata,
-                'duration_ms': round(duration_ms, 2),
-                'success': True
-            }
+            extra={**metadata, "duration_ms": round(duration_ms, 2), "success": True},
         )
 
     except Exception as e:
@@ -141,12 +131,12 @@ def log_operation(logger: StructuredLogger, operation: str, **context):
             f"Failed operation: {operation}",
             extra={
                 **metadata,
-                'duration_ms': round(duration_ms, 2),
-                'success': False,
-                'error_type': type(e).__name__,
-                'error_message': str(e)
+                "duration_ms": round(duration_ms, 2),
+                "success": False,
+                "error_type": type(e).__name__,
+                "error_message": str(e),
             },
-            exc_info=True
+            exc_info=True,
         )
         raise
 
@@ -167,6 +157,7 @@ def log_api_call(logger: StructuredLogger):
     Returns:
         Decorated function
     """
+
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -175,17 +166,12 @@ def log_api_call(logger: StructuredLogger):
             start_time = time.time()
 
             # Extract common parameters
-            url = kwargs.get('url', args[0] if args else 'unknown')
-            params = kwargs.get('params', {})
+            url = kwargs.get("url", args[0] if args else "unknown")
+            params = kwargs.get("params", {})
 
             logger.debug(
                 f"API call starting: {func_name}",
-                extra={
-                    'function': func_name,
-                    'call_id': call_id,
-                    'url': url,
-                    'params': params
-                }
+                extra={"function": func_name, "call_id": call_id, "url": url, "params": params},
             )
 
             try:
@@ -195,12 +181,12 @@ def log_api_call(logger: StructuredLogger):
                 logger.info(
                     f"API call succeeded: {func_name}",
                     extra={
-                        'function': func_name,
-                        'call_id': call_id,
-                        'url': url,
-                        'duration_ms': round(duration_ms, 2),
-                        'success': True
-                    }
+                        "function": func_name,
+                        "call_id": call_id,
+                        "url": url,
+                        "duration_ms": round(duration_ms, 2),
+                        "success": True,
+                    },
                 )
 
                 return result
@@ -211,20 +197,21 @@ def log_api_call(logger: StructuredLogger):
                 logger.error(
                     f"API call failed: {func_name}",
                     extra={
-                        'function': func_name,
-                        'call_id': call_id,
-                        'url': url,
-                        'duration_ms': round(duration_ms, 2),
-                        'success': False,
-                        'error_type': type(e).__name__,
-                        'error_message': str(e),
-                        'status_code': getattr(e, 'status_code', None)
+                        "function": func_name,
+                        "call_id": call_id,
+                        "url": url,
+                        "duration_ms": round(duration_ms, 2),
+                        "success": False,
+                        "error_type": type(e).__name__,
+                        "error_message": str(e),
+                        "status_code": getattr(e, "status_code", None),
                     },
-                    exc_info=True
+                    exc_info=True,
                 )
                 raise
 
         return wrapper
+
     return decorator
 
 
@@ -246,12 +233,7 @@ def log_performance_metrics(logger: StructuredLogger, metrics: Dict[str, Any]):
         metrics: Dictionary of metric name-value pairs
     """
     logger.info(
-        "Performance metrics",
-        extra={
-            'metric_type': 'performance',
-            'timestamp': datetime.now().isoformat(),
-            **metrics
-        }
+        "Performance metrics", extra={"metric_type": "performance", "timestamp": datetime.now().isoformat(), **metrics}
     )
 
 
@@ -272,14 +254,7 @@ def log_quality_metrics(logger: StructuredLogger, metrics: Dict[str, Any]):
         logger: StructuredLogger instance
         metrics: Dictionary of metric name-value pairs
     """
-    logger.info(
-        "Quality metrics",
-        extra={
-            'metric_type': 'quality',
-            'timestamp': datetime.now().isoformat(),
-            **metrics
-        }
-    )
+    logger.info("Quality metrics", extra={"metric_type": "quality", "timestamp": datetime.now().isoformat(), **metrics})
 
 
 class ErrorCollector:
@@ -316,13 +291,15 @@ class ErrorCollector:
         try:
             yield
         except Exception as e:
-            self.errors.append({
-                'operation': operation,
-                'error_type': type(e).__name__,
-                'error_message': str(e),
-                'timestamp': datetime.now().isoformat(),
-                **context
-            })
+            self.errors.append(
+                {
+                    "operation": operation,
+                    "error_type": type(e).__name__,
+                    "error_message": str(e),
+                    "timestamp": datetime.now().isoformat(),
+                    **context,
+                }
+            )
 
     def has_errors(self) -> bool:
         """Check if any errors were collected."""
@@ -344,10 +321,7 @@ class ErrorCollector:
 
         logger.warning(
             f"Error summary: {len(self.errors)} errors occurred",
-            extra={
-                'error_count': len(self.errors),
-                'errors': self.errors
-            }
+            extra={"error_count": len(self.errors), "errors": self.errors},
         )
 
     def clear(self):
@@ -356,18 +330,17 @@ class ErrorCollector:
 
 
 # Example usage in module
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Configure basic logging
     logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s [%(levelname)s] %(name)s: %(message)s [%(correlation_id)s]'
+        level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s [%(correlation_id)s]"
     )
 
     # Create structured logger
     logger = StructuredLogger("example")
 
     # Simple logging with context
-    logger.info("Pipeline started", extra={'version': '1.0.0', 'environment': 'production'})
+    logger.info("Pipeline started", extra={"version": "1.0.0", "environment": "production"})
 
     # Operation tracking
     with log_operation(logger, "fetch_trends", source="hackernews", limit=25):

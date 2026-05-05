@@ -55,6 +55,31 @@ def _to_dict_list(items):
     return [_to_dict(item) for item in items]
 
 
+def _load_json_dict(path: Path, required_keys: set = None) -> dict:
+    """Load a JSON file expected to be a dict.
+
+    Returns the dict on success. Returns None and logs a warning if the file
+    is missing, unreadable, malformed, not a dict, or missing any required key.
+    """
+    required_keys = required_keys or set()
+    if not path.exists():
+        return None
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError) as e:
+        logger.warning(f"Failed to load JSON from {path}: {e}")
+        return None
+    if not isinstance(data, dict):
+        logger.warning(f"Expected dict in {path}, got {type(data).__name__}")
+        return None
+    missing = required_keys - data.keys()
+    if missing:
+        logger.warning(f"{path} missing required keys: {sorted(missing)}")
+        return None
+    return data
+
+
 class CMMCWatchPipeline:
     """Orchestrates the CMMC Watch website generation pipeline."""
 
@@ -101,14 +126,7 @@ class CMMCWatchPipeline:
             if archive:
                 logger.info("[1/10] Archiving previous website...")
                 # Load previous design to save with archive
-                prev_design = None
-                design_file = self.data_dir / "design.json"
-                if design_file.exists():
-                    try:
-                        with open(design_file) as f:
-                            prev_design = json.load(f)
-                    except Exception:
-                        pass
+                prev_design = _load_json_dict(self.data_dir / "design.json")
                 self.archive_manager.archive_current(design=prev_design)
 
             # Step 2: Collect trends
@@ -127,9 +145,7 @@ class CMMCWatchPipeline:
 
             # Step 3: Fetch images
             logger.info("[3/10] Fetching images...")
-            image_keywords = (
-                self.keywords[:5] if self.keywords else ["cybersecurity", "compliance"]
-            )
+            image_keywords = self.keywords[:5] if self.keywords else ["cybersecurity", "compliance"]
             self.images = self.image_fetcher.fetch_for_keywords(image_keywords)
             logger.info(f"Fetched {len(self.images)} images")
 
@@ -171,11 +187,8 @@ class CMMCWatchPipeline:
             logger.info("=" * 60)
             return True
 
-        except Exception as e:
-            logger.error(f"Pipeline failed: {e}")
-            import traceback
-
-            traceback.print_exc()
+        except Exception:
+            logger.exception("Pipeline failed")
             return False
 
     def _load_environment(self):
@@ -239,14 +252,9 @@ class CMMCWatchPipeline:
         today = datetime.now().strftime("%Y-%m-%d")
 
         # Check for existing today's design
-        if design_file.exists():
-            try:
-                with open(design_file) as f:
-                    design = json.load(f)
-                if design.get("design_seed") == today:
-                    return design
-            except Exception:
-                pass
+        existing = _load_json_dict(design_file, required_keys={"design_seed"})
+        if existing and existing.get("design_seed") == today:
+            return existing
 
         # Generate new design - convert trends to dicts first
         design = self.design_generator.generate(
@@ -270,18 +278,14 @@ class CMMCWatchPipeline:
             )
 
             if self.editorial_article:
-                logger.info(
-                    f"Editorial article generated: {self.editorial_article.title}"
-                )
+                logger.info(f"Editorial article generated: {self.editorial_article.title}")
             else:
-                logger.error(
-                    "Editorial article generation returned None - check logs above for details"
-                )
+                logger.error("Editorial article generation returned None - check logs above for details")
 
             # Generate articles index page (always regenerate to keep index current)
             self.editorial_generator.generate_articles_index(design=self.design)
-        except Exception as e:
-            logger.error(f"Editorial generation failed with exception: {e}")
+        except Exception:
+            logger.exception("Editorial generation failed")
             self.editorial_article = None
 
     def _build_website(self):
@@ -293,9 +297,7 @@ class CMMCWatchPipeline:
             images=_to_dict_list(self.images),
             design=self.design,
             keywords=self.keywords,
-            editorial_article=(
-                _to_dict(self.editorial_article) if self.editorial_article else None
-            ),
+            editorial_article=(_to_dict(self.editorial_article) if self.editorial_article else None),
         )
 
         builder = WebsiteBuilder(context)

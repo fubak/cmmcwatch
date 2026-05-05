@@ -193,9 +193,7 @@ class TestArchiveManager:
         recent_date = (datetime.now() - timedelta(days=10)).strftime("%Y-%m-%d")
         recent_archive_dir = manager.archive_dir / recent_date
         recent_archive_dir.mkdir(parents=True, exist_ok=True)
-        (recent_archive_dir / "index.html").write_text(
-            "<html><body>Recent</body></html>"
-        )
+        (recent_archive_dir / "index.html").write_text("<html><body>Recent</body></html>")
 
         # Cleanup (keep 30 days)
         removed = manager.cleanup_old(keep_days=30)

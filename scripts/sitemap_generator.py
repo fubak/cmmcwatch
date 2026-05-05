@@ -10,11 +10,14 @@ Includes:
 """
 
 import json
+import logging
 import os
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
+
+logger = logging.getLogger("pipeline")
 
 
 def generate_sitemap(
@@ -95,9 +98,7 @@ def generate_sitemap(
             archive_page = ET.SubElement(urlset, "url")
             ET.SubElement(archive_page, "loc").text = f"{base_url}/archive/{date}/"
             ET.SubElement(archive_page, "lastmod").text = date
-            ET.SubElement(archive_page, "changefreq").text = (
-                "never"  # Archives don't change
-            )
+            ET.SubElement(archive_page, "changefreq").text = "never"  # Archives don't change
             ET.SubElement(archive_page, "priority").text = "0.5"
 
     # Add articles index page
@@ -129,7 +130,8 @@ def generate_sitemap(
                             ET.SubElement(article_page, "lastmod").text = article_date
                             ET.SubElement(article_page, "changefreq").text = "never"
                             ET.SubElement(article_page, "priority").text = "0.8"
-                except Exception:
+                except (OSError, json.JSONDecodeError) as e:
+                    logger.warning(f"Skipping article metadata {metadata_file}: {e}")
                     continue
 
     # Add extra URLs (topic pages, etc.) - skip articles already added above
@@ -151,14 +153,10 @@ def generate_sitemap(
 
             # Set priority based on URL type
             if "/articles/" in url:
-                ET.SubElement(page, "changefreq").text = (
-                    "never"  # Articles are permanent
-                )
+                ET.SubElement(page, "changefreq").text = "never"  # Articles are permanent
                 ET.SubElement(page, "priority").text = "0.8"
             else:
-                ET.SubElement(page, "changefreq").text = (
-                    "daily"  # Topic pages update daily
-                )
+                ET.SubElement(page, "changefreq").text = "daily"  # Topic pages update daily
                 ET.SubElement(page, "priority").text = "0.8"
 
     # Add proper indentation for readability and compatibility
@@ -239,9 +237,7 @@ Sitemap: {base_url}/sitemap_news.xml
 """
 
 
-def generate_sitemap_index(
-    base_url: str = "https://cmmcwatch.com", include_news: bool = True
-) -> str:
+def generate_sitemap_index(base_url: str = "https://cmmcwatch.com", include_news: bool = True) -> str:
     """
     Generate a sitemap index pointing to all sitemaps.
 
@@ -286,9 +282,7 @@ def save_sitemap(
         extra_urls: Additional URLs to include (articles, topic pages, etc.)
     """
     # Generate and save main sitemap
-    sitemap_content = generate_sitemap(
-        base_url=base_url, public_dir=public_dir, extra_urls=extra_urls
-    )
+    sitemap_content = generate_sitemap(base_url=base_url, public_dir=public_dir, extra_urls=extra_urls)
 
     # Save as sitemap_main.xml
     main_sitemap_path = public_dir / "sitemap_main.xml"
@@ -296,9 +290,7 @@ def save_sitemap(
     print(f"  Created {main_sitemap_path}")
 
     # Generate and save Google News sitemap
-    news_sitemap_content = generate_news_sitemap(
-        base_url=base_url, public_dir=public_dir
-    )
+    news_sitemap_content = generate_news_sitemap(base_url=base_url, public_dir=public_dir)
     news_sitemap_path = public_dir / "sitemap_news.xml"
     news_sitemap_path.write_text(news_sitemap_content)
     print(f"  Created {news_sitemap_path} (Google News)")
@@ -394,9 +386,7 @@ def generate_news_sitemap(
                     ET.SubElement(pub_elem, "news:language").text = "en"
 
                     # Publication date (ISO 8601 format)
-                    ET.SubElement(news_elem, "news:publication_date").text = (
-                        f"{article_date}T06:00:00Z"
-                    )
+                    ET.SubElement(news_elem, "news:publication_date").text = f"{article_date}T06:00:00Z"
 
                     # Title
                     ET.SubElement(news_elem, "news:title").text = article_title
@@ -408,7 +398,8 @@ def generate_news_sitemap(
 
                     articles_found += 1
 
-                except Exception:
+                except (OSError, json.JSONDecodeError) as e:
+                    logger.warning(f"Skipping news sitemap entry {metadata_file}: {e}")
                     continue
 
     # Add proper indentation
@@ -417,9 +408,7 @@ def generate_news_sitemap(
     # Convert to string with declaration
     xml_string = ET.tostring(urlset, encoding="unicode", method="xml")
 
-    print(
-        f"  Google News sitemap: {articles_found} articles from last {max_age_days} days"
-    )
+    print(f"  Google News sitemap: {articles_found} articles from last {max_age_days} days")
 
     return f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_string}'
 
@@ -444,5 +433,6 @@ def count_urls_in_sitemap(sitemap_path: Path) -> int:
             # Try without namespace
             urls = root.findall(".//url")
         return len(urls)
-    except Exception:
+    except (OSError, ET.ParseError) as e:
+        logger.warning(f"Could not count URLs in {sitemap_path}: {e}")
         return 0
