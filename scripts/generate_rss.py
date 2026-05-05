@@ -286,7 +286,7 @@ def generate_cmmc_from_data_file(trends_file: Path = None, output_path: Path = N
         return ""
 
     try:
-        with open(trends_file) as f:
+        with open(trends_file, encoding="utf-8") as f:
             trends = json.load(f)
     except (json.JSONDecodeError, IOError) as e:
         logger.error(f"Failed to load trends: {e}")
@@ -314,7 +314,7 @@ def generate_from_data_file(trends_file: Path = None, output_path: Path = None) 
         return ""
 
     try:
-        with open(trends_file) as f:
+        with open(trends_file, encoding="utf-8") as f:
             trends = json.load(f)
     except (json.JSONDecodeError, IOError) as e:
         logger.error(f"Failed to load trends: {e}")

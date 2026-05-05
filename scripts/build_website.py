@@ -17,7 +17,7 @@ import random
 import re
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
 
 import requests
@@ -443,7 +443,7 @@ class WebsiteBuilder:
                     # Show date for older articles
                     trend["time_ago"] = ts.strftime("%b %d")
             else:
-                trend["timestamp_iso"] = datetime.now().isoformat()
+                trend["timestamp_iso"] = datetime.now(timezone.utc).isoformat()
                 trend["time_ago"] = "Today"
 
             groups[category].append(trend)
@@ -769,7 +769,7 @@ class WebsiteBuilder:
 
         description = ""
         try:
-            response = requests.get(url, timeout=6, headers={"User-Agent": "DailyTrendingBot/1.0"})
+            response = requests.get(url, timeout=6, headers={"User-Agent": "CMMCWatchBot/1.0"})
             if response.status_code >= 400:
                 self._description_cache[url] = ""
                 return ""
@@ -1015,7 +1015,7 @@ class WebsiteBuilder:
                     "@type": "NewsArticle",
                     "headline": story.get("title", ""),
                     "url": story.get("url", ""),
-                    "datePublished": story.get("timestamp_iso", datetime.now().isoformat()),
+                    "datePublished": story.get("timestamp_iso", datetime.now(timezone.utc).isoformat()),
                     "publisher": {
                         "@type": "Organization",
                         "name": story.get("source_display") or story.get("source", "").replace("_", " ").title(),
@@ -1039,7 +1039,7 @@ class WebsiteBuilder:
             "name": f"CMMC & Compliance News - {self.ctx.generated_at}",
             "description": self._build_meta_description(),
             "url": "https://cmmcwatch.com/",
-            "datePublished": datetime.now().isoformat(),
+            "datePublished": datetime.now(timezone.utc).isoformat(),
             "mainEntity": {
                 "@type": "ItemList",
                 "numberOfItems": len(item_list_elements),
@@ -1412,7 +1412,7 @@ class WebsiteBuilder:
             "canonical_url": "https://cmmcwatch.com/",
             "date_str": self.ctx.generated_at,
             "date_iso": datetime.now().strftime("%Y-%m-%d"),
-            "last_modified": datetime.now().isoformat(),
+            "last_modified": datetime.now(timezone.utc).isoformat(),
             "active_page": "home",
             "font_primary": d.get("font_primary", "Space Grotesk").replace(" ", "+"),
             "font_secondary": d.get("font_secondary", "Inter").replace(" ", "+"),

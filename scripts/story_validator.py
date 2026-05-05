@@ -15,7 +15,7 @@ import json
 import os
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from difflib import SequenceMatcher
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -176,7 +176,7 @@ class StoryValidator:
         """Filter out stories older than MAX_STORY_AGE_DAYS."""
         valid = []
         rejected = []
-        cutoff = datetime.now() - timedelta(days=self.MAX_STORY_AGE_DAYS)
+        cutoff = datetime.now(timezone.utc) - timedelta(days=self.MAX_STORY_AGE_DAYS)
 
         for story in stories:
             timestamp = story.get("timestamp")
@@ -187,9 +187,13 @@ class StoryValidator:
                         timestamp = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
                     except ValueError:
                         try:
-                            timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+                            timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
                         except ValueError:
                             timestamp = None
+
+                # Normalize naive timestamps to UTC for comparison
+                if timestamp and timestamp.tzinfo is None:
+                    timestamp = timestamp.replace(tzinfo=timezone.utc)
 
                 if timestamp and timestamp < cutoff:
                     story["rejection_reason"] = f"Too old: {timestamp.strftime('%Y-%m-%d')}"

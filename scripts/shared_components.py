@@ -125,7 +125,7 @@ def build_footer(date_str: str = None, style_info: str = "") -> str:
         <div class="footer-bottom">
             <span>Generated on {date_str}</span>
             <span class="footer-separator">|</span>
-            <span>Built on <a href="https://dailytrending.info" target="_blank" rel="noopener noreferrer">Daily Trending</a></span>
+            <span>CMMC Watch — Daily Compliance Intelligence</span>
             <div class="footer-actions">
                 <a href="/archive/" class="archive-btn">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -239,7 +239,7 @@ class EditorialGenerator:
             if existing_articles:
                 try:
                     metadata_path = existing_articles[0]
-                    with open(metadata_path) as f:
+                    with open(metadata_path, encoding="utf-8") as f:
                         metadata = json.load(f)
 
                     # Check if existing article is truncated (missing Conclusion)
@@ -2042,7 +2042,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
         # Walk through year/month/day/slug directories
         for metadata_file in self.articles_dir.rglob("metadata.json"):
             try:
-                with open(metadata_file) as f:
+                with open(metadata_file, encoding="utf-8") as f:
                     articles.append(json.load(f))
             except Exception as e:
                 logger.warning(f"Failed to load {metadata_file}: {e}")
@@ -2078,7 +2078,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
 
         for metadata_file in self.articles_dir.rglob("metadata.json"):
             try:
-                with open(metadata_file) as f:
+                with open(metadata_file, encoding="utf-8") as f:
                     metadata = json.load(f)
 
                 content = metadata.get("content", "")
@@ -2140,7 +2140,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
                     logger.warning(f"Metadata file not found: {metadata_file}")
                     continue
 
-                with open(metadata_file) as f:
+                with open(metadata_file, encoding="utf-8") as f:
                     metadata = json.load(f)
 
                 logger.info(f"Attempting to fix: {article_id}")
@@ -2199,7 +2199,7 @@ Respond with ONLY a valid JSON object:
                 metadata["word_count"] = len(new_content.split())
 
                 # Save updated metadata
-                with open(metadata_file, "w") as f:
+                with open(metadata_file, "w", encoding="utf-8") as f:
                     json.dump(metadata, f, indent=2)
 
                 # Reconstruct article and regenerate HTML
@@ -2295,7 +2295,7 @@ Respond with ONLY a valid JSON object:
         count = 0
         for metadata_file in self.articles_dir.rglob("metadata.json"):
             try:
-                with open(metadata_file) as f:
+                with open(metadata_file, encoding="utf-8") as f:
                     metadata = json.load(f)
 
                 # Reconstruct EditorialArticle from metadata

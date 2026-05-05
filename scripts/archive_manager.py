@@ -7,9 +7,11 @@ Features: Daily snapshots, browsable index, retention policy.
 import html
 import json
 import logging
+import os
 import re
 import shutil
-from datetime import datetime, timedelta
+import tempfile
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -82,12 +84,15 @@ class ArchiveManager:
         # Save metadata
         metadata = {
             "date": today,
-            "archived_at": datetime.now().isoformat(),
+            "archived_at": datetime.now(timezone.utc).isoformat(),
             "design": design or {},
         }
 
-        with open(archive_path / "metadata.json", "w") as f:
-            json.dump(metadata, f, indent=2)
+        metadata_path = archive_path / "metadata.json"
+        with tempfile.NamedTemporaryFile("w", dir=archive_path, suffix=".tmp", delete=False, encoding="utf-8") as tmp:
+            json.dump(metadata, tmp, indent=2)
+            tmp_path = Path(tmp.name)
+        os.replace(tmp_path, metadata_path)
 
         print(f"Archived current site to {archive_path}")
 
@@ -107,7 +112,7 @@ class ArchiveManager:
                 metadata = {"date": item.name}
                 if metadata_file.exists():
                     try:
-                        with open(metadata_file) as f:
+                        with open(metadata_file, encoding="utf-8") as f:
                             loaded = json.load(f)
                         if isinstance(loaded, dict):
                             metadata.update(loaded)

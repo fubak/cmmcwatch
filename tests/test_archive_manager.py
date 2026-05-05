@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from archive_manager import ArchiveManager
@@ -322,9 +322,9 @@ class TestArchiveManager:
         """Test that archive metadata includes archived_at timestamp."""
         manager = ArchiveManager(public_dir=str(temp_public_dir))
 
-        before = datetime.now()
+        before = datetime.now(timezone.utc)
         manager.archive_current()
-        after = datetime.now()
+        after = datetime.now(timezone.utc)
 
         today = datetime.now().strftime("%Y-%m-%d")
         metadata_file = manager.archive_dir / today / "metadata.json"

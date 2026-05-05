@@ -3,7 +3,7 @@
 Enhanced Logging Utilities - Structured logging with contextual information.
 
 Provides utilities for better error tracking, correlation, and debugging
-throughout the DailyTrending.info pipeline.
+throughout the CMMC Watch pipeline.
 """
 
 import functools

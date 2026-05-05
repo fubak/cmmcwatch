@@ -13,7 +13,7 @@ import re
 import tempfile
 import time
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -292,7 +292,7 @@ class ImageCache:
             return False
 
         cached = self.index["queries"][key]
-        cached_time = datetime.fromisoformat(cached.get("timestamp", "2000-01-01"))
+        cached_time = datetime.fromisoformat(cached.get("timestamp", "2000-01-01")).replace(tzinfo=None)
         max_age = timedelta(days=CACHE_MAX_AGE_DAYS)
 
         return datetime.now() - cached_time < max_age
@@ -331,7 +331,7 @@ class ImageCache:
         # Store query mapping
         self.index.setdefault("queries", {})[key] = {
             "query": query,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "image_ids": [img.id for img in images],
         }
 
@@ -817,7 +817,7 @@ class ImageFetcher:
 
         for i in range(count):
             # Use seeded URLs for reproducibility within the same day
-            seed = f"dailytrending_{datetime.now().strftime('%Y%m%d')}_{i}"
+            seed = f"cmmcwatch_{datetime.now().strftime('%Y%m%d')}_{i}"
             base_url = f"https://picsum.photos/seed/{seed}"
 
             try:

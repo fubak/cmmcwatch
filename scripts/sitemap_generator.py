@@ -117,7 +117,7 @@ def generate_sitemap(
         if articles_dir.exists():
             for metadata_file in articles_dir.rglob("metadata.json"):
                 try:
-                    with open(metadata_file) as f:
+                    with open(metadata_file, encoding="utf-8") as f:
                         article_meta = json.load(f)
                     article_url = article_meta.get("url", "")
                     article_date = article_meta.get("date", today)
@@ -356,7 +356,7 @@ def generate_news_sitemap(
         if articles_dir.exists():
             for metadata_file in articles_dir.rglob("metadata.json"):
                 try:
-                    with open(metadata_file) as f:
+                    with open(metadata_file, encoding="utf-8") as f:
                         article_meta = json.load(f)
 
                     article_url = article_meta.get("url", "")

@@ -19,8 +19,9 @@ import argparse
 import json
 import os
 import sys
+import tempfile
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 # Add scripts directory to path for imports
@@ -55,6 +56,15 @@ def _to_dict_list(items):
     return [_to_dict(item) for item in items]
 
 
+def _safe_write_json(path: Path, data, **json_kwargs) -> None:
+    """Write JSON to path atomically via a temp file in the same directory."""
+    path = Path(path)
+    with tempfile.NamedTemporaryFile("w", dir=path.parent, suffix=".tmp", delete=False, encoding="utf-8") as tmp:
+        json.dump(data, tmp, **json_kwargs)
+        tmp_path = Path(tmp.name)
+    os.replace(tmp_path, path)
+
+
 def _load_json_dict(path: Path, required_keys: set = None) -> dict:
     """Load a JSON file expected to be a dict.
 
@@ -65,7 +75,7 @@ def _load_json_dict(path: Path, required_keys: set = None) -> dict:
     if not path.exists():
         return None
     try:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
     except (OSError, json.JSONDecodeError) as e:
         logger.warning(f"Failed to load JSON from {path}: {e}")
@@ -113,7 +123,7 @@ class CMMCWatchPipeline:
         """Run the complete pipeline."""
         logger.info("=" * 60)
         logger.info("CMMC WATCH - Daily Compliance News")
-        logger.info(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info(f"Started at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
         logger.info("=" * 60)
 
         # Validate environment variables
@@ -321,19 +331,10 @@ class CMMCWatchPipeline:
         logger.info(f"RSS feed saved to {self.public_dir / 'feed.xml'}")
 
     def _save_data(self):
-        """Save pipeline data to JSON files."""
-        # Save trends
-        with open(self.data_dir / "trends.json", "w") as f:
-            json.dump(_to_dict_list(self.trends), f, indent=2, default=str)
-
-        # Save images
-        with open(self.data_dir / "images.json", "w") as f:
-            json.dump(_to_dict_list(self.images), f, indent=2, default=str)
-
-        # Save design
-        with open(self.data_dir / "design.json", "w") as f:
-            json.dump(self.design, f, indent=2, default=str)
-
+        """Save pipeline data to JSON files atomically."""
+        _safe_write_json(self.data_dir / "trends.json", _to_dict_list(self.trends), indent=2, default=str)
+        _safe_write_json(self.data_dir / "images.json", _to_dict_list(self.images), indent=2, default=str)
+        _safe_write_json(self.data_dir / "design.json", self.design, indent=2, default=str)
         logger.info(f"Pipeline data saved to {self.data_dir}")
 
 

@@ -1647,8 +1647,8 @@ Respond with ONLY a valid JSON object:
                         headers={
                             "Authorization": f"Bearer {self.openrouter_key}",
                             "Content-Type": "application/json",
-                            "HTTP-Referer": "https://dailytrending.info",
-                            "X-Title": "DailyTrending.info",
+                            "HTTP-Referer": "https://cmmcwatch.com",
+                            "X-Title": "CMMC Watch",
                         },
                         json={
                             "model": model,
