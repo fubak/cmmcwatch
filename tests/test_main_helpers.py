@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 from dataclasses import dataclass
 
 import pytest
-from main import _load_json_dict, _to_dict, _to_dict_list
+from main import _load_json_dict, _safe_write_json, _to_dict, _to_dict_list
 
 
 @dataclass
@@ -386,6 +386,49 @@ class TestLoadJsonDict:
 
         assert result is not None
         assert result["design_seed"] == "2024-01-01"
+
+
+class TestSafeWriteJson:
+    """Test _safe_write_json atomic write helper."""
+
+    def test_writes_valid_json(self, tmp_path):
+        path = tmp_path / "output.json"
+        _safe_write_json(path, {"key": "value", "num": 42})
+
+        assert path.exists()
+        data = json.loads(path.read_text())
+        assert data == {"key": "value", "num": 42}
+
+    def test_overwrites_existing_file(self, tmp_path):
+        path = tmp_path / "output.json"
+        path.write_text(json.dumps({"old": True}))
+
+        _safe_write_json(path, {"new": True})
+
+        data = json.loads(path.read_text())
+        assert data == {"new": True}
+
+    def test_no_tmp_file_left_on_success(self, tmp_path):
+        path = tmp_path / "output.json"
+        _safe_write_json(path, {"x": 1})
+
+        tmp_files = list(tmp_path.glob("*.tmp"))
+        assert tmp_files == []
+
+    def test_atomic_write_with_list_data(self, tmp_path):
+        path = tmp_path / "trends.json"
+        data = [{"title": "Story 1"}, {"title": "Story 2"}]
+        _safe_write_json(path, data)
+
+        result = json.loads(path.read_text())
+        assert result == data
+
+    def test_accepts_json_kwargs(self, tmp_path):
+        path = tmp_path / "pretty.json"
+        _safe_write_json(path, {"key": "value"}, indent=2)
+
+        content = path.read_text()
+        assert "\n" in content  # pretty-printed
 
 
 if __name__ == "__main__":
