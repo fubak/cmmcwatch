@@ -256,7 +256,7 @@ class ImageCache:
         """Load the cache index from disk."""
         if self.index_file.exists():
             try:
-                with open(self.index_file) as f:
+                with open(self.index_file, encoding="utf-8") as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError):
                 pass
@@ -1109,7 +1109,7 @@ class ImageFetcher:
 
     def save(self, filepath: str):
         """Save images to a JSON file."""
-        with open(filepath, "w") as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             f.write(self.to_json())
         logger.info(f"Saved {len(self.images)} images to {filepath}")
 

@@ -2087,7 +2087,7 @@ Respond with ONLY a valid JSON object:
 
     def save(self, spec: DesignSpec, filepath: str):
         """Save design spec to JSON."""
-        with open(filepath, "w") as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(asdict(spec), f, indent=2)
         logger.info(f"Saved design spec to {filepath}")
 
@@ -2096,7 +2096,7 @@ Respond with ONLY a valid JSON object:
         if not self.history_path.exists():
             return []
         try:
-            with open(self.history_path) as f:
+            with open(self.history_path, encoding="utf-8") as f:
                 data = json.load(f)
             cutoff = datetime.now() - timedelta(days=days)
             recent = [
@@ -2115,11 +2115,11 @@ Respond with ONLY a valid JSON object:
             self.history_path.parent.mkdir(parents=True, exist_ok=True)
             history = []
             if self.history_path.exists():
-                with open(self.history_path) as f:
+                with open(self.history_path, encoding="utf-8") as f:
                     history = json.load(f)
             history.append({"theme": theme, "timestamp": datetime.now().isoformat()})
             history = history[-30:]  # keep compact
-            with open(self.history_path, "w") as f:
+            with open(self.history_path, "w", encoding="utf-8") as f:
                 json.dump(history, f, indent=2)
         except (OSError, json.JSONDecodeError) as e:
             logger.warning(f"Could not persist theme history to {self.history_path}: {e}")
