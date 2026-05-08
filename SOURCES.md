@@ -71,7 +71,7 @@ LinkedIn API integration is available but **not recommended** because:
 - Our key profiles are personal accounts
 - Apify free tier works better for our use case
 
-See `scripts/linkedin_api_setup.md` and `scripts/linkedin_oauth.py` if you want to experiment.
+The pipeline uses Apify exclusively (`scripts/fetch_linkedin_posts.py`).
 
 ---
 

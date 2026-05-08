@@ -1,0 +1,45 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+      - 'claude/**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: pytest + ruff
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff
+
+      - name: Lint (ruff)
+        run: |
+          ruff check scripts/ tests/ --select F401,F811,F841
+          ruff format --check scripts/ tests/
+
+      - name: Run tests
+        # Skip the integration test that requires live API keys.
+        # Run all unit tests collected from tests/.
+        run: |
+          python -m pytest tests/ -v --tb=short
