@@ -125,14 +125,18 @@ class TestParseFeedEntryTimestamp:
         assert result is None
 
     def test_invalid_struct_skips_to_next(self):
-        # Garbage struct, but valid published string fallback
+        # When `published_parsed` is malformed, the helper must catch the
+        # TypeError/ValueError and fall through to the `published` string
+        # fallback rather than abandoning the entry.
         entry = {
             "published_parsed": ("not", "a", "tuple"),
             "published": "2026-05-08",
         }
         result = parse_feed_entry_timestamp(entry)
-        # Should not crash; falls through to string parsing
-        assert result is not None or result is None  # tolerate either
+        assert result is not None
+        assert result.year == 2026
+        assert result.month == 5
+        assert result.day == 8
 
 
 if __name__ == "__main__":

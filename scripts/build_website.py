@@ -24,9 +24,9 @@ import requests
 from bs4 import BeautifulSoup
 from config import setup_logging
 from fetch_images import FallbackImageGenerator
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 logger = setup_logging("pipeline")
-from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 LAYOUT_TEMPLATES = ["newspaper", "magazine", "bold", "mosaic"]
 HERO_STYLES = [

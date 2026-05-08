@@ -34,8 +34,11 @@ jobs:
           pip install ruff
 
       - name: Lint (ruff)
+        # Use the rule selection configured in pyproject.toml ([tool.ruff.lint]
+        # select = ["E", "F", "W", "I"]). Don't pass --select here; that would
+        # narrow the check vs. the configured policy.
         run: |
-          ruff check scripts/ tests/ --select F401,F811,F841
+          ruff check scripts/ tests/
           ruff format --check scripts/ tests/
 
       - name: Run tests

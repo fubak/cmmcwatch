@@ -12,7 +12,6 @@ None is returned for: missing key, rate-limit-unavailable, all-models-failed,
 network errors after retries.
 """
 
-import logging
 import os
 import time
 from typing import Optional
@@ -20,11 +19,13 @@ from typing import Optional
 import requests
 
 try:
+    from config import setup_logging
     from rate_limiter import check_before_call, get_rate_limiter, mark_provider_exhausted
 except ImportError:
+    from scripts.config import setup_logging
     from scripts.rate_limiter import check_before_call, get_rate_limiter, mark_provider_exhausted
 
-logger = logging.getLogger("pipeline")
+logger = setup_logging("pipeline")
 
 MAX_RETRY_WAIT = 10  # seconds — cap for Retry-After backoff
 
@@ -98,18 +99,23 @@ def call_openai_compatible(
     max_tokens: int = 1000,
     max_retries: int = 1,
     session: Optional[requests.Session] = None,
+    api_key: Optional[str] = None,
 ) -> Optional[str]:
     """
     Call any OpenAI-compatible provider (openrouter, groq, opencode, mistral).
 
     Iterates the provider's free model list, retries on 429 with Retry-After
     backoff, returns the first successful completion text or None.
+
+    api_key: Explicit override; falls back to the provider's configured env
+    var (OPENROUTER_API_KEY, GROQ_API_KEY, OPENCODE_API_KEY, MISTRAL_API_KEY).
+    Callers that store keys on instance state must pass them explicitly.
     """
     config = _OPENAI_COMPAT_PROVIDERS.get(provider)
     if config is None:
         raise ValueError(f"Unknown provider: {provider}")
 
-    api_key = os.getenv(config["key_env"])
+    api_key = api_key or os.getenv(config["key_env"])
     if not api_key:
         return None
 
@@ -169,13 +175,16 @@ def call_huggingface(
     max_tokens: int = 1000,
     max_retries: int = 1,
     session: Optional[requests.Session] = None,
+    api_key: Optional[str] = None,
 ) -> Optional[str]:
     """
     Call Hugging Face Inference API. Has divergent request/response shape
     (uses `inputs`/`parameters` and returns a list with `generated_text`),
     plus 503 handling for model-loading state.
+
+    api_key: Explicit override; falls back to HUGGINGFACE_API_KEY env var.
     """
-    api_key = os.getenv("HUGGINGFACE_API_KEY")
+    api_key = api_key or os.getenv("HUGGINGFACE_API_KEY")
     if not api_key:
         return None
 

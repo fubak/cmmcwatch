@@ -34,10 +34,11 @@ class TestValidateImageUrl:
         assert valid is True
 
     def test_data_url_rejected(self):
-        # Data URLs are typically not desirable for image sources
-        valid, _ = validate_image_url("data:image/png;base64,iVBORw0KGgo=")
-        # Implementation may accept or reject; accept either as valid test outcome
-        assert isinstance(valid, bool)
+        # Policy: data: URLs are not accepted as image sources because they
+        # bypass the validation/quality scoring our pipeline applies to
+        # remote URLs. The first element of the tuple must be False.
+        valid, _reason = validate_image_url("data:image/png;base64,iVBORw0KGgo=")
+        assert valid is False
 
     def test_javascript_url_rejected(self):
         valid, err = validate_image_url("javascript:alert(1)")
