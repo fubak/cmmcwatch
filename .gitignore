@@ -38,6 +38,11 @@ data/trends.json
 data/images.json
 data/design.json
 data/feed_runtime_cache.json
+data/competitor_monitor/
+
+# Generated site content (deployed via gh-pages branch)
+public/archive/
+public/articles/
 
 # Logs
 *.log
@@ -51,4 +56,8 @@ htmlcov/
 # Temporary files
 *.tmp
 *.temp
-.osgrep
+.osgrep/
+
+# Session tooling
+dev/
+tasks/
