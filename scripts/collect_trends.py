@@ -532,6 +532,15 @@ class TrendCollector:
                     try:
                         timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
                     except ValueError:
+                        # Both formats failed — log so we know this happened.
+                        # Trend.__post_init__ will fall back to "now", which
+                        # would otherwise silently boost stale items in
+                        # recency-weighted ranking.
+                        logger.warning(
+                            f"Unparseable timestamp from upstream: {timestamp!r}; "
+                            f"falling back to current time for {td.get('source', 'unknown')} "
+                            f"item {td.get('url', 'unknown')!r}"
+                        )
                         timestamp = None
 
             trend = Trend(

@@ -347,12 +347,17 @@ class ImageCache:
         if len(images) <= CACHE_MAX_ENTRIES:
             return
 
-        # Sort queries by timestamp and remove oldest
+        # Sort queries by timestamp and remove oldest. Empty-string default
+        # for missing timestamps sorts them to the end of a reverse-sorted list,
+        # so they're dropped first — desirable.
         queries = self.index.get("queries", {})
         sorted_queries = sorted(queries.items(), key=lambda x: x[1].get("timestamp", ""), reverse=True)
 
-        # Keep only the newest entries
-        keep_queries = dict(sorted_queries[: CACHE_MAX_ENTRIES // 5])
+        # Trim ~20% on overflow rather than 80%. Previous `// 5` dropped to a
+        # fifth of capacity on every cleanup, throwing away usable cached
+        # results and forcing repeat API calls.
+        keep_count = max(CACHE_MAX_ENTRIES * 4 // 5, 1)
+        keep_queries = dict(sorted_queries[:keep_count])
         keep_image_ids = set()
         for q in keep_queries.values():
             keep_image_ids.update(q.get("image_ids", []))
