@@ -8,9 +8,11 @@ cohesive narratives. Articles are permanently retained (not archived).
 URL Structure: /articles/YYYY/MM/DD/slug/index.html
 """
 
+import html
 import json
 import os
 import re
+import tempfile
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -674,9 +676,29 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
         """Generate full HTML page for an editorial article."""
         date_formatted = datetime.strptime(article.date, "%Y-%m-%d").strftime("%B %d, %Y")
 
-        # Escape for HTML attributes
-        title_escaped = article.title.replace('"', "&quot;")
-        summary_escaped = article.summary.replace('"', "&quot;")
+        # Properly escape for two distinct contexts:
+        # - HTML attributes (meta og:title, twitter:title, <title>): full html.escape
+        # - JSON-LD inside <script>: json.dumps PLUS <,>,& replacement, otherwise
+        #   a payload like </script> in the value will break out of the script tag
+        #   (the HTML parser scans for </script> regardless of JSON-string context).
+        title_html = html.escape(article.title, quote=True)
+        summary_html = html.escape(article.summary, quote=True)
+
+        def _json_ld_safe(value: str) -> str:
+            # json.dumps wraps in quotes; strip outer quotes for inline use,
+            # then escape the three HTML chars that can break out of a script tag.
+            encoded = json.dumps(value)[1:-1]
+            return encoded.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+
+        title_json = _json_ld_safe(article.title)
+        summary_json = _json_ld_safe(article.summary)
+        # Pre-render keywords array so the f-string below stays backslash-free.
+        keywords_json = (
+            json.dumps(article.keywords).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+        )
+        # Backwards-compatible aliases used in attribute contexts below
+        title_escaped = title_html
+        summary_escaped = summary_html
 
         # Build related articles HTML
         related_html = ""
@@ -709,9 +731,9 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{article.title} | CMMC Watch</title>
+    <title>{title_html} | CMMC Watch</title>
     <meta name="description" content="{summary_escaped}">
-    <meta name="keywords" content="{", ".join(article.keywords)}">
+    <meta name="keywords" content="{html.escape(", ".join(article.keywords), quote=True)}">
     <link rel="canonical" href="https://cmmcwatch.com{article.url}">
 
     <!-- Open Graph -->
@@ -736,7 +758,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
     <meta name="twitter:image" content="https://cmmcwatch.com/og-image.png">
 
     <!-- Google News -->
-    <meta name="news_keywords" content="{", ".join(article.keywords[:5]) if article.keywords else "CMMC, NIST 800-171, cybersecurity, compliance"}">
+    <meta name="news_keywords" content="{html.escape(", ".join(article.keywords[:5]), quote=True) if article.keywords else "CMMC, NIST 800-171, cybersecurity, compliance"}">
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -746,8 +768,8 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
             {{
                 "@type": "NewsArticle",
                 "@id": "https://cmmcwatch.com{article.url}#article",
-                "headline": "{title_escaped}",
-                "description": "{summary_escaped}",
+                "headline": "{title_json}",
+                "description": "{summary_json}",
                 "datePublished": "{article.date}T06:00:00Z",
                 "dateModified": "{article.date}T06:00:00Z",
                 "author": {{
@@ -770,7 +792,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
                     "@id": "https://cmmcwatch.com{article.url}"
                 }},
                 "wordCount": {article.word_count},
-                "keywords": {json.dumps(article.keywords)},
+                "keywords": {keywords_json},
                 "articleSection": "Analysis",
                 "inLanguage": "en-US"
             }},
@@ -1164,12 +1186,12 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
 
         <header class="article-header">
             <div class="article-meta">
-                <time datetime="{article.date}">{date_formatted}</time>
-                <span class="mood-badge">{article.mood}</span>
+                <time datetime="{html.escape(article.date, quote=True)}">{date_formatted}</time>
+                <span class="mood-badge">{html.escape(article.mood)}</span>
                 <span>{article.word_count} words</span>
             </div>
-            <h1>{article.title}</h1>
-            <p class="article-summary">{article.summary}</p>
+            <h1>{html.escape(article.title)}</h1>
+            <p class="article-summary">{html.escape(article.summary)}</p>
         </header>
 
         <div class="article-content">
@@ -1180,12 +1202,12 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
             <div class="sources-section">
                 <h3>Stories Referenced</h3>
                 <ul>
-                    {"".join(f"<li>{story}</li>" for story in article.top_stories)}
+                    {"".join(f"<li>{html.escape(story)}</li>" for story in article.top_stories)}
                 </ul>
             </div>
 
             <div class="keywords">
-                {"".join(f'<span class="keyword">{kw}</span>' for kw in article.keywords)}
+                {"".join(f'<span class="keyword">{html.escape(kw)}</span>' for kw in article.keywords)}
             </div>
 
             {related_html}
@@ -1735,9 +1757,14 @@ Respond with ONLY a valid JSON object:
                 metadata["content"] = new_content
                 metadata["word_count"] = len(new_content.split())
 
-                # Save updated metadata
-                with open(metadata_file, "w", encoding="utf-8") as f:
-                    json.dump(metadata, f, indent=2)
+                # Save updated metadata atomically — a crash mid-write would
+                # corrupt the article state file the regen pipeline depends on.
+                with tempfile.NamedTemporaryFile(
+                    "w", dir=metadata_file.parent, suffix=".tmp", delete=False, encoding="utf-8"
+                ) as tmp:
+                    json.dump(metadata, tmp, indent=2)
+                    tmp_path = Path(tmp.name)
+                os.replace(tmp_path, metadata_file)
 
                 # Reconstruct article and regenerate HTML
                 article = EditorialArticle(
