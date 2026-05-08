@@ -50,6 +50,13 @@ Archive → Collect CMMC trends → Fetch images → Generate design → Generat
 3. **Defense Industrial Base** - DoD contractors, DIB news
 4. **Federal Cybersecurity** - General federal cyber news
 
+## Continuous Improvement
+
+- **After corrections**: Append the lesson to `tasks/lessons.md` — write the rule that would have prevented the mistake
+- **Before marking done**: Prove it works — pipeline runs clean, HTML output valid, no regressions in RSS/sitemap
+- **3+ step tasks**: Enter plan mode; STOP and re-plan immediately if confused
+- **Session start**: Read `tasks/lessons.md` for relevant patterns before beginning work
+
 ## GitHub Workflow
 
 `daily-regenerate.yml` - Daily 6AM EST, push main, manual trigger
