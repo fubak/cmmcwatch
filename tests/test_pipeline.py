@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Tests for main pipeline."""
 
+import os
 import sys
 from pathlib import Path
 
@@ -71,12 +72,9 @@ class TestPipelineIntegration:
 
     @pytest.mark.slow
     @pytest.mark.skipif(
-        not any(
-            [
-                Path(__file__).parent.parent / ".env",
-            ]
-        ),
-        reason="Requires .env file with API keys",
+        not (Path(__file__).parent.parent / ".env").exists()
+        and not any(os.getenv(k) for k in ("GROQ_API_KEY", "OPENROUTER_API_KEY", "GOOGLE_AI_API_KEY")),
+        reason="Requires .env file or AI API key in environment",
     )
     def test_pipeline_dry_run(self):
         """Test pipeline dry run (collect data only)."""

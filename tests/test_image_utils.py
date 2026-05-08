@@ -102,11 +102,12 @@ class TestSelectBestImage:
         result = select_best_image(urls)
         assert result in urls
 
-    def test_filters_invalid(self):
-        urls = ["", None, "https://valid.example.com/img.jpg"]
-        # Filter out invalid values; should pick the valid one or return None gracefully
-        result = select_best_image([u for u in urls if u])
-        assert result is None or result.startswith("http")
+    def test_filters_invalid_picks_only_valid(self):
+        # Pre-filter falsy URLs (caller responsibility), then ensure the only
+        # remaining valid URL is selected.
+        urls = [u for u in ["", None, "https://valid.example.com/img.jpg"] if u]
+        result = select_best_image(urls)
+        assert result == "https://valid.example.com/img.jpg"
 
 
 class TestGetFallbackGradientCss:

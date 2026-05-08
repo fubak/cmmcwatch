@@ -50,8 +50,9 @@ class TestBuildHeader:
 
     def test_accepts_date_str(self):
         header = build_header(date_str="May 8, 2026")
-        # date_str may or may not be rendered in header; just verify no crash
-        assert isinstance(header, str)
+        # Either the date is rendered, or the header is non-empty HTML.
+        # In either case the function must not crash and must produce a string.
+        assert isinstance(header, str) and len(header) > 50
 
 
 class TestBuildFooter:
@@ -73,7 +74,8 @@ class TestBuildFooter:
 
     def test_accepts_date_str(self):
         footer = build_footer(date_str="May 8, 2026")
-        assert "May 8, 2026" in footer or isinstance(footer, str)
+        # The supplied date string should be rendered into the footer
+        assert "May 8, 2026" in footer
 
 
 class TestStyleHelpers:
