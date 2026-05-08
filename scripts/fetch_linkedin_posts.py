@@ -22,7 +22,7 @@ import os
 import re
 import time
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -194,7 +194,7 @@ def fetch_linkedin_posts(
 
     # Update last-fetched timestamp
     if posts:
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         _save_last_fetched(
             {
                 "last_fetched_ts": int(now.timestamp() * 1000),
@@ -236,8 +236,8 @@ def _parse_linkedin_item(item: Dict) -> Optional[LinkedInPost]:
         date_str = posted_at.get("date", "")
         if date_str:
             try:
-                # Format: "2026-02-01 14:20:41"
-                timestamp = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                # Format: "2026-02-01 14:20:41" — Apify returns UTC
+                timestamp = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
             except (ValueError, TypeError):
                 pass
 
@@ -329,7 +329,9 @@ def _calculate_post_score(post: LinkedInPost) -> float:
     # Recency boost
     recency_boost = 0.0
     if post.timestamp:
-        age_hours = (datetime.now() - post.timestamp).total_seconds() / 3600
+        # Normalize naive timestamps to UTC for safe comparison
+        post_ts = post.timestamp if post.timestamp.tzinfo else post.timestamp.replace(tzinfo=timezone.utc)
+        age_hours = (datetime.now(timezone.utc) - post_ts).total_seconds() / 3600
         if age_hours < 24:
             recency_boost = 0.5
         elif age_hours < 72:
