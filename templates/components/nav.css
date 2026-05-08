@@ -88,6 +88,8 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
     border: none;
     cursor: pointer;
     padding: 0.5rem;
+    min-width: 44px;
+    min-height: 44px;
     z-index: 101;
 }
 

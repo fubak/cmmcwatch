@@ -22,7 +22,7 @@ import logging
 import re
 import sys
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 from urllib.parse import urljoin
 
@@ -148,7 +148,7 @@ class CompetitorMonitor:
                 with open(SEEN_ITEMS_FILE, "r") as f:
                     data = json.load(f)
                     # Clean up old entries (older than 30 days)
-                    cutoff = (datetime.now() - timedelta(days=30)).isoformat()
+                    cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
                     return {k: v for k, v in data.items() if v > cutoff}
             except Exception as e:
                 logger.warning(f"Failed to load seen items: {e}")
@@ -189,7 +189,7 @@ class CompetitorMonitor:
 
     def _mark_as_seen(self, item: MonitoredItem):
         """Mark item as seen."""
-        self.seen_items[item.item_hash] = datetime.now().isoformat()
+        self.seen_items[item.item_hash] = datetime.now(timezone.utc).isoformat()
 
     def monitor_federal_register(self) -> List[MonitoredItem]:
         """Monitor Federal Register for DFARS/CMMC regulatory changes."""
@@ -261,8 +261,8 @@ class CompetitorMonitor:
                 if hasattr(entry, "published_parsed") and entry.published_parsed:
                     try:
                         published = datetime(*entry.published_parsed[:6]).strftime("%Y-%m-%d")
-                    except Exception:
-                        pass
+                    except (TypeError, ValueError) as e:
+                        logger.debug(f"Could not parse published date for {url}: {e}")
 
                 item = MonitoredItem(
                     title=title,
@@ -418,7 +418,7 @@ def save_results(items: List[MonitoredItem], output_format: str = "json"):
 
     if output_format == "json":
         data = {
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "total_items": len(items),
             "items": [asdict(item) for item in items],
         }
@@ -428,7 +428,7 @@ def save_results(items: List[MonitoredItem], output_format: str = "json"):
         # Plain text format
         with open(output_file, "w") as f:
             f.write("CMMC Watch - Competitor Monitor Results\n")
-            f.write(f"Generated: {datetime.now().isoformat()}\n")
+            f.write(f"Generated: {datetime.now(timezone.utc).isoformat()}\n")
             f.write(f"Total Items: {len(items)}\n")
             f.write("=" * 60 + "\n\n")
 

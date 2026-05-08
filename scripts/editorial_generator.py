@@ -9,7 +9,6 @@ URL Structure: /articles/YYYY/MM/DD/slug/index.html
 """
 
 import json
-import logging
 import os
 import re
 import time
