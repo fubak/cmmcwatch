@@ -12,7 +12,9 @@ import requests
 from ai_providers import (
     _OPENAI_COMPAT_PROVIDERS,
     _retry_after_seconds,
+    call_google_ai,
     call_huggingface,
+    call_ollama,
     call_openai_compatible,
 )
 
@@ -175,6 +177,101 @@ class TestCallHuggingface:
         # Empty list breaks current attempt, next iteration of inner loop tries
         # but max_retries=1, so it moves to next model
         assert result == "second"
+
+
+class TestCallGoogleAi:
+    def test_returns_none_when_no_key(self, monkeypatch):
+        monkeypatch.delenv("GOOGLE_AI_API_KEY", raising=False)
+        assert call_google_ai("test") is None
+
+    def test_explicit_key_overrides_env(self, monkeypatch):
+        monkeypatch.delenv("GOOGLE_AI_API_KEY", raising=False)
+        mock_session = MagicMock()
+        mock_session.post.return_value = _mock_response(
+            json_body={"candidates": [{"content": {"parts": [{"text": "Hello"}]}}]}
+        )
+        with patch("ai_providers._wait_for_rate_limit", return_value=True):
+            result = call_google_ai("test", session=mock_session, api_key="explicit-key")
+        assert result == "Hello"
+
+    def test_successful_call_extracts_text(self, monkeypatch):
+        monkeypatch.setenv("GOOGLE_AI_API_KEY", "fake")
+        mock_session = MagicMock()
+        mock_session.post.return_value = _mock_response(
+            json_body={"candidates": [{"content": {"parts": [{"text": "gemini output"}]}}]}
+        )
+        with patch("ai_providers._wait_for_rate_limit", return_value=True):
+            result = call_google_ai("test", session=mock_session)
+        assert result == "gemini output"
+
+    def test_quota_429_marks_provider_exhausted(self, monkeypatch):
+        monkeypatch.setenv("GOOGLE_AI_API_KEY", "fake")
+        mock_session = MagicMock()
+        mock_session.post.return_value = _mock_response(
+            status=429,
+            json_body={"error": {"message": "Quota exceeded for daily limit"}},
+        )
+        with (
+            patch("ai_providers._wait_for_rate_limit", return_value=True),
+            patch("ai_providers.mark_provider_exhausted") as mock_mark,
+        ):
+            result = call_google_ai("test", session=mock_session)
+        assert result is None
+        mock_mark.assert_called_once()
+        assert mock_mark.call_args[0][0] == "google"
+
+    def test_transient_429_retries(self, monkeypatch):
+        monkeypatch.setenv("GOOGLE_AI_API_KEY", "fake")
+        mock_session = MagicMock()
+        mock_session.post.side_effect = [
+            _mock_response(status=429, headers={"Retry-After": "0"}, json_body={"error": "transient"}),
+            _mock_response(json_body={"candidates": [{"content": {"parts": [{"text": "ok"}]}}]}),
+        ]
+        with patch("ai_providers._wait_for_rate_limit", return_value=True), patch("ai_providers.time.sleep"):
+            result = call_google_ai("test", max_retries=2, session=mock_session)
+        assert result == "ok"
+
+    def test_empty_candidates_returns_none(self, monkeypatch):
+        monkeypatch.setenv("GOOGLE_AI_API_KEY", "fake")
+        mock_session = MagicMock()
+        mock_session.post.return_value = _mock_response(json_body={"candidates": []})
+        with patch("ai_providers._wait_for_rate_limit", return_value=True):
+            result = call_google_ai("test", session=mock_session)
+        assert result is None
+
+
+class TestCallOllama:
+    def test_successful_call_returns_text(self):
+        mock_session = MagicMock()
+        mock_session.post.return_value = _mock_response(json_body={"response": "ollama output"})
+        result = call_ollama("test", session=mock_session)
+        assert result == "ollama output"
+
+    def test_uses_custom_url(self):
+        mock_session = MagicMock()
+        mock_session.post.return_value = _mock_response(json_body={"response": "ok"})
+        call_ollama("test", session=mock_session, ollama_url="http://my-ollama:11434")
+        url = mock_session.post.call_args[0][0]
+        assert url.startswith("http://my-ollama:11434/api/generate")
+
+    def test_connection_error_returns_none(self):
+        mock_session = MagicMock()
+        mock_session.post.side_effect = requests.exceptions.ConnectionError("refused")
+        result = call_ollama("test", session=mock_session)
+        assert result is None
+
+    def test_empty_response_returns_none(self):
+        mock_session = MagicMock()
+        mock_session.post.return_value = _mock_response(json_body={"response": ""})
+        result = call_ollama("test", session=mock_session)
+        assert result is None
+
+    def test_passes_max_tokens_as_num_predict(self):
+        mock_session = MagicMock()
+        mock_session.post.return_value = _mock_response(json_body={"response": "x"})
+        call_ollama("test", max_tokens=500, session=mock_session)
+        body = mock_session.post.call_args.kwargs["json"]
+        assert body["options"]["num_predict"] == 500
 
 
 if __name__ == "__main__":

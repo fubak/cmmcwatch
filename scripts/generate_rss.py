@@ -3,6 +3,7 @@
 RSS Feed Generator - Generates an RSS feed from collected trends.
 """
 
+import html
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -43,20 +44,30 @@ def _build_content_html(title: str, description: str, source: str, url: str, why
     Returns:
         HTML string wrapped in CDATA
     """
-    source_formatted = source.replace("_", " ").title() if source else "Unknown"
+    # Escape every interpolated value — RSS descriptions go into RSS readers
+    # that render them as HTML, so unescaped third-party feed content is a
+    # stored-XSS vector. Use html.escape with quote=True so URLs are safe in
+    # attributes too.
+    title_safe = html.escape(title or "")
+    description_safe = html.escape(description or "")
+    why_matters_safe = html.escape(why_matters or "")
+    source_formatted = html.escape((source or "Unknown").replace("_", " ").title())
 
-    html_parts = [f"<h3>{title}</h3>"]
+    html_parts = [f"<h3>{title_safe}</h3>"]
 
-    if description:
-        html_parts.append(f"<p>{description}</p>")
+    if description_safe:
+        html_parts.append(f"<p>{description_safe}</p>")
 
-    if why_matters:
-        html_parts.append(f"<blockquote><strong>Why This Matters:</strong> {why_matters}</blockquote>")
+    if why_matters_safe:
+        html_parts.append(f"<blockquote><strong>Why This Matters:</strong> {why_matters_safe}</blockquote>")
 
     html_parts.append(f"<p><small>Source: {source_formatted}</small></p>")
 
-    if url and url.startswith("http"):
-        html_parts.append(f'<p><a href="{url}">Read full story →</a></p>')
+    # Only emit a link for http(s) URLs to block javascript:/data: schemes.
+    # Escape the URL with quote=True so `"` in the URL can't break the attribute.
+    if url and url.startswith(("http://", "https://")):
+        url_safe = html.escape(url, quote=True)
+        html_parts.append(f'<p><a href="{url_safe}">Read full story →</a></p>')
 
     return "".join(html_parts)
 
