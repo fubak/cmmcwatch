@@ -12,7 +12,6 @@ import requests
 from ai_providers import (
     _OPENAI_COMPAT_PROVIDERS,
     _retry_after_seconds,
-    _wait_for_rate_limit,
     call_huggingface,
     call_openai_compatible,
 )

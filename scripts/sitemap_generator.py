@@ -10,7 +10,6 @@ Includes:
 """
 
 import json
-import logging
 import os
 import xml.etree.ElementTree as ET
 from datetime import datetime

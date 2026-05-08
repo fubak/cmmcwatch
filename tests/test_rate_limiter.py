@@ -188,7 +188,6 @@ class TestModuleLevelHelpers:
 
     def test_module_mark_and_check_exhausted(self):
         # Use module-level helpers
-        import os
 
         # Ensure we have a fresh state by resetting
         limiter = get_rate_limiter()

@@ -112,7 +112,7 @@ class TestGenerateNewsSitemap:
         assert "google.com/schemas/sitemap-news" in xml
 
     def test_includes_recent_articles(self, tmp_path):
-        from datetime import datetime, timedelta, timezone
+        from datetime import datetime, timezone
 
         articles = tmp_path / "articles" / "2026" / "05" / "01" / "slug"
         articles.mkdir(parents=True)

@@ -149,7 +149,8 @@ class Trend:
 
     def __post_init__(self):
         parsed_timestamp = parse_timestamp(self.timestamp)
-        self.timestamp = parsed_timestamp or datetime.now()
+        # Match _normalize_datetime: store naive UTC for consistency
+        self.timestamp = parsed_timestamp or datetime.now(timezone.utc).replace(tzinfo=None)
 
         if not self.source_metadata:
             self.source_metadata = source_metadata_dict(self.source)
@@ -1090,7 +1091,8 @@ class TrendCollector:
         Recency boost ensures today's articles rank higher than older ones,
         even if older articles have slightly higher keyword relevance.
         """
-        now = datetime.now()
+        # Use naive UTC to match _normalize_datetime() output stored on trend.timestamp
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
 
         for trend in self.trends:
             recency_boost = 0.0

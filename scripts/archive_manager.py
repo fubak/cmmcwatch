@@ -6,7 +6,6 @@ Features: Daily snapshots, browsable index, retention policy.
 
 import html
 import json
-import logging
 import os
 import re
 import shutil
