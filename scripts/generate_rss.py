@@ -42,7 +42,11 @@ def _build_content_html(title: str, description: str, source: str, url: str, why
         why_matters: Optional 'Why This Matters' context
 
     Returns:
-        HTML string wrapped in CDATA
+        HTML string for the <content:encoded> element. The caller assigns
+        this directly to the element's text; ElementTree handles XML
+        escaping at serialization time, so no manual CDATA wrapping is
+        needed (and our html.escape calls below ensure user-supplied
+        values can't break the surrounding HTML structure).
     """
     # Escape every interpolated value — RSS descriptions go into RSS readers
     # that render them as HTML, so unescaped third-party feed content is a

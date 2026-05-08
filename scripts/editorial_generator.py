@@ -1431,11 +1431,13 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
 
     def _call_openrouter(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
         """Call OpenRouter API (delegates to shared ai_providers)."""
-        return call_openai_compatible("openrouter", prompt, max_tokens, max_retries, self.session)
+        return call_openai_compatible(
+            "openrouter", prompt, max_tokens, max_retries, self.session, api_key=self.openrouter_key
+        )
 
     def _call_groq_direct(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
         """Call Groq API (delegates to shared ai_providers)."""
-        return call_openai_compatible("groq", prompt, max_tokens, max_retries, self.session)
+        return call_openai_compatible("groq", prompt, max_tokens, max_retries, self.session, api_key=self.groq_key)
 
     def _call_opencode(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
         """Call OpenCode API (delegates to shared ai_providers)."""

@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 import pytest
-from rate_limiter import RateLimitStatus, RateLimiter, get_rate_limiter, is_provider_exhausted, mark_provider_exhausted
+from rate_limiter import RateLimiter, RateLimitStatus, get_rate_limiter, is_provider_exhausted, mark_provider_exhausted
 
 
 class TestRateLimitStatus:

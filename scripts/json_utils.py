@@ -9,11 +9,15 @@ editorial_generator and generate_design.
 """
 
 import json
-import logging
 import re
 from typing import Optional
 
-logger = logging.getLogger("pipeline")
+try:
+    from config import setup_logging
+except ImportError:
+    from scripts.config import setup_logging
+
+logger = setup_logging("pipeline")
 
 
 def repair_json(json_str: str) -> str:

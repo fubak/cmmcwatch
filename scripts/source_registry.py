@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 from typing import Dict, Optional, Tuple
 
 from source_catalog import COLLECTOR_SOURCES

@@ -14,6 +14,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from config import setup_logging
+
 # Import shared components for consistent header/footer
 from shared_components import (
     build_footer,
@@ -22,8 +24,6 @@ from shared_components import (
     get_header_styles,
     get_theme_script,
 )
-
-from config import setup_logging
 
 logger = setup_logging("pipeline")
 
