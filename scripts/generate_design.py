@@ -17,7 +17,6 @@ import hashlib
 import json
 import os
 import random
-import re
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -36,6 +35,7 @@ try:
         call_ollama,
         call_openai_compatible,
     )
+    from json_utils import parse_llm_json
 except ImportError:
     from scripts.ai_providers import (
         call_google_ai,
@@ -43,6 +43,7 @@ except ImportError:
         call_ollama,
         call_openai_compatible,
     )
+    from scripts.json_utils import parse_llm_json
 
 
 @dataclass
@@ -1528,55 +1529,23 @@ Respond with ONLY a valid JSON object:
         return call_openai_compatible("mistral", prompt, max_tokens, max_retries, self.session)
 
     def _parse_ai_response(self, response: str) -> Optional[Dict]:
-        try:
-            json_match = re.search(r"\{.*\}", response, re.DOTALL)
-            payload = json_match.group() if json_match else response
-
-            # Try parsing as-is first
-            try:
-                data = json.loads(payload)
-            except json.JSONDecodeError:
-                # Escape control characters only INSIDE quoted strings
-                def escape_string_contents(match):
-                    s = match.group(0)
-                    inner = s[1:-1]  # Remove quotes
-                    # Only escape raw control characters
-                    inner = inner.replace("\n", "\\n")
-                    inner = inner.replace("\r", "\\r")
-                    inner = inner.replace("\t", "\\t")
-                    inner = re.sub(
-                        r"[\x00-\x08\x0b\x0c\x0e-\x1f]",
-                        lambda m: f"\\u{ord(m.group()):04x}",
-                        inner,
-                    )
-                    return f'"{inner}"'
-
-                try:
-                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, payload)
-                    data = json.loads(sanitized)
-                except (json.JSONDecodeError, Exception):
-                    # Last resort: strip all control chars except structural whitespace
-                    stripped = re.sub(r"[\x00-\x09\x0b\x0c\x0e-\x1f]", " ", payload)
-                    data = json.loads(stripped)
-
+        """Parse JSON from AI response, normalize to {variants: [...]} shape."""
+        data = parse_llm_json(response)
+        if data and "variants" not in data:
             # Normalize single-variant responses
-            if data and "variants" not in data:
-                data = {
-                    "variants": [
-                        {
-                            "theme_name": data.get("theme_name"),
-                            "headline": data.get("headline"),
-                            "subheadline": data.get("subheadline"),
-                            "color_accent": data.get("color_accent"),
-                            "color_accent_secondary": data.get("color_accent_secondary"),
-                            "cta": data.get("cta") or data.get("cta_primary"),
-                        }
-                    ]
-                }
-            return data
-        except (json.JSONDecodeError, Exception) as e:
-            logger.warning(f"    Parse error: {e}")
-        return None
+            data = {
+                "variants": [
+                    {
+                        "theme_name": data.get("theme_name"),
+                        "headline": data.get("headline"),
+                        "subheadline": data.get("subheadline"),
+                        "color_accent": data.get("color_accent"),
+                        "color_accent_secondary": data.get("color_accent_secondary"),
+                        "cta": data.get("cta") or data.get("cta_primary"),
+                    }
+                ]
+            }
+        return data
 
     def _create_headline(self, trends: List[Dict], rng: random.Random) -> str:
         """Create a headline from trends."""
