@@ -12,6 +12,7 @@ import re
 import time
 import json
 import base64
+import binascii
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
@@ -118,7 +119,8 @@ def parse_feed_entry_timestamp(entry: Any) -> Optional[datetime]:
         if parsed_value:
             try:
                 return datetime(*parsed_value[:6])
-            except Exception:
+            except (TypeError, ValueError) as e:
+                logger.debug(f"Could not build datetime from {parsed_key}: {e}")
                 continue
 
     for key in ("published", "updated", "created", "dc_date", "pubDate"):
@@ -323,7 +325,8 @@ class TrendCollector:
                 return None
             try:
                 content = base64.b64decode(content_b64.encode("ascii"))
-            except Exception:
+            except (binascii.Error, ValueError, UnicodeEncodeError) as e:
+                logger.debug(f"Failed to decode cached base64 content: {e}")
                 return None
 
         if not isinstance(content, (bytes, bytearray)):

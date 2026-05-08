@@ -20,9 +20,9 @@ from typing import Optional
 import requests
 
 try:
-    from rate_limiter import check_before_call, get_rate_limiter
+    from rate_limiter import check_before_call, get_rate_limiter, mark_provider_exhausted
 except ImportError:
-    from scripts.rate_limiter import check_before_call, get_rate_limiter
+    from scripts.rate_limiter import check_before_call, get_rate_limiter, mark_provider_exhausted
 
 logger = logging.getLogger("pipeline")
 
@@ -236,4 +236,109 @@ def call_huggingface(
                 break  # try next model
 
     logger.warning("  All Hugging Face models failed")
+    return None
+
+
+def call_google_ai(
+    prompt: str,
+    max_tokens: int = 1000,
+    max_retries: int = 1,
+    session: Optional[requests.Session] = None,
+    api_key: Optional[str] = None,
+) -> Optional[str]:
+    """
+    Call Google AI (Gemini) API. Uses gemini-2.5-flash-lite — highest RPM (10)
+    among free models. Detects quota-exhaustion 429s (vs transient rate limits)
+    and marks provider exhausted to short-circuit further attempts this run.
+    """
+    api_key = api_key or os.getenv("GOOGLE_AI_API_KEY")
+    if not api_key:
+        return None
+
+    if not _wait_for_rate_limit("google"):
+        return None
+
+    rate_limiter = get_rate_limiter()
+    sess = session or requests
+    model = "gemini-2.5-flash-lite"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+
+    for attempt in range(max_retries):
+        try:
+            logger.info(f"  Trying Google AI {model} (attempt {attempt + 1}/{max_retries})")
+            response = sess.post(
+                url,
+                headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
+                json={
+                    "contents": [{"parts": [{"text": prompt}]}],
+                    "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.7},
+                },
+                timeout=60,
+            )
+            response.raise_for_status()
+            rate_limiter._last_call_time["google"] = time.time()
+
+            data = response.json()
+            candidates = data.get("candidates", [])
+            if candidates:
+                parts = candidates[0].get("content", {}).get("parts", [])
+                if parts:
+                    text = parts[0].get("text", "")
+                    if text:
+                        logger.info(f"  Google AI success with {model}")
+                        return text
+        except requests.exceptions.HTTPError as e:
+            if response.status_code == 429:
+                try:
+                    error_msg = str(response.json()).lower()
+                    if "quota" in error_msg or "exhausted" in error_msg or "daily" in error_msg:
+                        mark_provider_exhausted("google", "daily quota exceeded")
+                        return None
+                except (ValueError, requests.exceptions.JSONDecodeError) as parse_err:
+                    logger.debug(f"Could not parse 429 error body as JSON: {parse_err}")
+                wait = _retry_after_seconds(response.headers)
+                logger.info(f"  Google AI rate limited, waiting {wait}s (attempt {attempt + 1}/{max_retries})")
+                time.sleep(wait)
+                continue
+            logger.warning(f"  Google AI failed: {e}")
+            return None
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"  Google AI failed: {e}")
+            return None
+
+    logger.warning("  Google AI: max retries exceeded")
+    return None
+
+
+def call_ollama(
+    prompt: str,
+    max_tokens: int = 1000,
+    session: Optional[requests.Session] = None,
+    ollama_url: str = "http://localhost:11434",
+    timeout: int = 120,
+) -> Optional[str]:
+    """
+    Call a local Ollama server. Free, fast, private. Returns None silently
+    when Ollama isn't running (expected in CI).
+    """
+    sess = session or requests
+    try:
+        logger.info("  Trying Ollama (local)...")
+        response = sess.post(
+            f"{ollama_url}/api/generate",
+            json={
+                "model": "llama3.2",
+                "prompt": prompt,
+                "stream": False,
+                "options": {"num_predict": max_tokens, "temperature": 0.7},
+            },
+            timeout=timeout,
+        )
+        response.raise_for_status()
+        result = response.json().get("response", "")
+        if result:
+            logger.info("  Ollama success")
+            return result
+    except (requests.exceptions.RequestException, ValueError) as e:
+        logger.info(f"  Ollama not available: {e}")
     return None

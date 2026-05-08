@@ -24,7 +24,12 @@ SITE_NAME = "CMMC Watch"
 SITE_URL = "https://cmmcwatch.com"
 
 try:
-    from ai_providers import call_huggingface, call_openai_compatible
+    from ai_providers import (
+        call_google_ai,
+        call_huggingface,
+        call_ollama,
+        call_openai_compatible,
+    )
     from config import setup_logging
     from rate_limiter import (
         check_before_call,
@@ -39,7 +44,12 @@ try:
         get_theme_script,
     )
 except ImportError:
-    from scripts.ai_providers import call_huggingface, call_openai_compatible
+    from scripts.ai_providers import (
+        call_google_ai,
+        call_huggingface,
+        call_ollama,
+        call_openai_compatible,
+    )
     from scripts.config import setup_logging
     from scripts.rate_limiter import (
         check_before_call,
@@ -1273,120 +1283,12 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
             return False
 
     def _call_ollama(self, prompt: str, max_tokens: int = 800) -> Optional[str]:
-        """Call local Ollama for LLM inference (free, fast, private)."""
-        try:
-            logger.info("Trying Ollama (local)...")
-            response = self.session.post(
-                f"{self.ollama_url}/api/generate",
-                json={
-                    "model": "llama3.2",
-                    "prompt": prompt,
-                    "stream": False,
-                    "options": {
-                        "num_predict": max_tokens,
-                        "temperature": 0.7,
-                    },
-                },
-                timeout=180,  # Longer timeout for editorial content
-            )
-            response.raise_for_status()
-            result = response.json().get("response", "")
-            if result:
-                logger.info("Ollama success")
-                return result
-        except Exception as e:
-            logger.info(f"Ollama not available: {e}")
-        return None
+        """Call local Ollama (delegates to shared ai_providers)."""
+        return call_ollama(prompt, max_tokens, self.session, self.ollama_url, timeout=180)
 
     def _call_google_ai(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
-        """Call Google AI (Gemini) API - primary provider with generous free tier."""
-        if not self.google_key:
-            logger.info("No Google AI API key available, skipping to next provider")
-            return None
-
-        # Check rate limits before calling
-        rate_limiter = get_rate_limiter()
-        status = check_before_call("google")
-
-        if not status.is_available:
-            logger.warning(f"Google AI not available: {status.error}")
-            return None
-
-        if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for Google AI rate limit...")
-            time.sleep(status.wait_seconds)
-
-        # Use Gemini 2.5 Flash Lite - highest RPM (10) among free models
-        model = "gemini-2.5-flash-lite"
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-
-        for attempt in range(max_retries):
-            try:
-                logger.info(f"Trying Google AI {model} (attempt {attempt + 1}/{max_retries})")
-                response = self.session.post(
-                    url,
-                    headers={
-                        "x-goog-api-key": self.google_key,
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "contents": [{"parts": [{"text": prompt}]}],
-                        "generationConfig": {
-                            "maxOutputTokens": max_tokens,
-                            "temperature": 0.7,
-                        },
-                    },
-                    timeout=60,
-                )
-                response.raise_for_status()
-
-                # Update rate limiter tracking
-                rate_limiter._last_call_time["google"] = time.time()
-
-                # Parse response
-                data = response.json()
-                candidates = data.get("candidates", [])
-                if candidates:
-                    content = candidates[0].get("content", {})
-                    parts = content.get("parts", [])
-                    if parts:
-                        text = parts[0].get("text", "")
-                        if text:
-                            logger.info(f"Google AI success with {model}")
-                            return text
-
-            except requests.exceptions.HTTPError as e:
-                if response.status_code == 429:
-                    # Check if this is a quota exhaustion (daily limit) vs temporary rate limit
-                    try:
-                        error_data = response.json()
-                        error_msg = str(error_data).lower()
-                        if "quota" in error_msg or "exhausted" in error_msg or "daily" in error_msg:
-                            # This is a quota exhaustion - mark provider as exhausted
-                            mark_provider_exhausted("google", "daily quota exceeded")
-                            return None
-                    except (ValueError, requests.exceptions.JSONDecodeError) as parse_err:
-                        logger.debug(f"Could not parse 429 error body as JSON: {parse_err}")
-
-                    # Temporary rate limit - wait and retry
-                    retry_after = response.headers.get("Retry-After", "10")
-                    try:
-                        wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
-                    except ValueError:
-                        wait_time = self.MAX_RETRY_WAIT
-                    logger.warning(
-                        f"Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
-                    )
-                    time.sleep(wait_time)
-                    continue
-                logger.error(f"Google AI failed: {e}")
-                return None
-            except Exception as e:
-                logger.error(f"Google AI failed: {e}")
-                return None
-
-        logger.warning("Google AI: Max retries exceeded")
-        return None
+        """Call Google AI Gemini (delegates to shared ai_providers)."""
+        return call_google_ai(prompt, max_tokens, max_retries, self.session, self.google_key)
 
     def _call_google_ai_structured(
         self, prompt: str, schema: dict, max_tokens: int = 4000, max_retries: int = 1
