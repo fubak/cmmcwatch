@@ -33,6 +33,7 @@ try:
         call_openai_compatible,
     )
     from config import setup_logging
+    from json_utils import parse_llm_json, repair_json
     from rate_limiter import (
         check_before_call,
         get_rate_limiter,
@@ -53,6 +54,7 @@ except ImportError:
         call_openai_compatible,
     )
     from scripts.config import setup_logging
+    from scripts.json_utils import parse_llm_json, repair_json
     from scripts.rate_limiter import (
         check_before_call,
         get_rate_limiter,
@@ -1448,139 +1450,12 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
         return call_openai_compatible("mistral", prompt, max_tokens, max_retries, self.session)
 
     def _repair_json(self, json_str: str) -> str:
-        """Attempt to repair common JSON formatting issues from LLM output."""
-        # Fix missing commas between elements (common LLM error)
-        # Pattern: }" followed by whitespace and then "{ or "[
-        json_str = re.sub(r'"\s*\n\s*"', '",\n"', json_str)
-        json_str = re.sub(r"}\s*\n\s*{", "},\n{", json_str)
-        json_str = re.sub(r"]\s*\n\s*\[", "],\n[", json_str)
-        json_str = re.sub(r'"\s*\n\s*{', '",\n{', json_str)
-        json_str = re.sub(r'}\s*\n\s*"', '},\n"', json_str)
-        json_str = re.sub(r'"\s*\n\s*\[', '",\n[', json_str)
-        json_str = re.sub(r']\s*\n\s*"', '],\n"', json_str)
-
-        # Fix missing comma after value before next key
-        # Pattern: "value" (whitespace) "key":
-        json_str = re.sub(r'"\s+("[\w]+"\s*:)', r'", \1', json_str)
-
-        # Fix trailing commas before closing brackets
-        json_str = re.sub(r",\s*}", "}", json_str)
-        json_str = re.sub(r",\s*]", "]", json_str)
-
-        # Handle truncated JSON by closing open structures
-        # Count unmatched brackets
-        open_braces = json_str.count("{") - json_str.count("}")
-        open_brackets = json_str.count("[") - json_str.count("]")
-
-        # Check if we're in an unclosed string (odd number of unescaped quotes)
-        # Simple heuristic: if last significant char is not }, ], or "
-        stripped = json_str.rstrip()
-        if stripped and stripped[-1] not in '}"]':
-            # Try to close an open string if we appear to be mid-string
-            if open_braces > 0 or open_brackets > 0:
-                # Check if we might be in an unclosed string value
-                # by looking for an odd number of quotes
-                quote_count = 0
-                i = len(stripped) - 1
-                while i >= 0:
-                    if stripped[i] == '"' and (i == 0 or stripped[i - 1] != "\\"):
-                        quote_count += 1
-                        if quote_count == 1:
-                            break
-                    i -= 1
-                if quote_count % 2 == 1:
-                    # We're in an unclosed string, close it
-                    json_str = stripped + '"'
-
-        # Re-count after potential string closure
-        stripped = json_str.rstrip()
-        open_braces = json_str.count("{") - json_str.count("}")
-        open_brackets = json_str.count("[") - json_str.count("]")
-
-        # Close any remaining open structures
-        if open_brackets > 0:
-            json_str = json_str.rstrip()
-            # Remove trailing comma if present
-            if json_str.endswith(","):
-                json_str = json_str[:-1]
-            json_str += "]" * open_brackets
-
-        if open_braces > 0:
-            json_str = json_str.rstrip()
-            # Remove trailing comma if present
-            if json_str.endswith(","):
-                json_str = json_str[:-1]
-            json_str += "}" * open_braces
-
-        return json_str
+        """Delegate to shared json_utils.repair_json."""
+        return repair_json(json_str)
 
     def _parse_json_response(self, response: Optional[str]) -> Optional[Dict]:
-        """Parse JSON from LLM response."""
-        if not response:
-            return None
-
-        try:
-            # Try to find JSON in response
-            json_match = re.search(r"\{.*\}", response, re.DOTALL)
-            if json_match:
-                json_str = json_match.group()
-                # First, try parsing as-is
-                try:
-                    return json.loads(json_str)
-                except json.JSONDecodeError:
-                    pass
-
-                # Try repairing common JSON issues (missing commas, etc.)
-                try:
-                    repaired = self._repair_json(json_str)
-                    return json.loads(repaired)
-                except json.JSONDecodeError:
-                    pass
-
-                # Escape control characters only INSIDE quoted strings
-                # This preserves structural JSON formatting
-                def escape_string_contents(match):
-                    s = match.group(0)
-                    inner = s[1:-1]  # Remove quotes
-                    # Only escape raw control characters, not already-escaped sequences
-                    inner = inner.replace("\n", "\\n")
-                    inner = inner.replace("\r", "\\r")
-                    inner = inner.replace("\t", "\\t")
-                    # Escape other control characters (except those already handled)
-                    inner = re.sub(
-                        r"[\x00-\x08\x0b\x0c\x0e-\x1f]",
-                        lambda m: f"\\u{ord(m.group()):04x}",
-                        inner,
-                    )
-                    return f'"{inner}"'
-
-                # Match quoted strings (handles escaped quotes inside)
-                try:
-                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, json_str)
-                    return json.loads(sanitized)
-                except (json.JSONDecodeError, Exception):
-                    pass
-
-                # Try repair + escape combination
-                try:
-                    repaired = self._repair_json(json_str)
-                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, repaired)
-                    return json.loads(sanitized)
-                except (json.JSONDecodeError, Exception):
-                    pass
-
-                # Last resort: strip all control chars except structural whitespace
-                try:
-                    stripped = re.sub(r"[\x00-\x09\x0b\x0c\x0e-\x1f]", " ", json_str)
-                    repaired = self._repair_json(stripped)
-                    return json.loads(repaired)
-                except (json.JSONDecodeError, Exception):
-                    pass
-
-        except (json.JSONDecodeError, Exception) as e:
-            logger.warning(f"JSON parse error: {e}")
-
-        return None
+        """Parse JSON from LLM response (delegates to shared json_utils)."""
+        return parse_llm_json(response)
 
     def _sanitize_slug(self, slug: str) -> str:
         """Sanitize slug for URL usage."""
