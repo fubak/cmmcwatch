@@ -61,6 +61,8 @@
     border: none;
     cursor: pointer;
     padding: 0.5rem;
+    min-width: 44px;
+    min-height: 44px;
     border-radius: 0.5rem;
     color: var(--color-muted);
     display: flex;
