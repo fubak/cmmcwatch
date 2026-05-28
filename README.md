@@ -159,6 +159,10 @@ Run tests:
 pytest tests/
 ```
 
+CI runs the suite (currently ~450 tests across 24 files) plus `ruff check` and
+`ruff format --check` on every push to `main`/`claude/**` and on every PR. See
+`.github/workflows/tests.yml`.
+
 Run with coverage:
 
 ```bash

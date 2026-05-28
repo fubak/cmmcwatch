@@ -33,7 +33,9 @@ Archive → Collect CMMC trends → Fetch images → Generate design → Generat
 | `editorial_generator.py` | Daily article generation |
 | `generate_rss.py` | RSS 2.0 feed |
 | `archive_manager.py` | 30-day snapshots |
-| `config.py` | All constants and settings |
+| `ai_providers.py` | Shared HTTP layer for Groq/OpenRouter/Google AI/Mistral/HF/Ollama |
+| `json_utils.py` | Shared LLM-JSON repair helpers (`parse_llm_json`, `repair_json`) |
+| `config.py` | All constants and settings (incl. `SITE_URL`, `SITE_NAME`) |
 
 ## Data Sources
 
@@ -60,3 +62,5 @@ Archive → Collect CMMC trends → Fetch images → Generate design → Generat
 ## GitHub Workflow
 
 `daily-regenerate.yml` - Daily 6AM EST, push main, manual trigger
+`fix-articles.yml` - Manual trigger for emergency article-HTML regeneration
+`tests.yml` - Runs ruff lint + format check + pytest on every push to main/claude/** and on PRs to main

@@ -19,10 +19,10 @@ from typing import Optional
 import requests
 
 try:
-    from config import setup_logging
+    from config import SITE_NAME, SITE_URL, setup_logging
     from rate_limiter import check_before_call, get_rate_limiter, mark_provider_exhausted
 except ImportError:
-    from scripts.config import setup_logging
+    from scripts.config import SITE_NAME, SITE_URL, setup_logging
     from scripts.rate_limiter import check_before_call, get_rate_limiter, mark_provider_exhausted
 
 logger = setup_logging("pipeline")
@@ -43,8 +43,8 @@ _OPENAI_COMPAT_PROVIDERS = {
         ],
         "key_env": "OPENROUTER_API_KEY",
         "extra_headers": {
-            "HTTP-Referer": "https://cmmcwatch.com",
-            "X-Title": "CMMC Watch",
+            "HTTP-Referer": SITE_URL,
+            "X-Title": SITE_NAME,
         },
         "timeout": 60,
     },
