@@ -467,6 +467,243 @@
     }
 }
 
+/* ===== THE BRIEF (executive summary + op-ed) + LATEST RAIL ===== */
+.brief-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 2rem;
+    margin-bottom: var(--section-gap);
+    align-items: start;
+}
+
+.brief-grid.no-rail {
+    grid-template-columns: 1fr;
+}
+
+.daily-brief {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg, 1rem);
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+}
+
+.brief-eyebrow {
+    display: inline-block;
+    font-family: var(--font-secondary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 0.5rem;
+}
+
+.brief-headline {
+    font-family: var(--font-primary);
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    line-height: 1.15;
+    margin: 0 0 0.5rem;
+    color: var(--color-text);
+}
+
+.brief-dek {
+    font-size: 1.05rem;
+    color: var(--color-muted);
+    margin: 0 0 1.5rem;
+    line-height: 1.5;
+}
+
+.brief-bullets {
+    list-style: none;
+    margin: 0 0 1.75rem;
+    padding: 0;
+    display: grid;
+    gap: 0.9rem;
+}
+
+.brief-bullet {
+    position: relative;
+    padding-left: 1.4rem;
+    line-height: 1.5;
+    color: var(--color-text);
+}
+
+.brief-bullet::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--color-accent);
+}
+
+.brief-bullet-text {
+    font-weight: 500;
+}
+
+.brief-bullet-source {
+    display: inline-block;
+    margin-left: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+.brief-bullet-source:hover,
+.brief-bullet-source:focus-visible {
+    text-decoration: underline;
+}
+
+.brief-oped {
+    border-top: 1px solid var(--color-border);
+    padding-top: 1.5rem;
+}
+
+.brief-oped-label {
+    font-family: var(--font-secondary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin: 0 0 0.75rem;
+}
+
+.brief-oped p {
+    margin: 0 0 1rem;
+    line-height: 1.7;
+    color: var(--color-text);
+}
+
+.brief-readmore {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+.brief-readmore:hover,
+.brief-readmore:focus-visible {
+    text-decoration: underline;
+}
+
+/* Latest rail — sticky reverse-chron headlines */
+.latest-rail-inner {
+    position: sticky;
+    top: 1.5rem;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg, 1rem);
+    padding: 1.25rem;
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+}
+
+.latest-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+}
+
+.latest-filter {
+    font-family: var(--font-secondary);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.latest-filter:hover {
+    color: var(--color-text);
+    border-color: var(--color-accent);
+}
+
+.latest-filter.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #fff;
+}
+
+.latest-filter:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.latest-item.is-hidden {
+    display: none;
+}
+
+.latest-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: latest;
+}
+
+.latest-item {
+    border-bottom: 1px solid var(--color-border);
+}
+
+.latest-item:last-child {
+    border-bottom: none;
+}
+
+.latest-link {
+    display: block;
+    padding: 0.7rem 0;
+    text-decoration: none;
+    color: var(--color-text);
+}
+
+.latest-link:hover .latest-title,
+.latest-link:focus-visible .latest-title {
+    color: var(--color-accent);
+}
+
+.latest-title {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-bottom: 0.3rem;
+}
+
+.latest-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+}
+
+.latest-source {
+    font-weight: 600;
+}
+
+@media (max-width: 900px) {
+    .brief-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .latest-rail-inner {
+        position: static;
+        max-height: none;
+    }
+}
+
 /* ===== MAIN CONTENT GRID (Top Stories + Influencer Sidebar) ===== */
 .main-content-grid {
     display: grid;

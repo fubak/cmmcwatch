@@ -270,6 +270,230 @@ class TestWebsiteBuilder:
         # Should not crash
         assert builder.grouped_trends == {}
 
+    def _news_trends(self, n=11):
+        return [
+            {
+                "title": f"Story {i} on CMMC",
+                "source": "cmmc_rss_fedscoop",
+                "url": f"https://example.com/{i}",
+                "description": f"Summary for story {i}.",
+                "category": "cmmc_program",
+                "timestamp": f"2026-05-{10 + i} 12:00:00",
+            }
+            for i in range(n)
+        ]
+
+    def test_latest_rail_excludes_reddit_and_linkedin(self):
+        """The Latest rail should only contain professional news sources."""
+        trends = self._news_trends(5) + [
+            {
+                "title": "Reddit",
+                "source": "reddit_cmmc",
+                "url": "https://reddit.com/x",
+                "timestamp": "2026-05-28 09:00:00",
+            },
+            {
+                "title": "LinkedIn",
+                "source": "cmmc_linkedin",
+                "url": "https://linkedin.com/x",
+                "timestamp": "2026-05-28 09:00:00",
+            },
+        ]
+        ctx = BuildContext(trends=trends, images=[], design={}, keywords=[])
+        latest = WebsiteBuilder(ctx)._get_latest_stories()
+        urls = [s["url"] for s in latest]
+        assert "https://reddit.com/x" not in urls
+        assert "https://linkedin.com/x" not in urls
+        assert len(latest) == 5
+
+    def test_latest_rail_sorts_iso_timestamps(self):
+        """Pipeline stores timestamps via datetime.isoformat() (T-separated);
+        the rail must sort those correctly, not collapse them to epoch."""
+        trends = [
+            {
+                "title": "Older",
+                "source": "cmmc_rss_fedscoop",
+                "url": "https://example.com/old",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-20T08:00:00",
+            },
+            {
+                "title": "Newest",
+                "source": "cmmc_rss_nextgov",
+                "url": "https://example.com/new",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-28T18:30:00",
+            },
+            {
+                "title": "Middle",
+                "source": "cmmc_rss_securityweek",
+                "url": "https://example.com/mid",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-24T12:00:00",
+            },
+        ]
+        latest = WebsiteBuilder(BuildContext(trends=trends, images=[], design={}, keywords=[]))._get_latest_stories()
+        assert [s["title"] for s in latest] == ["Newest", "Middle", "Older"]
+
+    def test_latest_rail_sorts_mixed_naive_and_aware_timestamps(self):
+        """Aware (with offset) and naive timestamps must not raise when compared."""
+        trends = [
+            {
+                "title": "Aware",
+                "source": "cmmc_rss_fedscoop",
+                "url": "https://example.com/a",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-28T18:00:00+00:00",
+            },
+            {
+                "title": "Naive",
+                "source": "cmmc_rss_nextgov",
+                "url": "https://example.com/b",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-27T18:00:00",
+            },
+        ]
+        latest = WebsiteBuilder(BuildContext(trends=trends, images=[], design={}, keywords=[]))._get_latest_stories()
+        assert [s["title"] for s in latest] == ["Aware", "Naive"]
+
+    def test_latest_rail_sorted_recent_first_and_deduped(self):
+        trends = self._news_trends(5)
+        trends.append(dict(trends[0]))  # duplicate URL
+        ctx = BuildContext(trends=trends, images=[], design={}, keywords=[])
+        latest = WebsiteBuilder(ctx)._get_latest_stories()
+        timestamps = [s["timestamp"] for s in latest]
+        assert timestamps == sorted(timestamps, reverse=True)
+        assert len(latest) == len({s["url"] for s in latest})
+
+    def test_latest_categories_distinct_in_order(self):
+        trends = [
+            {
+                "title": "A",
+                "source": "cmmc_rss_fedscoop",
+                "url": "https://e.com/1",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-28 12:00:00",
+            },
+            {
+                "title": "B",
+                "source": "cmmc_rss_nextgov",
+                "url": "https://e.com/2",
+                "category": "nist_compliance",
+                "timestamp": "2026-05-27 12:00:00",
+            },
+            {
+                "title": "C",
+                "source": "cmmc_rss_securityweek",
+                "url": "https://e.com/3",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-26 12:00:00",
+            },
+        ]
+        builder = WebsiteBuilder(BuildContext(trends=trends, images=[], design={}, keywords=[]))
+        cats = builder._latest_categories(builder._get_latest_stories())
+        keys = [c["key"] for c in cats]
+        assert keys == ["cmmc_program", "nist_compliance"]
+        labels = {c["key"]: c["label"] for c in cats}
+        assert labels["cmmc_program"] == "CMMC"
+        assert labels["nist_compliance"] == "NIST"
+
+    def test_latest_filter_chips_render_when_multiple_categories(self):
+        trends = [
+            {
+                "title": "A",
+                "source": "cmmc_rss_fedscoop",
+                "url": "https://example.com/1",
+                "description": "desc a",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-28 12:00:00",
+            },
+            {
+                "title": "B",
+                "source": "cmmc_rss_nextgov",
+                "url": "https://example.com/2",
+                "description": "desc b",
+                "category": "nist_compliance",
+                "timestamp": "2026-05-27 12:00:00",
+            },
+        ]
+        html = WebsiteBuilder(BuildContext(trends=trends, images=[], design={}, keywords=[])).build()
+        assert 'class="latest-filters"' in html
+        assert 'data-filter="all"' in html
+        assert 'data-filter="cmmc_program"' in html
+        assert 'data-filter="nist_compliance"' in html
+
+    def test_latest_filter_chips_absent_with_single_category(self):
+        html = WebsiteBuilder(BuildContext(trends=self._news_trends(), images=[], design={}, keywords=[])).build()
+        # _news_trends() are all cmmc_program -> only one category -> no filter bar
+        assert 'class="latest-filters"' not in html
+
+    def test_motion_layer_present(self):
+        """Motion/interaction layer hooks and CSS are inlined into the page."""
+        html = WebsiteBuilder(BuildContext(trends=self._news_trends(), images=[], design={}, keywords=[])).build()
+        # Structural hooks
+        assert 'id="scroll-progress"' in html
+        assert 'class="hero-aurora"' in html
+        assert "data-countup=" in html
+        # Inlined motion CSS + reduced-motion guard
+        assert "auroraDrift" in html
+        assert "prefers-reduced-motion" in html
+        # JS module wired in
+        assert "navigator.vibrate" in html
+
+    def test_brief_grid_renders_with_brief(self):
+        ctx = BuildContext(
+            trends=self._news_trends(),
+            images=[],
+            design={"color_accent": "#6366f1"},
+            keywords=["cmmc"],
+            front_page_brief={
+                "headline": "DoD Tightens CMMC Timeline",
+                "dek": "Contractors face a faster path.",
+                "bullets": [
+                    {
+                        "text": "New rule accelerates rollout.",
+                        "source_name": "Fedscoop",
+                        "source_url": "https://example.com/1",
+                        "source_title": "Story 1",
+                    }
+                ],
+                "op_ed_paragraphs": ["Analysis paragraph one.", "Analysis paragraph two."],
+                "date": "2026-05-28",
+            },
+        )
+        html = WebsiteBuilder(ctx).build()
+        assert 'class="brief-grid' in html
+        assert "DoD Tightens CMMC Timeline" in html
+        assert "New rule accelerates rollout." in html
+        assert "Analysis paragraph one." in html
+        assert 'class="latest-rail"' in html
+
+    def test_brief_grid_fallback_header_without_brief(self):
+        """With no brief but with stories, the Latest rail still renders and no crash."""
+        ctx = BuildContext(trends=self._news_trends(), images=[], design={}, keywords=[])
+        html = WebsiteBuilder(ctx).build()
+        assert 'class="latest-rail"' in html
+        assert "Latest CMMC &amp; Compliance News" in html
+
+    def test_brief_op_ed_is_escaped(self):
+        """Op-ed paragraphs are plain text and must be HTML-escaped (no raw tags)."""
+        ctx = BuildContext(
+            trends=self._news_trends(),
+            images=[],
+            design={},
+            keywords=[],
+            front_page_brief={
+                "headline": "H",
+                "dek": "",
+                "bullets": [{"text": "t", "source_name": "s", "source_url": "https://e.com/1", "source_title": "t"}],
+                "op_ed_paragraphs": ["<script>alert(1)</script>"],
+                "date": "2026-05-28",
+            },
+        )
+        html = WebsiteBuilder(ctx).build()
+        assert "<script>alert(1)</script>" not in html
+        assert "&lt;script&gt;" in html
+
     def test_page_title_generation(self, basic_context):
         """Test that page title is SEO-optimized."""
         builder = WebsiteBuilder(basic_context)

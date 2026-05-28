@@ -118,6 +118,7 @@ class CMMCWatchPipeline:
         self.design = None
         self.keywords = []
         self.editorial_article = None
+        self.front_page_brief = None
 
     def run(self, archive: bool = True, dry_run: bool = False) -> bool:
         """Run the complete pipeline."""
@@ -298,6 +299,19 @@ class CMMCWatchPipeline:
             logger.exception("Editorial generation failed")
             self.editorial_article = None
 
+        # Front-page brief (always returns a brief; falls back to top stories on failure)
+        try:
+            self.front_page_brief = self.editorial_generator.generate_front_page_brief(
+                trends=_to_dict_list(self.trends[:20]),
+                keywords=self.keywords,
+                design=self.design,
+            )
+            if self.front_page_brief:
+                logger.info(f"Front-page brief generated: {len(self.front_page_brief.bullets)} bullets")
+        except Exception:
+            logger.exception("Front-page brief generation failed")
+            self.front_page_brief = None
+
     def _build_website(self):
         """Build the main HTML website."""
         from build_website import BuildContext, WebsiteBuilder
@@ -308,6 +322,7 @@ class CMMCWatchPipeline:
             design=self.design,
             keywords=self.keywords,
             editorial_article=(_to_dict(self.editorial_article) if self.editorial_article else None),
+            front_page_brief=(_to_dict(self.front_page_brief) if self.front_page_brief else None),
         )
 
         builder = WebsiteBuilder(context)

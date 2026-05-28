@@ -57,6 +57,7 @@ class BuildContext:
     why_this_matters: Optional[List[Dict]] = None
     yesterday_trends: Optional[List[Dict]] = None
     editorial_article: Optional[Dict] = None
+    front_page_brief: Optional[Dict] = None
     keyword_history: Optional[Dict] = None
     generated_at: str = ""
 
@@ -452,6 +453,88 @@ class WebsiteBuilder:
             groups[category].append(trend)
 
         return dict(groups)
+
+    def _get_latest_stories(self, limit: int = 30) -> List[Dict]:
+        """Reverse-chronological feed of professional news stories for the 'Latest' rail.
+
+        Excludes Reddit and LinkedIn (they have their own sections) and dedupes by
+        URL. Trends are already enriched (time_ago, source_display, category) by
+        _group_trends during init. Does NOT touch _used_urls, since the rail is a
+        cross-cutting index whose items may also appear in other sections.
+        """
+
+        epoch = datetime(1970, 1, 1)
+
+        def get_timestamp(story: Dict) -> datetime:
+            # Prefer timestamp_iso (normalized to ISO by _group_trends), then the
+            # raw timestamp which the pipeline stores via datetime.isoformat()
+            # (e.g. "2026-05-28T18:00:00"). Normalize to naive so aware/naive
+            # values never get compared during sort.
+            raw = story.get("timestamp_iso") or story.get("timestamp")
+            if isinstance(raw, datetime):
+                dt = raw
+            elif isinstance(raw, str) and raw:
+                try:
+                    dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+                except ValueError:
+                    try:
+                        dt = datetime.strptime(raw, "%Y-%m-%d %H:%M:%S")
+                    except ValueError:
+                        return epoch
+            else:
+                return epoch
+            if dt.tzinfo is not None:
+                dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+            return dt
+
+        candidates = [
+            t
+            for t in self.ctx.trends
+            if t.get("url")
+            and t.get("title")
+            and not self._is_reddit_source(t.get("source", ""))
+            and not self._is_linkedin_source(t.get("source", ""))
+        ]
+        candidates.sort(key=get_timestamp, reverse=True)
+
+        seen: set = set()
+        latest: List[Dict] = []
+        for story in candidates:
+            url = story.get("url")
+            if url in seen:
+                continue
+            seen.add(url)
+            latest.append(story)
+            if len(latest) >= limit:
+                break
+        return latest
+
+    # Short chip labels for the Latest-rail category filter
+    LATEST_FILTER_LABELS = {
+        "cmmc_program": "CMMC",
+        "nist_compliance": "NIST",
+        "defense_industrial_base": "DIB",
+        "federal_cybersecurity": "Federal",
+        "intelligence_threats": "Intel",
+        "insider_threats": "Insider",
+    }
+
+    def _latest_categories(self, latest_stories: List[Dict]) -> List[Dict]:
+        """Distinct categories present in the Latest rail, in order of appearance.
+
+        Returns dicts of {"key", "label"} for filter chips. Only categories that
+        actually appear in the rail are included.
+        """
+        ordered: List[Dict] = []
+        seen: set = set()
+        for story in latest_stories:
+            key = story.get("category")
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            label = self.LATEST_FILTER_LABELS.get(key, key.replace("_", " ").title())
+            ordered.append({"key": key, "label": label})
+        return ordered
 
     def _select_top_stories(self) -> List[Dict]:
         """
@@ -1407,6 +1490,9 @@ class WebsiteBuilder:
         top_stories = self._select_top_stories()
         # 3. Categories (excludes all already-used URLs)
         categories = self._prepare_categories()
+        # 4. Latest rail (cross-cutting index; does not consume _used_urls)
+        latest_stories = self._get_latest_stories()
+        latest_categories = self._latest_categories(latest_stories)
 
         # Build context variables for the template
         render_context = {
@@ -1450,6 +1536,9 @@ class WebsiteBuilder:
             # Content (pre-computed above for proper deduplication order)
             "hero_story": hero_story,
             "top_stories": top_stories,
+            "front_page_brief": self.ctx.front_page_brief,
+            "latest_stories": latest_stories,
+            "latest_categories": latest_categories,
             "trends": self.ctx.trends,
             "reddit_stories": self._get_reddit_stories(),
             "linkedin_stories": linkedin_stories,

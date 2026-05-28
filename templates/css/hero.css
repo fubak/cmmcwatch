@@ -11,6 +11,29 @@
     background: var(--hero-bg); /* Dynamic background from design spec */
 }
 
+/* Slim hero: site identity band, not a single-story splash */
+.hero--slim {
+    min-height: auto;
+    padding: 3rem 2rem 2.25rem;
+}
+
+.hero--slim .hero-content {
+    text-align: center;
+}
+
+.hero--slim h1 {
+    font-size: clamp(1.4rem, 3vw, 2.1rem);
+    margin-bottom: 0.75rem;
+}
+
+.hero--slim .hero-subtitle {
+    margin: 0 auto 1.25rem;
+}
+
+.hero--slim .hero-meta {
+    justify-content: center;
+}
+
 .hero::before { /* Image overlay */
     content: '';
     position: absolute;

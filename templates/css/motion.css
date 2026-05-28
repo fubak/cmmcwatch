@@ -1,0 +1,305 @@
+/* ===== MOTION & MODERN DESIGN LAYER =====
+   Bold, energetic interactions layered on top of the daily AI design.
+   Everything here adapts to the current palette via CSS vars and is
+   fully neutralized under prefers-reduced-motion. */
+
+/* ---- Scroll progress bar ---- */
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0;
+    z-index: 1000;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-secondary));
+    box-shadow: 0 0 12px var(--color-accent);
+    transition: width 90ms linear;
+    pointer-events: none;
+}
+
+/* ---- Scroll reveal ---- */
+.reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+        opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1),
+        transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+    will-change: opacity, transform;
+}
+
+.reveal.in {
+    opacity: 1;
+    transform: none;
+}
+
+/* ---- Ripple (tactile click feedback) ---- */
+.ripple-host {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+    pointer-events: none;
+    animation: rippleExpand 0.6s ease-out forwards;
+}
+
+@keyframes rippleExpand {
+    to {
+        transform: scale(2.6);
+        opacity: 0;
+    }
+}
+
+/* ---- Aurora hero background ---- */
+.hero-aurora {
+    position: absolute;
+    inset: -25%;
+    z-index: 0;
+    pointer-events: none;
+    filter: blur(70px);
+    opacity: 0.55;
+    background:
+        radial-gradient(38% 50% at 18% 28%, var(--color-accent) 0%, transparent 60%),
+        radial-gradient(34% 44% at 82% 18%, var(--color-accent-secondary) 0%, transparent 60%),
+        radial-gradient(46% 56% at 62% 82%, var(--color-accent) 0%, transparent 60%);
+    background-size: 180% 180%;
+    animation: auroraDrift 20s ease-in-out infinite alternate;
+}
+
+@keyframes auroraDrift {
+    0% {
+        background-position: 0% 0%, 100% 0%, 50% 100%;
+    }
+    100% {
+        background-position: 100% 50%, 0% 100%, 50% 0%;
+    }
+}
+
+.hero--slim .hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* Animated gradient headline (decorative, large text over dark overlay) */
+.hero--slim h1 {
+    background: linear-gradient(110deg, #ffffff 0%, var(--color-accent) 58%, var(--color-accent-secondary) 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    text-shadow: none;
+    animation: textShine 9s linear infinite;
+}
+
+@keyframes textShine {
+    to {
+        background-position: 220% center;
+    }
+}
+
+/* ---- Card lift + glow + image zoom ---- */
+.story-card {
+    transition:
+        transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 0.4s ease,
+        border-color 0.4s ease;
+}
+
+.story-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 44px -14px color-mix(in srgb, var(--color-accent) 50%, transparent);
+    border-color: color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
+}
+
+.story-media {
+    overflow: hidden;
+}
+
+.story-image {
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.story-card:hover .story-image {
+    transform: scale(1.06);
+}
+
+/* Pointer-tracking sheen on the brief + featured card */
+.daily-brief,
+.story-card.featured {
+    position: relative;
+    isolation: isolate;
+}
+
+.daily-brief::before,
+.story-card.featured::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    background: radial-gradient(
+        520px circle at var(--mx, 50%) var(--my, 50%),
+        color-mix(in srgb, var(--color-accent) 22%, transparent),
+        transparent 45%
+    );
+}
+
+.daily-brief:hover::before,
+.story-card.featured:hover::before {
+    opacity: 1;
+}
+
+/* ---- Section title accent underline ---- */
+.section-title {
+    position: relative;
+}
+
+.section-title::after {
+    content: "";
+    display: block;
+    height: 3px;
+    width: 48px;
+    margin-top: 0.45rem;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-secondary));
+}
+
+/* ---- Brief eyebrow gradient accent ---- */
+.brief-eyebrow {
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+/* ---- Gradient / springy controls ---- */
+.hero-cta,
+.latest-filter.active,
+.reading-button.active,
+.tab-button.active {
+    background-image: linear-gradient(120deg, var(--color-accent), var(--color-accent-secondary));
+    border-color: transparent;
+    color: #fff;
+}
+
+.latest-filter,
+.reading-button,
+.tab-button,
+.hero-cta,
+.save-btn,
+.share-btn,
+.brief-readmore,
+.brief-bullet-source {
+    transition:
+        transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.latest-filter:active,
+.reading-button:active,
+.tab-button:active,
+.hero-cta:active,
+.save-btn:active,
+.share-btn:active {
+    transform: scale(0.94);
+}
+
+/* Latest rail row nudge on hover */
+.latest-link {
+    transition:
+        transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+        color 0.2s ease;
+}
+
+.latest-item:hover .latest-link {
+    transform: translateX(5px);
+}
+
+/* Save button celebratory pop */
+.save-btn.saved {
+    color: var(--color-accent);
+    animation: savedPop 0.4s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+@keyframes savedPop {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.3);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Count-up stat emphasis */
+.stat-countup {
+    font-weight: 700;
+    color: var(--color-accent);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- Respect reduced-motion: strip the kinetics, keep the styling ---- */
+@media (prefers-reduced-motion: reduce) {
+    .scroll-progress {
+        transition: none;
+    }
+
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+
+    .ripple {
+        display: none;
+    }
+
+    .hero-aurora {
+        animation: none;
+    }
+
+    .hero--slim h1 {
+        animation: none;
+    }
+
+    .story-card,
+    .story-image,
+    .latest-link,
+    .hero-cta,
+    .latest-filter,
+    .reading-button,
+    .tab-button,
+    .save-btn,
+    .share-btn {
+        transition: none;
+    }
+
+    .story-card:hover {
+        transform: none;
+    }
+
+    .story-card:hover .story-image {
+        transform: none;
+    }
+
+    .latest-item:hover .latest-link {
+        transform: none;
+    }
+
+    .save-btn.saved {
+        animation: none;
+    }
+}
