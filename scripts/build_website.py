@@ -411,17 +411,12 @@ class WebsiteBuilder:
             # Set display-friendly source name
             trend["source_display"] = self._get_source_display_name(source)
 
-            # Format timestamp for display
+            # Format timestamp for display (shared parser → naive UTC)
             ts = None
             if trend.get("timestamp"):
-                ts_raw = trend["timestamp"]
-                if isinstance(ts_raw, str):
-                    try:
-                        ts = datetime.fromisoformat(ts_raw.replace("Z", "+00:00"))
-                    except ValueError:
-                        ts = None
-                elif isinstance(ts_raw, datetime):
-                    ts = ts_raw
+                parsed = self._parse_story_timestamp(trend)
+                if parsed != datetime(1970, 1, 1):
+                    ts = parsed
 
             if ts:
                 # Store ISO format for datetime attribute
@@ -429,8 +424,6 @@ class WebsiteBuilder:
 
                 # Calculate time ago with better formatting
                 now = datetime.now()
-                if ts.tzinfo:
-                    now = datetime.now(ts.tzinfo)
                 diff = now - ts
                 hours = int(diff.total_seconds() / 3600)
                 days = int(diff.total_seconds() / 86400)
@@ -454,6 +447,34 @@ class WebsiteBuilder:
 
         return dict(groups)
 
+    @staticmethod
+    def _parse_story_timestamp(story: Dict) -> datetime:
+        """Parse a story timestamp to a naive (UTC) datetime; epoch on failure.
+
+        Prefers ``timestamp_iso`` (normalized by ``_group_trends``), then the raw
+        ``timestamp`` the pipeline stores via ``datetime.isoformat()`` (e.g.
+        ``"2026-05-28T18:00:00"``, sometimes timezone-aware). Aware values are
+        converted to naive UTC so naive/aware datetimes are never compared during
+        sorting. Shared by ``_group_trends``, ``_select_top_stories``, and
+        ``_get_latest_stories`` so they all parse timestamps identically.
+        """
+        raw = story.get("timestamp_iso") or story.get("timestamp")
+        if isinstance(raw, datetime):
+            dt = raw
+        elif isinstance(raw, str) and raw:
+            try:
+                dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+            except ValueError:
+                try:
+                    dt = datetime.strptime(raw, "%Y-%m-%d %H:%M:%S")
+                except ValueError:
+                    return datetime(1970, 1, 1)
+        else:
+            return datetime(1970, 1, 1)
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return dt
+
     def _get_latest_stories(self, limit: int = 30) -> List[Dict]:
         """Reverse-chronological feed of professional news stories for the 'Latest' rail.
 
@@ -462,31 +483,6 @@ class WebsiteBuilder:
         _group_trends during init. Does NOT touch _used_urls, since the rail is a
         cross-cutting index whose items may also appear in other sections.
         """
-
-        epoch = datetime(1970, 1, 1)
-
-        def get_timestamp(story: Dict) -> datetime:
-            # Prefer timestamp_iso (normalized to ISO by _group_trends), then the
-            # raw timestamp which the pipeline stores via datetime.isoformat()
-            # (e.g. "2026-05-28T18:00:00"). Normalize to naive so aware/naive
-            # values never get compared during sort.
-            raw = story.get("timestamp_iso") or story.get("timestamp")
-            if isinstance(raw, datetime):
-                dt = raw
-            elif isinstance(raw, str) and raw:
-                try:
-                    dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
-                except ValueError:
-                    try:
-                        dt = datetime.strptime(raw, "%Y-%m-%d %H:%M:%S")
-                    except ValueError:
-                        return epoch
-            else:
-                return epoch
-            if dt.tzinfo is not None:
-                dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
-            return dt
-
         candidates = [
             t
             for t in self.ctx.trends
@@ -495,7 +491,7 @@ class WebsiteBuilder:
             and not self._is_reddit_source(t.get("source", ""))
             and not self._is_linkedin_source(t.get("source", ""))
         ]
-        candidates.sort(key=get_timestamp, reverse=True)
+        candidates.sort(key=self._parse_story_timestamp, reverse=True)
 
         seen: set = set()
         latest: List[Dict] = []
@@ -561,12 +557,7 @@ class WebsiteBuilder:
         source_counts = defaultdict(int)
         MAX_PER_SOURCE = 2
 
-        def get_timestamp(story: Dict) -> datetime:
-            """Parse story timestamp, return epoch if invalid."""
-            try:
-                return datetime.strptime(story.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
-            except (ValueError, TypeError):
-                return datetime(1970, 1, 1)
+        get_timestamp = self._parse_story_timestamp
 
         def is_from_today(story: Dict) -> bool:
             """Check if story is from today."""
@@ -804,11 +795,7 @@ class WebsiteBuilder:
         today = now.date()
         day_of_year = today.timetuple().tm_yday  # Use for rotation
 
-        def get_timestamp(story: Dict) -> datetime:
-            try:
-                return datetime.strptime(story.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
-            except (ValueError, TypeError):
-                return datetime(1970, 1, 1)
+        get_timestamp = self._parse_story_timestamp
 
         # Filter for non-Reddit, CMMC-relevant stories
         relevant_stories = []

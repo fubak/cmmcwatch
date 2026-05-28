@@ -356,6 +356,64 @@ class TestWebsiteBuilder:
         latest = WebsiteBuilder(BuildContext(trends=trends, images=[], design={}, keywords=[]))._get_latest_stories()
         assert [s["title"] for s in latest] == ["Aware", "Naive"]
 
+    def test_parse_story_timestamp_formats(self):
+        parse = WebsiteBuilder._parse_story_timestamp
+        from datetime import datetime as _dt
+
+        # ISO with T (how the pipeline stores them)
+        assert parse({"timestamp": "2026-05-28T18:30:00"}) == _dt(2026, 5, 28, 18, 30, 0)
+        # ISO with timezone offset -> normalized to naive UTC
+        assert parse({"timestamp": "2026-05-28T18:30:00+02:00"}) == _dt(2026, 5, 28, 16, 30, 0)
+        # Trailing Z
+        assert parse({"timestamp": "2026-05-28T18:30:00Z"}) == _dt(2026, 5, 28, 18, 30, 0)
+        # Legacy space-separated format
+        assert parse({"timestamp": "2026-05-28 18:30:00"}) == _dt(2026, 5, 28, 18, 30, 0)
+        # datetime instance passes through
+        assert parse({"timestamp": _dt(2026, 5, 28, 18, 30, 0)}) == _dt(2026, 5, 28, 18, 30, 0)
+        # timestamp_iso preferred over raw timestamp
+        assert parse({"timestamp_iso": "2026-05-28T18:30:00", "timestamp": "garbage"}) == _dt(2026, 5, 28, 18, 30, 0)
+        # Missing / unparseable -> epoch
+        assert parse({}) == _dt(1970, 1, 1)
+        assert parse({"timestamp": "not-a-date"}) == _dt(1970, 1, 1)
+
+    def test_top_stories_recency_with_iso_timestamps(self):
+        """Regression for #12: ISO timestamps must drive recency, not collapse to
+        epoch (which forced rotation-fallback and arbitrary ordering)."""
+        from datetime import datetime, timedelta
+
+        now = datetime.now()
+        trends = [
+            # input ordered oldest-first; with the bug the stable sort kept this order
+            {
+                "title": "CMMC old story",
+                "source": "cmmc_rss_fedscoop",
+                "url": "https://example.com/old",
+                "description": "old",
+                "category": "cmmc_program",
+                "timestamp": (now - timedelta(days=20)).isoformat(),
+            },
+            {
+                "title": "CMMC mid story",
+                "source": "cmmc_rss_nextgov",
+                "url": "https://example.com/mid",
+                "description": "mid",
+                "category": "cmmc_program",
+                "timestamp": (now - timedelta(days=10)).isoformat(),
+            },
+            {
+                "title": "CMMC newest story today",
+                "source": "cmmc_rss_securityweek",
+                "url": "https://example.com/new",
+                "description": "new",
+                "category": "cmmc_program",
+                "timestamp": (now - timedelta(minutes=30)).isoformat(),
+            },
+        ]
+        top = WebsiteBuilder(BuildContext(trends=trends, images=[], design={}, keywords=["cmmc"]))._select_top_stories()
+        assert top, "expected top stories to be selected"
+        # The most-recent (today) story should lead, not trail.
+        assert top[0]["url"] == "https://example.com/new"
+
     def test_latest_rail_sorted_recent_first_and_deduped(self):
         trends = self._news_trends(5)
         trends.append(dict(trends[0]))  # duplicate URL
