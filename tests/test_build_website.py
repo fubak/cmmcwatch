@@ -276,6 +276,7 @@ class TestWebsiteBuilder:
                 "title": f"Story {i} on CMMC",
                 "source": "cmmc_rss_fedscoop",
                 "url": f"https://example.com/{i}",
+                "description": f"Summary for story {i}.",
                 "category": "cmmc_program",
                 "timestamp": f"2026-05-{10 + i} 12:00:00",
             }
@@ -313,6 +314,68 @@ class TestWebsiteBuilder:
         timestamps = [s["timestamp"] for s in latest]
         assert timestamps == sorted(timestamps, reverse=True)
         assert len(latest) == len({s["url"] for s in latest})
+
+    def test_latest_categories_distinct_in_order(self):
+        trends = [
+            {
+                "title": "A",
+                "source": "cmmc_rss_fedscoop",
+                "url": "https://e.com/1",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-28 12:00:00",
+            },
+            {
+                "title": "B",
+                "source": "cmmc_rss_nextgov",
+                "url": "https://e.com/2",
+                "category": "nist_compliance",
+                "timestamp": "2026-05-27 12:00:00",
+            },
+            {
+                "title": "C",
+                "source": "cmmc_rss_securityweek",
+                "url": "https://e.com/3",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-26 12:00:00",
+            },
+        ]
+        builder = WebsiteBuilder(BuildContext(trends=trends, images=[], design={}, keywords=[]))
+        cats = builder._latest_categories(builder._get_latest_stories())
+        keys = [c["key"] for c in cats]
+        assert keys == ["cmmc_program", "nist_compliance"]
+        labels = {c["key"]: c["label"] for c in cats}
+        assert labels["cmmc_program"] == "CMMC"
+        assert labels["nist_compliance"] == "NIST"
+
+    def test_latest_filter_chips_render_when_multiple_categories(self):
+        trends = [
+            {
+                "title": "A",
+                "source": "cmmc_rss_fedscoop",
+                "url": "https://example.com/1",
+                "description": "desc a",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-28 12:00:00",
+            },
+            {
+                "title": "B",
+                "source": "cmmc_rss_nextgov",
+                "url": "https://example.com/2",
+                "description": "desc b",
+                "category": "nist_compliance",
+                "timestamp": "2026-05-27 12:00:00",
+            },
+        ]
+        html = WebsiteBuilder(BuildContext(trends=trends, images=[], design={}, keywords=[])).build()
+        assert 'class="latest-filters"' in html
+        assert 'data-filter="all"' in html
+        assert 'data-filter="cmmc_program"' in html
+        assert 'data-filter="nist_compliance"' in html
+
+    def test_latest_filter_chips_absent_with_single_category(self):
+        html = WebsiteBuilder(BuildContext(trends=self._news_trends(), images=[], design={}, keywords=[])).build()
+        # _news_trends() are all cmmc_program -> only one category -> no filter bar
+        assert 'class="latest-filters"' not in html
 
     def test_brief_grid_renders_with_brief(self):
         ctx = BuildContext(

@@ -255,6 +255,26 @@
                 });
             }
 
+            // Latest-rail category filter
+            const latestFilters = document.querySelectorAll('.latest-filter');
+            if (latestFilters.length) {
+                const latestItems = document.querySelectorAll('.latest-item');
+                latestFilters.forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        const filter = btn.dataset.filter;
+                        latestFilters.forEach((b) => {
+                            const active = b === btn;
+                            b.classList.toggle('active', active);
+                            b.setAttribute('aria-pressed', active ? 'true' : 'false');
+                        });
+                        latestItems.forEach((item) => {
+                            const show = filter === 'all' || item.dataset.category === filter;
+                            item.classList.toggle('is-hidden', !show);
+                        });
+                    });
+                });
+            }
+
             // Save and Share actions
             const savedKey = 'cmmcwatch_saved';
             const saveButtons = document.querySelectorAll('.save-btn');

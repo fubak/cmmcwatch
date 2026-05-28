@@ -491,6 +491,33 @@ class WebsiteBuilder:
                 break
         return latest
 
+    # Short chip labels for the Latest-rail category filter
+    LATEST_FILTER_LABELS = {
+        "cmmc_program": "CMMC",
+        "nist_compliance": "NIST",
+        "defense_industrial_base": "DIB",
+        "federal_cybersecurity": "Federal",
+        "intelligence_threats": "Intel",
+        "insider_threats": "Insider",
+    }
+
+    def _latest_categories(self, latest_stories: List[Dict]) -> List[Dict]:
+        """Distinct categories present in the Latest rail, in order of appearance.
+
+        Returns dicts of {"key", "label"} for filter chips. Only categories that
+        actually appear in the rail are included.
+        """
+        ordered: List[Dict] = []
+        seen: set = set()
+        for story in latest_stories:
+            key = story.get("category")
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            label = self.LATEST_FILTER_LABELS.get(key, key.replace("_", " ").title())
+            ordered.append({"key": key, "label": label})
+        return ordered
+
     def _select_top_stories(self) -> List[Dict]:
         """
         Select top stories prioritizing CMMC-relevant content and recency.
@@ -1445,6 +1472,9 @@ class WebsiteBuilder:
         top_stories = self._select_top_stories()
         # 3. Categories (excludes all already-used URLs)
         categories = self._prepare_categories()
+        # 4. Latest rail (cross-cutting index; does not consume _used_urls)
+        latest_stories = self._get_latest_stories()
+        latest_categories = self._latest_categories(latest_stories)
 
         # Build context variables for the template
         render_context = {
@@ -1489,7 +1519,8 @@ class WebsiteBuilder:
             "hero_story": hero_story,
             "top_stories": top_stories,
             "front_page_brief": self.ctx.front_page_brief,
-            "latest_stories": self._get_latest_stories(),
+            "latest_stories": latest_stories,
+            "latest_categories": latest_categories,
             "trends": self.ctx.trends,
             "reddit_stories": self._get_reddit_stories(),
             "linkedin_stories": linkedin_stories,

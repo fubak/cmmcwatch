@@ -1,29 +1,17 @@
 {% extends "base.html" %}
 
 {% block hero %}
-<header class="hero">
+<header class="hero hero--slim">
     <div class="hero-content">
-        {% if design.theme_name %}
         <div class="hero-eyebrow">
-            <span>•</span> {{ design.theme_name }} Mode
+            <span>•</span> Daily CMMC &amp; Compliance Briefing
         </div>
-        {% endif %}
-        
-        <h1>{{ hero_story.title }}</h1>
-        
+
+        <h1>The latest in CMMC, NIST 800-171 &amp; the Defense Industrial Base</h1>
+
+        {% if design.subheadline %}
         <p class="hero-subtitle">{{ design.subheadline }}</p>
-        
-        <div class="hero-actions">
-            {% if hero_story.url %}
-            <a href="{{ hero_story.url }}" target="_blank" rel="noopener" class="hero-cta" aria-label="Read full story: {{ hero_story.title }}">Read Story</a>
-            {% endif %}
-            {% if design.story_capsules %}
-            <div class="hero-capsule">
-                <span style="color: var(--color-accent)">Trending:</span> 
-                {{ design.story_capsules[0] }}
-            </div>
-            {% endif %}
-        </div>
+        {% endif %}
 
         <div class="hero-meta">
             <span>{{ date_str }}</span>
@@ -173,6 +161,14 @@
                     <h2 id="latest-heading" class="section-title">Latest</h2>
                     <span class="section-count">{{ latest_stories|length }}</span>
                 </div>
+                {% if latest_categories|length > 1 %}
+                <div class="latest-filters" role="group" aria-label="Filter latest news by category">
+                    <button type="button" class="latest-filter active" data-filter="all" aria-pressed="true">All</button>
+                    {% for cat in latest_categories %}
+                    <button type="button" class="latest-filter" data-filter="{{ cat.key }}" aria-pressed="false">{{ cat.label }}</button>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 <ol class="latest-list">
                     {% for story in latest_stories %}
                     <li class="latest-item" data-category="{{ story.category }}">
