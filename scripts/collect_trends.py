@@ -8,10 +8,11 @@ Focused sources:
 - LinkedIn posts from key CMMC influencers
 """
 
+import base64
+import binascii
+import json
 import re
 import time
-import json
-import base64
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
@@ -118,7 +119,8 @@ def parse_feed_entry_timestamp(entry: Any) -> Optional[datetime]:
         if parsed_value:
             try:
                 return datetime(*parsed_value[:6])
-            except Exception:
+            except (TypeError, ValueError) as e:
+                logger.debug(f"Could not build datetime from {parsed_key}: {e}")
                 continue
 
     for key in ("published", "updated", "created", "dc_date", "pubDate"):
@@ -149,7 +151,8 @@ class Trend:
 
     def __post_init__(self):
         parsed_timestamp = parse_timestamp(self.timestamp)
-        self.timestamp = parsed_timestamp or datetime.now()
+        # Match _normalize_datetime: store naive UTC for consistency
+        self.timestamp = parsed_timestamp or datetime.now(timezone.utc).replace(tzinfo=None)
 
         if not self.source_metadata:
             self.source_metadata = source_metadata_dict(self.source)
@@ -322,7 +325,8 @@ class TrendCollector:
                 return None
             try:
                 content = base64.b64decode(content_b64.encode("ascii"))
-            except Exception:
+            except (binascii.Error, ValueError, UnicodeEncodeError) as e:
+                logger.debug(f"Failed to decode cached base64 content: {e}")
                 return None
 
         if not isinstance(content, (bytes, bytearray)):
@@ -528,6 +532,15 @@ class TrendCollector:
                     try:
                         timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
                     except ValueError:
+                        # Both formats failed — log so we know this happened.
+                        # Trend.__post_init__ will fall back to "now", which
+                        # would otherwise silently boost stale items in
+                        # recency-weighted ranking.
+                        logger.warning(
+                            f"Unparseable timestamp from upstream: {timestamp!r}; "
+                            f"falling back to current time for {td.get('source', 'unknown')} "
+                            f"item {td.get('url', 'unknown')!r}"
+                        )
                         timestamp = None
 
             trend = Trend(
@@ -1090,7 +1103,8 @@ class TrendCollector:
         Recency boost ensures today's articles rank higher than older ones,
         even if older articles have slightly higher keyword relevance.
         """
-        now = datetime.now()
+        # Use naive UTC to match _normalize_datetime() output stored on trend.timestamp
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
 
         for trend in self.trends:
             recency_boost = 0.0

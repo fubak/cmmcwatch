@@ -410,6 +410,25 @@ def get_footer_styles() -> str:
             color: var(--color-accent);
         }
 
+        .archive-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.6rem 1rem;
+            min-height: 44px;
+            border: 1px solid var(--color-border);
+            border-radius: 0.5rem;
+            color: var(--color-text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .archive-btn:hover {
+            border-color: var(--color-accent);
+            background: rgba(99, 102, 241, 0.08);
+        }
+
         .footer-bottom {
             max-width: 1200px;
             margin: 2rem auto 0;

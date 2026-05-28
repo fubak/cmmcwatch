@@ -8,10 +8,11 @@ cohesive narratives. Articles are permanently retained (not archived).
 URL Structure: /articles/YYYY/MM/DD/slug/index.html
 """
 
+import html
 import json
-import logging
 import os
 import re
+import tempfile
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -25,7 +26,14 @@ SITE_NAME = "CMMC Watch"
 SITE_URL = "https://cmmcwatch.com"
 
 try:
+    from ai_providers import (
+        call_google_ai,
+        call_huggingface,
+        call_ollama,
+        call_openai_compatible,
+    )
     from config import setup_logging
+    from json_utils import parse_llm_json, repair_json
     from rate_limiter import (
         check_before_call,
         get_rate_limiter,
@@ -39,7 +47,14 @@ try:
         get_theme_script,
     )
 except ImportError:
+    from scripts.ai_providers import (
+        call_google_ai,
+        call_huggingface,
+        call_ollama,
+        call_openai_compatible,
+    )
     from scripts.config import setup_logging
+    from scripts.json_utils import parse_llm_json, repair_json
     from scripts.rate_limiter import (
         check_before_call,
         get_rate_limiter,
@@ -663,9 +678,29 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
         """Generate full HTML page for an editorial article."""
         date_formatted = datetime.strptime(article.date, "%Y-%m-%d").strftime("%B %d, %Y")
 
-        # Escape for HTML attributes
-        title_escaped = article.title.replace('"', "&quot;")
-        summary_escaped = article.summary.replace('"', "&quot;")
+        # Properly escape for two distinct contexts:
+        # - HTML attributes (meta og:title, twitter:title, <title>): full html.escape
+        # - JSON-LD inside <script>: json.dumps PLUS <,>,& replacement, otherwise
+        #   a payload like </script> in the value will break out of the script tag
+        #   (the HTML parser scans for </script> regardless of JSON-string context).
+        title_html = html.escape(article.title, quote=True)
+        summary_html = html.escape(article.summary, quote=True)
+
+        def _json_ld_safe(value: str) -> str:
+            # json.dumps wraps in quotes; strip outer quotes for inline use,
+            # then escape the three HTML chars that can break out of a script tag.
+            encoded = json.dumps(value)[1:-1]
+            return encoded.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+
+        title_json = _json_ld_safe(article.title)
+        summary_json = _json_ld_safe(article.summary)
+        # Pre-render keywords array so the f-string below stays backslash-free.
+        keywords_json = (
+            json.dumps(article.keywords).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+        )
+        # Backwards-compatible aliases used in attribute contexts below
+        title_escaped = title_html
+        summary_escaped = summary_html
 
         # Build related articles HTML
         related_html = ""
@@ -698,9 +733,9 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{article.title} | CMMC Watch</title>
+    <title>{title_html} | CMMC Watch</title>
     <meta name="description" content="{summary_escaped}">
-    <meta name="keywords" content="{", ".join(article.keywords)}">
+    <meta name="keywords" content="{html.escape(", ".join(article.keywords), quote=True)}">
     <link rel="canonical" href="https://cmmcwatch.com{article.url}">
 
     <!-- Open Graph -->
@@ -725,7 +760,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
     <meta name="twitter:image" content="https://cmmcwatch.com/og-image.png">
 
     <!-- Google News -->
-    <meta name="news_keywords" content="{", ".join(article.keywords[:5]) if article.keywords else "CMMC, NIST 800-171, cybersecurity, compliance"}">
+    <meta name="news_keywords" content="{html.escape(", ".join(article.keywords[:5]), quote=True) if article.keywords else "CMMC, NIST 800-171, cybersecurity, compliance"}">
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -735,8 +770,8 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
             {{
                 "@type": "NewsArticle",
                 "@id": "https://cmmcwatch.com{article.url}#article",
-                "headline": "{title_escaped}",
-                "description": "{summary_escaped}",
+                "headline": "{title_json}",
+                "description": "{summary_json}",
                 "datePublished": "{article.date}T06:00:00Z",
                 "dateModified": "{article.date}T06:00:00Z",
                 "author": {{
@@ -759,7 +794,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
                     "@id": "https://cmmcwatch.com{article.url}"
                 }},
                 "wordCount": {article.word_count},
-                "keywords": {json.dumps(article.keywords)},
+                "keywords": {keywords_json},
                 "articleSection": "Analysis",
                 "inLanguage": "en-US"
             }},
@@ -1153,12 +1188,12 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
 
         <header class="article-header">
             <div class="article-meta">
-                <time datetime="{article.date}">{date_formatted}</time>
-                <span class="mood-badge">{article.mood}</span>
+                <time datetime="{html.escape(article.date, quote=True)}">{date_formatted}</time>
+                <span class="mood-badge">{html.escape(article.mood)}</span>
                 <span>{article.word_count} words</span>
             </div>
-            <h1>{article.title}</h1>
-            <p class="article-summary">{article.summary}</p>
+            <h1>{html.escape(article.title)}</h1>
+            <p class="article-summary">{html.escape(article.summary)}</p>
         </header>
 
         <div class="article-content">
@@ -1169,12 +1204,12 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
             <div class="sources-section">
                 <h3>Stories Referenced</h3>
                 <ul>
-                    {"".join(f"<li>{story}</li>" for story in article.top_stories)}
+                    {"".join(f"<li>{html.escape(story)}</li>" for story in article.top_stories)}
                 </ul>
             </div>
 
             <div class="keywords">
-                {"".join(f'<span class="keyword">{kw}</span>' for kw in article.keywords)}
+                {"".join(f'<span class="keyword">{html.escape(kw)}</span>' for kw in article.keywords)}
             </div>
 
             {related_html}
@@ -1272,120 +1307,12 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
             return False
 
     def _call_ollama(self, prompt: str, max_tokens: int = 800) -> Optional[str]:
-        """Call local Ollama for LLM inference (free, fast, private)."""
-        try:
-            logger.info("Trying Ollama (local)...")
-            response = self.session.post(
-                f"{self.ollama_url}/api/generate",
-                json={
-                    "model": "llama3.2",
-                    "prompt": prompt,
-                    "stream": False,
-                    "options": {
-                        "num_predict": max_tokens,
-                        "temperature": 0.7,
-                    },
-                },
-                timeout=180,  # Longer timeout for editorial content
-            )
-            response.raise_for_status()
-            result = response.json().get("response", "")
-            if result:
-                logger.info("Ollama success")
-                return result
-        except Exception as e:
-            logger.info(f"Ollama not available: {e}")
-        return None
+        """Call local Ollama (delegates to shared ai_providers)."""
+        return call_ollama(prompt, max_tokens, self.session, self.ollama_url, timeout=180)
 
     def _call_google_ai(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
-        """Call Google AI (Gemini) API - primary provider with generous free tier."""
-        if not self.google_key:
-            logger.info("No Google AI API key available, skipping to next provider")
-            return None
-
-        # Check rate limits before calling
-        rate_limiter = get_rate_limiter()
-        status = check_before_call("google")
-
-        if not status.is_available:
-            logger.warning(f"Google AI not available: {status.error}")
-            return None
-
-        if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for Google AI rate limit...")
-            time.sleep(status.wait_seconds)
-
-        # Use Gemini 2.5 Flash Lite - highest RPM (10) among free models
-        model = "gemini-2.5-flash-lite"
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-
-        for attempt in range(max_retries):
-            try:
-                logger.info(f"Trying Google AI {model} (attempt {attempt + 1}/{max_retries})")
-                response = self.session.post(
-                    url,
-                    headers={
-                        "x-goog-api-key": self.google_key,
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "contents": [{"parts": [{"text": prompt}]}],
-                        "generationConfig": {
-                            "maxOutputTokens": max_tokens,
-                            "temperature": 0.7,
-                        },
-                    },
-                    timeout=60,
-                )
-                response.raise_for_status()
-
-                # Update rate limiter tracking
-                rate_limiter._last_call_time["google"] = time.time()
-
-                # Parse response
-                data = response.json()
-                candidates = data.get("candidates", [])
-                if candidates:
-                    content = candidates[0].get("content", {})
-                    parts = content.get("parts", [])
-                    if parts:
-                        text = parts[0].get("text", "")
-                        if text:
-                            logger.info(f"Google AI success with {model}")
-                            return text
-
-            except requests.exceptions.HTTPError as e:
-                if response.status_code == 429:
-                    # Check if this is a quota exhaustion (daily limit) vs temporary rate limit
-                    try:
-                        error_data = response.json()
-                        error_msg = str(error_data).lower()
-                        if "quota" in error_msg or "exhausted" in error_msg or "daily" in error_msg:
-                            # This is a quota exhaustion - mark provider as exhausted
-                            mark_provider_exhausted("google", "daily quota exceeded")
-                            return None
-                    except (ValueError, requests.exceptions.JSONDecodeError) as parse_err:
-                        logger.debug(f"Could not parse 429 error body as JSON: {parse_err}")
-
-                    # Temporary rate limit - wait and retry
-                    retry_after = response.headers.get("Retry-After", "10")
-                    try:
-                        wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
-                    except ValueError:
-                        wait_time = self.MAX_RETRY_WAIT
-                    logger.warning(
-                        f"Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
-                    )
-                    time.sleep(wait_time)
-                    continue
-                logger.error(f"Google AI failed: {e}")
-                return None
-            except Exception as e:
-                logger.error(f"Google AI failed: {e}")
-                return None
-
-        logger.warning("Google AI: Max retries exceeded")
-        return None
+        """Call Google AI Gemini (delegates to shared ai_providers)."""
+        return call_google_ai(prompt, max_tokens, max_retries, self.session, self.google_key)
 
     def _call_google_ai_structured(
         self, prompt: str, schema: dict, max_tokens: int = 4000, max_retries: int = 1
@@ -1503,527 +1430,34 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
         return None
 
     def _call_openrouter(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
-        """Call OpenRouter API with free models (primary)."""
-        if not self.openrouter_key:
-            logger.warning("No OpenRouter API key available")
-            return None
-
-        # Check rate limits before calling
-        rate_limiter = get_rate_limiter()
-        status = check_before_call("openrouter")
-
-        if not status.is_available:
-            logger.warning(f"OpenRouter not available: {status.error}")
-            return None
-
-        if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for OpenRouter rate limit...")
-            time.sleep(status.wait_seconds)
-
-        # Free models to try in order of preference
-        free_models = [
-            "meta-llama/llama-3.3-70b-instruct:free",
-            "deepseek/deepseek-r1-0528:free",
-            "google/gemma-3-27b-it:free",
-        ]
-
-        for model in free_models:
-            for attempt in range(max_retries):
-                try:
-                    logger.info(f"Trying OpenRouter {model} (attempt {attempt + 1}/{max_retries})")
-                    response = self.session.post(
-                        "https://openrouter.ai/api/v1/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {self.openrouter_key}",
-                            "Content-Type": "application/json",
-                            "HTTP-Referer": "https://cmmcwatch.com",
-                            "X-Title": "CMMC Watch",
-                        },
-                        json={
-                            "model": model,
-                            "messages": [{"role": "user", "content": prompt}],
-                            "max_tokens": max_tokens,
-                            "temperature": 0.7,
-                        },
-                        timeout=60,
-                    )
-                    response.raise_for_status()
-
-                    # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers("openrouter", dict(response.headers))
-
-                    result = response.json().get("choices", [{}])[0].get("message", {}).get("content")
-                    if result:
-                        logger.info(f"OpenRouter success with {model}")
-                        return result
-                except requests.exceptions.HTTPError as e:
-                    if response.status_code == 429:
-                        # Parse retry-after header if available
-                        retry_after = response.headers.get("Retry-After", "10")
-                        try:
-                            wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
-                        except ValueError:
-                            wait_time = self.MAX_RETRY_WAIT
-                        logger.warning(
-                            f"OpenRouter {model} rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
-                        )
-                        time.sleep(wait_time)
-                        continue
-                    logger.warning(f"OpenRouter {model} failed: {e}")
-                    break  # Try next model
-                except Exception as e:
-                    logger.warning(f"OpenRouter {model} failed: {e}")
-                    break  # Try next model
-
-        logger.warning("All OpenRouter models failed")
-        return None
+        """Call OpenRouter API (delegates to shared ai_providers)."""
+        return call_openai_compatible(
+            "openrouter", prompt, max_tokens, max_retries, self.session, api_key=self.openrouter_key
+        )
 
     def _call_groq_direct(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
-        """Call Groq API directly (fallback)."""
-        if not self.groq_key:
-            return None
-
-        # Check rate limits before calling
-        rate_limiter = get_rate_limiter()
-        status = check_before_call("groq")
-
-        if not status.is_available:
-            logger.warning(f"Groq not available: {status.error}")
-            return None
-
-        if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for Groq rate limit...")
-            time.sleep(status.wait_seconds)
-
-        # Proactive rate limiting
-        elapsed = time.time() - self._last_call_time
-        if elapsed < self.MIN_CALL_INTERVAL:
-            time.sleep(self.MIN_CALL_INTERVAL - elapsed)
-
-        for attempt in range(max_retries):
-            try:
-                self._last_call_time = time.time()
-                response = self.session.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {self.groq_key}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "model": "llama-3.3-70b-versatile",
-                        "messages": [{"role": "user", "content": prompt}],
-                        "max_tokens": max_tokens,
-                        "temperature": 0.7,
-                    },
-                    timeout=60,
-                )
-                response.raise_for_status()
-
-                # Update rate limiter from response headers
-                rate_limiter.update_from_response_headers("groq", dict(response.headers))
-
-                return response.json().get("choices", [{}])[0].get("message", {}).get("content")
-            except requests.exceptions.HTTPError as e:
-                if response.status_code == 429:
-                    # Parse retry-after header if available
-                    retry_after = response.headers.get("Retry-After", "10")
-                    try:
-                        wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
-                    except ValueError:
-                        wait_time = self.MAX_RETRY_WAIT
-                    logger.warning(f"Groq rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
-                    time.sleep(wait_time)
-                    continue
-                logger.error(f"Groq API error: {e}")
-                return None
-            except Exception as e:
-                logger.error(f"Groq API error: {e}")
-                return None
-
-        logger.warning("Groq API: Max retries exceeded")
-        return None
+        """Call Groq API (delegates to shared ai_providers)."""
+        return call_openai_compatible("groq", prompt, max_tokens, max_retries, self.session, api_key=self.groq_key)
 
     def _call_opencode(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
-        """Call OpenCode API with free models (glm-4.7-free, minimax-m2.1-free)."""
-        opencode_key = os.getenv("OPENCODE_API_KEY")
-        if not opencode_key:
-            return None
-
-        # Check rate limits before calling
-        rate_limiter = get_rate_limiter()
-        status = check_before_call("opencode")
-
-        if not status.is_available:
-            logger.warning(f"OpenCode not available: {status.error}")
-            return None
-
-        if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for OpenCode rate limit...")
-            time.sleep(status.wait_seconds)
-
-        # Proactive rate limiting
-        elapsed = time.time() - self._last_call_time
-        if elapsed < self.MIN_CALL_INTERVAL:
-            time.sleep(self.MIN_CALL_INTERVAL - elapsed)
-
-        # Free models to try in order
-        free_models = ["glm-4.7-free", "minimax-m2.1-free"]
-
-        for model in free_models:
-            for attempt in range(max_retries):
-                try:
-                    self._last_call_time = time.time()
-                    logger.info(f"Trying OpenCode {model} (attempt {attempt + 1}/{max_retries})")
-                    response = self.session.post(
-                        "https://opencode.ai/zen/v1/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {opencode_key}",
-                            "Content-Type": "application/json",
-                        },
-                        json={
-                            "model": model,
-                            "messages": [{"role": "user", "content": prompt}],
-                            "max_tokens": max_tokens,
-                            "temperature": 0.7,
-                        },
-                        timeout=60,
-                    )
-                    response.raise_for_status()
-
-                    # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers("opencode", dict(response.headers))
-                    rate_limiter._last_call_time["opencode"] = time.time()
-
-                    result = response.json().get("choices", [{}])[0].get("message", {}).get("content")
-                    if result:
-                        logger.info(f"OpenCode success with {model}")
-                        return result
-
-                except requests.exceptions.HTTPError as e:
-                    if response.status_code == 429:
-                        retry_after = response.headers.get("Retry-After", "10")
-                        try:
-                            wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
-                        except ValueError:
-                            wait_time = self.MAX_RETRY_WAIT
-                        logger.warning(
-                            f"OpenCode rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
-                        )
-                        time.sleep(wait_time)
-                        continue
-                    logger.warning(f"OpenCode API error with {model}: {e}")
-                    break  # Try next model
-                except Exception as e:
-                    logger.warning(f"OpenCode API error with {model}: {e}")
-                    break  # Try next model
-
-        logger.warning("All OpenCode models failed")
-        return None
+        """Call OpenCode API (delegates to shared ai_providers)."""
+        return call_openai_compatible("opencode", prompt, max_tokens, max_retries, self.session)
 
     def _call_huggingface(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
-        """Call Hugging Face Inference API with free models."""
-        huggingface_key = os.getenv("HUGGINGFACE_API_KEY")
-        if not huggingface_key:
-            return None
-
-        # Check rate limits before calling
-        rate_limiter = get_rate_limiter()
-        status = check_before_call("huggingface")
-
-        if not status.is_available:
-            logger.warning(f"Hugging Face not available: {status.error}")
-            return None
-
-        if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for Hugging Face rate limit...")
-            time.sleep(status.wait_seconds)
-
-        # Proactive rate limiting
-        elapsed = time.time() - self._last_call_time
-        if elapsed < self.MIN_CALL_INTERVAL:
-            time.sleep(self.MIN_CALL_INTERVAL - elapsed)
-
-        # Free models to try in order (7B models work well on free tier)
-        free_models = [
-            "mistralai/Mistral-7B-Instruct-v0.3",
-            "Qwen/Qwen2.5-7B-Instruct",
-            "microsoft/Phi-3-mini-4k-instruct",
-        ]
-
-        for model in free_models:
-            for attempt in range(max_retries):
-                try:
-                    self._last_call_time = time.time()
-                    logger.info(f"Trying Hugging Face {model} (attempt {attempt + 1}/{max_retries})")
-                    response = self.session.post(
-                        f"https://api-inference.huggingface.co/models/{model}",
-                        headers={
-                            "Authorization": f"Bearer {huggingface_key}",
-                            "Content-Type": "application/json",
-                        },
-                        json={
-                            "inputs": prompt,
-                            "parameters": {
-                                "max_new_tokens": max_tokens,
-                                "temperature": 0.7,
-                                "return_full_text": False,
-                            },
-                        },
-                        timeout=60,
-                    )
-                    response.raise_for_status()
-
-                    # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers("huggingface", dict(response.headers))
-                    rate_limiter._last_call_time["huggingface"] = time.time()
-
-                    result = response.json()
-                    if isinstance(result, list) and len(result) > 0:
-                        text = result[0].get("generated_text", "")
-                        if text:
-                            logger.info(f"Hugging Face success with {model}")
-                            return text
-
-                except requests.exceptions.HTTPError as e:
-                    if response.status_code == 429:
-                        retry_after = response.headers.get("Retry-After", "10")
-                        try:
-                            wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
-                        except ValueError:
-                            wait_time = self.MAX_RETRY_WAIT
-                        logger.warning(
-                            f"Hugging Face rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
-                        )
-                        time.sleep(wait_time)
-                        continue
-                    elif response.status_code == 503:
-                        # Model is loading, wait and retry
-                        logger.warning(f"Hugging Face model {model} is loading, waiting {self.MAX_RETRY_WAIT}s...")
-                        time.sleep(self.MAX_RETRY_WAIT)
-                        continue
-                    logger.warning(f"Hugging Face API error with {model}: {e}")
-                    break  # Try next model
-                except Exception as e:
-                    logger.warning(f"Hugging Face API error with {model}: {e}")
-                    break  # Try next model
-
-        logger.warning("All Hugging Face models failed")
-        return None
+        """Call Hugging Face Inference API (delegates to shared ai_providers)."""
+        return call_huggingface(prompt, max_tokens, max_retries, self.session)
 
     def _call_mistral(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
-        """Call Mistral AI API - high quality free tier models."""
-        mistral_key = os.getenv("MISTRAL_API_KEY")
-        if not mistral_key:
-            return None
-
-        # Check rate limits before calling
-        rate_limiter = get_rate_limiter()
-        status = check_before_call("mistral")
-
-        if not status.is_available:
-            logger.warning(f"Mistral not available: {status.error}")
-            return None
-
-        if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for Mistral rate limit...")
-            time.sleep(status.wait_seconds)
-
-        # Proactive rate limiting
-        elapsed = time.time() - self._last_call_time
-        if elapsed < self.MIN_CALL_INTERVAL:
-            time.sleep(self.MIN_CALL_INTERVAL - elapsed)
-
-        # Mistral free tier models
-        models = [
-            "mistral-small-latest",
-            "open-mistral-7b",
-        ]
-
-        for model in models:
-            for attempt in range(max_retries):
-                try:
-                    self._last_call_time = time.time()
-                    logger.info(f"Trying Mistral {model} (attempt {attempt + 1}/{max_retries})")
-                    response = self.session.post(
-                        "https://api.mistral.ai/v1/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {mistral_key}",
-                            "Content-Type": "application/json",
-                        },
-                        json={
-                            "model": model,
-                            "messages": [{"role": "user", "content": prompt}],
-                            "max_tokens": max_tokens,
-                            "temperature": 0.7,
-                        },
-                        timeout=60,
-                    )
-                    response.raise_for_status()
-
-                    # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers("mistral", dict(response.headers))
-                    rate_limiter._last_call_time["mistral"] = time.time()
-
-                    result = response.json().get("choices", [{}])[0].get("message", {}).get("content")
-                    if result:
-                        logger.info(f"Mistral success with {model}")
-                        return result
-
-                except requests.exceptions.HTTPError as e:
-                    if response.status_code == 429:
-                        retry_after = response.headers.get("Retry-After", "10")
-                        try:
-                            wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
-                        except ValueError:
-                            wait_time = self.MAX_RETRY_WAIT
-                        logger.warning(
-                            f"Mistral rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
-                        )
-                        time.sleep(wait_time)
-                        continue
-                    logger.warning(f"Mistral API error with {model}: {e}")
-                    break  # Try next model
-                except Exception as e:
-                    logger.warning(f"Mistral API error with {model}: {e}")
-                    break  # Try next model
-
-        logger.warning("All Mistral models failed")
-        return None
+        """Call Mistral API (delegates to shared ai_providers)."""
+        return call_openai_compatible("mistral", prompt, max_tokens, max_retries, self.session)
 
     def _repair_json(self, json_str: str) -> str:
-        """Attempt to repair common JSON formatting issues from LLM output."""
-        # Fix missing commas between elements (common LLM error)
-        # Pattern: }" followed by whitespace and then "{ or "[
-        json_str = re.sub(r'"\s*\n\s*"', '",\n"', json_str)
-        json_str = re.sub(r"}\s*\n\s*{", "},\n{", json_str)
-        json_str = re.sub(r"]\s*\n\s*\[", "],\n[", json_str)
-        json_str = re.sub(r'"\s*\n\s*{', '",\n{', json_str)
-        json_str = re.sub(r'}\s*\n\s*"', '},\n"', json_str)
-        json_str = re.sub(r'"\s*\n\s*\[', '",\n[', json_str)
-        json_str = re.sub(r']\s*\n\s*"', '],\n"', json_str)
-
-        # Fix missing comma after value before next key
-        # Pattern: "value" (whitespace) "key":
-        json_str = re.sub(r'"\s+("[\w]+"\s*:)', r'", \1', json_str)
-
-        # Fix trailing commas before closing brackets
-        json_str = re.sub(r",\s*}", "}", json_str)
-        json_str = re.sub(r",\s*]", "]", json_str)
-
-        # Handle truncated JSON by closing open structures
-        # Count unmatched brackets
-        open_braces = json_str.count("{") - json_str.count("}")
-        open_brackets = json_str.count("[") - json_str.count("]")
-
-        # Check if we're in an unclosed string (odd number of unescaped quotes)
-        # Simple heuristic: if last significant char is not }, ], or "
-        stripped = json_str.rstrip()
-        if stripped and stripped[-1] not in '}"]':
-            # Try to close an open string if we appear to be mid-string
-            if open_braces > 0 or open_brackets > 0:
-                # Check if we might be in an unclosed string value
-                # by looking for an odd number of quotes
-                quote_count = 0
-                i = len(stripped) - 1
-                while i >= 0:
-                    if stripped[i] == '"' and (i == 0 or stripped[i - 1] != "\\"):
-                        quote_count += 1
-                        if quote_count == 1:
-                            break
-                    i -= 1
-                if quote_count % 2 == 1:
-                    # We're in an unclosed string, close it
-                    json_str = stripped + '"'
-
-        # Re-count after potential string closure
-        stripped = json_str.rstrip()
-        open_braces = json_str.count("{") - json_str.count("}")
-        open_brackets = json_str.count("[") - json_str.count("]")
-
-        # Close any remaining open structures
-        if open_brackets > 0:
-            json_str = json_str.rstrip()
-            # Remove trailing comma if present
-            if json_str.endswith(","):
-                json_str = json_str[:-1]
-            json_str += "]" * open_brackets
-
-        if open_braces > 0:
-            json_str = json_str.rstrip()
-            # Remove trailing comma if present
-            if json_str.endswith(","):
-                json_str = json_str[:-1]
-            json_str += "}" * open_braces
-
-        return json_str
+        """Delegate to shared json_utils.repair_json."""
+        return repair_json(json_str)
 
     def _parse_json_response(self, response: Optional[str]) -> Optional[Dict]:
-        """Parse JSON from LLM response."""
-        if not response:
-            return None
-
-        try:
-            # Try to find JSON in response
-            json_match = re.search(r"\{.*\}", response, re.DOTALL)
-            if json_match:
-                json_str = json_match.group()
-                # First, try parsing as-is
-                try:
-                    return json.loads(json_str)
-                except json.JSONDecodeError:
-                    pass
-
-                # Try repairing common JSON issues (missing commas, etc.)
-                try:
-                    repaired = self._repair_json(json_str)
-                    return json.loads(repaired)
-                except json.JSONDecodeError:
-                    pass
-
-                # Escape control characters only INSIDE quoted strings
-                # This preserves structural JSON formatting
-                def escape_string_contents(match):
-                    s = match.group(0)
-                    inner = s[1:-1]  # Remove quotes
-                    # Only escape raw control characters, not already-escaped sequences
-                    inner = inner.replace("\n", "\\n")
-                    inner = inner.replace("\r", "\\r")
-                    inner = inner.replace("\t", "\\t")
-                    # Escape other control characters (except those already handled)
-                    inner = re.sub(
-                        r"[\x00-\x08\x0b\x0c\x0e-\x1f]",
-                        lambda m: f"\\u{ord(m.group()):04x}",
-                        inner,
-                    )
-                    return f'"{inner}"'
-
-                # Match quoted strings (handles escaped quotes inside)
-                try:
-                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, json_str)
-                    return json.loads(sanitized)
-                except (json.JSONDecodeError, Exception):
-                    pass
-
-                # Try repair + escape combination
-                try:
-                    repaired = self._repair_json(json_str)
-                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, repaired)
-                    return json.loads(sanitized)
-                except (json.JSONDecodeError, Exception):
-                    pass
-
-                # Last resort: strip all control chars except structural whitespace
-                try:
-                    stripped = re.sub(r"[\x00-\x09\x0b\x0c\x0e-\x1f]", " ", json_str)
-                    repaired = self._repair_json(stripped)
-                    return json.loads(repaired)
-                except (json.JSONDecodeError, Exception):
-                    pass
-
-        except (json.JSONDecodeError, Exception) as e:
-            logger.warning(f"JSON parse error: {e}")
-
-        return None
+        """Parse JSON from LLM response (delegates to shared json_utils)."""
+        return parse_llm_json(response)
 
     def _sanitize_slug(self, slug: str) -> str:
         """Sanitize slug for URL usage."""
@@ -2200,9 +1634,14 @@ Respond with ONLY a valid JSON object:
                 metadata["content"] = new_content
                 metadata["word_count"] = len(new_content.split())
 
-                # Save updated metadata
-                with open(metadata_file, "w", encoding="utf-8") as f:
-                    json.dump(metadata, f, indent=2)
+                # Save updated metadata atomically — a crash mid-write would
+                # corrupt the article state file the regen pipeline depends on.
+                with tempfile.NamedTemporaryFile(
+                    "w", dir=metadata_file.parent, suffix=".tmp", delete=False, encoding="utf-8"
+                ) as tmp:
+                    json.dump(metadata, tmp, indent=2)
+                    tmp_path = Path(tmp.name)
+                os.replace(tmp_path, metadata_file)
 
                 # Reconstruct article and regenerate HTML
                 article = EditorialArticle(

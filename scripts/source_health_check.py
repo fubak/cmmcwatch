@@ -16,7 +16,6 @@ from urllib.parse import urlparse
 import feedparser
 import requests
 from bs4 import BeautifulSoup
-
 from config import DATA_DIR, setup_logging
 from source_catalog import (
     DEFAULT_BROWSER_UA,
