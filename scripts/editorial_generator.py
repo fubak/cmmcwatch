@@ -294,7 +294,8 @@ class EditorialGenerator:
         Always returns a FrontPageBrief: if no AI provider is available or the
         call fails, a deterministic fallback built from the top stories is used.
         """
-        today = datetime.now().strftime("%Y-%m-%d")
+        now = datetime.now()
+        today = now.strftime("%Y-%m-%d")
         top_stories = [t for t in trends if t.get("title") and t.get("url")][:10]
 
         if len(top_stories) < 3:
@@ -320,7 +321,7 @@ defense contractors, compliance officers, and CISOs. Be sharp, specific, and use
 {numbered}
 
 TRENDING KEYWORDS: {", ".join(keywords[:15])}
-DATE: {datetime.now().strftime("%B %d, %Y")}
+DATE: {now.strftime("%B %d, %Y")}
 
 ## TASK
 1. Write 3-5 "what matters today" bullets. Each bullet is ONE plain-text sentence and
@@ -374,7 +375,9 @@ Respond with ONLY a valid JSON object:
                 logger.warning("BRIEF: no valid bullets after mapping, using fallback")
                 return self._fallback_brief(top_stories, today)
 
-            op_ed = [p.strip() for p in (data.get("op_ed_paragraphs") or []) if p and p.strip()]
+            # Keep the front page stable regardless of how many items the model returns
+            bullets = bullets[:5]
+            op_ed = [p.strip() for p in (data.get("op_ed_paragraphs") or []) if p and p.strip()][:4]
 
             logger.info(f"BRIEF: generated {len(bullets)} bullets, {len(op_ed)} op-ed paragraphs")
             return FrontPageBrief(
@@ -389,7 +392,12 @@ Respond with ONLY a valid JSON object:
             return self._fallback_brief(top_stories, today)
 
     def _fallback_brief(self, stories: List[Dict], date: str) -> FrontPageBrief:
-        """Deterministic brief from the top stories (no AI). Always has bullets."""
+        """Deterministic brief from the top stories (no AI).
+
+        Bullets are built from stories that have both a title and URL, so the
+        list is empty only when no usable stories are provided (callers should
+        not assume at least one bullet).
+        """
         bullets = [
             BriefBullet(
                 text=s.get("title", ""),

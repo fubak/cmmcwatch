@@ -600,19 +600,35 @@
             }
 
             if (!prefersReduced) {
-                // Hero aurora parallax
+                // Hero aurora parallax (rAF-throttled)
                 const aurora = document.querySelector('.hero-aurora');
                 if (aurora) {
+                    let auroraTicking = false;
                     window.addEventListener('scroll', () => {
-                        aurora.style.transform = 'translate3d(0,' + (window.scrollY * 0.25) + 'px,0)';
+                        if (auroraTicking) return;
+                        auroraTicking = true;
+                        requestAnimationFrame(() => {
+                            aurora.style.transform = 'translate3d(0,' + (window.scrollY * 0.25) + 'px,0)';
+                            auroraTicking = false;
+                        });
                     }, { passive: true });
                 }
-                // Pointer-tracking sheen
+                // Pointer-tracking sheen (rAF-throttled, one frame per move at most)
                 document.querySelectorAll('.daily-brief, .story-card.featured').forEach((el) => {
+                    let sheenTicking = false;
+                    let lastX = 0;
+                    let lastY = 0;
                     el.addEventListener('pointermove', (e) => {
-                        const r = el.getBoundingClientRect();
-                        el.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
-                        el.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+                        lastX = e.clientX;
+                        lastY = e.clientY;
+                        if (sheenTicking) return;
+                        sheenTicking = true;
+                        requestAnimationFrame(() => {
+                            const r = el.getBoundingClientRect();
+                            el.style.setProperty('--mx', ((lastX - r.left) / r.width * 100) + '%');
+                            el.style.setProperty('--my', ((lastY - r.top) / r.height * 100) + '%');
+                            sheenTicking = false;
+                        });
                     });
                 });
             }

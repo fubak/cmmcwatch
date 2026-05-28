@@ -463,11 +463,29 @@ class WebsiteBuilder:
         cross-cutting index whose items may also appear in other sections.
         """
 
+        epoch = datetime(1970, 1, 1)
+
         def get_timestamp(story: Dict) -> datetime:
-            try:
-                return datetime.strptime(story.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
-            except (ValueError, TypeError):
-                return datetime(1970, 1, 1)
+            # Prefer timestamp_iso (normalized to ISO by _group_trends), then the
+            # raw timestamp which the pipeline stores via datetime.isoformat()
+            # (e.g. "2026-05-28T18:00:00"). Normalize to naive so aware/naive
+            # values never get compared during sort.
+            raw = story.get("timestamp_iso") or story.get("timestamp")
+            if isinstance(raw, datetime):
+                dt = raw
+            elif isinstance(raw, str) and raw:
+                try:
+                    dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+                except ValueError:
+                    try:
+                        dt = datetime.strptime(raw, "%Y-%m-%d %H:%M:%S")
+                    except ValueError:
+                        return epoch
+            else:
+                return epoch
+            if dt.tzinfo is not None:
+                dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+            return dt
 
         candidates = [
             t

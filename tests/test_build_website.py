@@ -306,6 +306,56 @@ class TestWebsiteBuilder:
         assert "https://linkedin.com/x" not in urls
         assert len(latest) == 5
 
+    def test_latest_rail_sorts_iso_timestamps(self):
+        """Pipeline stores timestamps via datetime.isoformat() (T-separated);
+        the rail must sort those correctly, not collapse them to epoch."""
+        trends = [
+            {
+                "title": "Older",
+                "source": "cmmc_rss_fedscoop",
+                "url": "https://example.com/old",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-20T08:00:00",
+            },
+            {
+                "title": "Newest",
+                "source": "cmmc_rss_nextgov",
+                "url": "https://example.com/new",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-28T18:30:00",
+            },
+            {
+                "title": "Middle",
+                "source": "cmmc_rss_securityweek",
+                "url": "https://example.com/mid",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-24T12:00:00",
+            },
+        ]
+        latest = WebsiteBuilder(BuildContext(trends=trends, images=[], design={}, keywords=[]))._get_latest_stories()
+        assert [s["title"] for s in latest] == ["Newest", "Middle", "Older"]
+
+    def test_latest_rail_sorts_mixed_naive_and_aware_timestamps(self):
+        """Aware (with offset) and naive timestamps must not raise when compared."""
+        trends = [
+            {
+                "title": "Aware",
+                "source": "cmmc_rss_fedscoop",
+                "url": "https://example.com/a",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-28T18:00:00+00:00",
+            },
+            {
+                "title": "Naive",
+                "source": "cmmc_rss_nextgov",
+                "url": "https://example.com/b",
+                "category": "cmmc_program",
+                "timestamp": "2026-05-27T18:00:00",
+            },
+        ]
+        latest = WebsiteBuilder(BuildContext(trends=trends, images=[], design={}, keywords=[]))._get_latest_stories()
+        assert [s["title"] for s in latest] == ["Aware", "Naive"]
+
     def test_latest_rail_sorted_recent_first_and_deduped(self):
         trends = self._news_trends(5)
         trends.append(dict(trends[0]))  # duplicate URL
