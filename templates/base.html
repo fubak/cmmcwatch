@@ -116,6 +116,7 @@
         {% include "css/layouts.css" %}
         {% include "css/hero.css" %}
         {% include "css/components.css" %}
+        {% include "css/motion.css" %}
         {% include "components/nav.css" %}
         {% include "components/footer.css" %}
         
@@ -142,6 +143,7 @@
          crossorigin="anonymous"></script>
 </head>
 <body class="{{ body_classes }}">
+    <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
     <a href="#main-content" class="skip-link">Skip to main content</a>
     
     {% include "components/nav.html" %}
@@ -492,6 +494,128 @@
             document.querySelectorAll('.category-section, [data-category], .section').forEach(function(section) {
                 categoryObserver.observe(section);
             });
+        })();
+    </script>
+    <script>
+        // Motion & interaction layer (bold/energetic, reduced-motion aware)
+        (function () {
+            const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // Haptic feedback (subtle, only on user-initiated interactions)
+            const canVibrate = typeof navigator.vibrate === 'function';
+            const haptic = (pattern) => {
+                if (!canVibrate) return;
+                try { navigator.vibrate(pattern); } catch (e) { /* no-op */ }
+            };
+
+            // Scroll progress bar
+            const bar = document.getElementById('scroll-progress');
+            if (bar) {
+                let ticking = false;
+                const update = () => {
+                    const doc = document.documentElement;
+                    const max = (doc.scrollHeight - doc.clientHeight) || 1;
+                    const pct = Math.min(100, Math.max(0, (window.scrollY / max) * 100));
+                    bar.style.width = pct + '%';
+                    ticking = false;
+                };
+                window.addEventListener('scroll', () => {
+                    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+                }, { passive: true });
+                update();
+            }
+
+            // Ripple + haptics on interactive controls (event-delegated)
+            const RIPPLE_SEL = '.latest-filter, .reading-button, .tab-button, .hero-cta, .save-btn, .share-btn, .brief-readmore, .brief-bullet-source';
+            document.addEventListener('pointerdown', (e) => {
+                const el = e.target.closest(RIPPLE_SEL);
+                if (!el) return;
+                haptic(10);
+                if (prefersReduced) return;
+                el.classList.add('ripple-host');
+                const rect = el.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const span = document.createElement('span');
+                span.className = 'ripple';
+                span.style.width = span.style.height = size + 'px';
+                span.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                span.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                el.appendChild(span);
+                span.addEventListener('animationend', () => span.remove());
+            }, { passive: true });
+
+            // Haptics when opening a story / following a headline
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.clickable-card, .latest-link, .compact-story-row')) haptic(14);
+            }, { passive: true });
+
+            // Count-up stats
+            const runCount = (el) => {
+                const target = parseInt(el.dataset.countup, 10) || 0;
+                if (prefersReduced || target <= 0) { el.textContent = String(target); return; }
+                const duration = 1100;
+                const start = performance.now();
+                const step = (now) => {
+                    const p = Math.min(1, (now - start) / duration);
+                    const eased = 1 - Math.pow(1 - p, 3);
+                    el.textContent = String(Math.round(eased * target));
+                    if (p < 1) requestAnimationFrame(step);
+                };
+                requestAnimationFrame(step);
+            };
+            const countups = document.querySelectorAll('[data-countup]');
+
+            // Scroll reveal (staggered) + count-up trigger
+            const revealTargets = document.querySelectorAll(
+                '.section, .daily-brief, .latest-rail, .brief-bullet, .story-card, .compact-story-row, .latest-item, .ticker-wrap, .reading-controls'
+            );
+            if (prefersReduced || !('IntersectionObserver' in window)) {
+                countups.forEach(runCount);
+            } else {
+                revealTargets.forEach((el) => {
+                    el.classList.add('reveal');
+                    const parent = el.parentElement;
+                    const idx = parent ? Array.prototype.indexOf.call(parent.children, el) : 0;
+                    el.style.transitionDelay = Math.min(idx * 55, 330) + 'ms';
+                });
+                const revealObs = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('in');
+                            revealObs.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+                revealTargets.forEach((el) => revealObs.observe(el));
+
+                const countObs = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            runCount(entry.target);
+                            countObs.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.6 });
+                countups.forEach((el) => countObs.observe(el));
+            }
+
+            if (!prefersReduced) {
+                // Hero aurora parallax
+                const aurora = document.querySelector('.hero-aurora');
+                if (aurora) {
+                    window.addEventListener('scroll', () => {
+                        aurora.style.transform = 'translate3d(0,' + (window.scrollY * 0.25) + 'px,0)';
+                    }, { passive: true });
+                }
+                // Pointer-tracking sheen
+                document.querySelectorAll('.daily-brief, .story-card.featured').forEach((el) => {
+                    el.addEventListener('pointermove', (e) => {
+                        const r = el.getBoundingClientRect();
+                        el.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+                        el.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+                    });
+                });
+            }
         })();
     </script>
 </body>

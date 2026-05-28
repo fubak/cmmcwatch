@@ -377,6 +377,19 @@ class TestWebsiteBuilder:
         # _news_trends() are all cmmc_program -> only one category -> no filter bar
         assert 'class="latest-filters"' not in html
 
+    def test_motion_layer_present(self):
+        """Motion/interaction layer hooks and CSS are inlined into the page."""
+        html = WebsiteBuilder(BuildContext(trends=self._news_trends(), images=[], design={}, keywords=[])).build()
+        # Structural hooks
+        assert 'id="scroll-progress"' in html
+        assert 'class="hero-aurora"' in html
+        assert "data-countup=" in html
+        # Inlined motion CSS + reduced-motion guard
+        assert "auroraDrift" in html
+        assert "prefers-reduced-motion" in html
+        # JS module wired in
+        assert "navigator.vibrate" in html
+
     def test_brief_grid_renders_with_brief(self):
         ctx = BuildContext(
             trends=self._news_trends(),

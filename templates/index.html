@@ -2,6 +2,7 @@
 
 {% block hero %}
 <header class="hero hero--slim">
+    <div class="hero-aurora" aria-hidden="true"></div>
     <div class="hero-content">
         <div class="hero-eyebrow">
             <span>•</span> Daily CMMC &amp; Compliance Briefing
@@ -16,7 +17,7 @@
         <div class="hero-meta">
             <span>{{ date_str }}</span>
             <span aria-hidden="true">•</span>
-            <span>{{ total_trends_count }} stories analyzed</span>
+            <span><span class="stat-countup" data-countup="{{ total_trends_count }}">{{ total_trends_count }}</span> stories analyzed</span>
         </div>
     </div>
 </header>
