@@ -270,6 +270,104 @@ class TestWebsiteBuilder:
         # Should not crash
         assert builder.grouped_trends == {}
 
+    def _news_trends(self, n=11):
+        return [
+            {
+                "title": f"Story {i} on CMMC",
+                "source": "cmmc_rss_fedscoop",
+                "url": f"https://example.com/{i}",
+                "category": "cmmc_program",
+                "timestamp": f"2026-05-{10 + i} 12:00:00",
+            }
+            for i in range(n)
+        ]
+
+    def test_latest_rail_excludes_reddit_and_linkedin(self):
+        """The Latest rail should only contain professional news sources."""
+        trends = self._news_trends(5) + [
+            {
+                "title": "Reddit",
+                "source": "reddit_cmmc",
+                "url": "https://reddit.com/x",
+                "timestamp": "2026-05-28 09:00:00",
+            },
+            {
+                "title": "LinkedIn",
+                "source": "cmmc_linkedin",
+                "url": "https://linkedin.com/x",
+                "timestamp": "2026-05-28 09:00:00",
+            },
+        ]
+        ctx = BuildContext(trends=trends, images=[], design={}, keywords=[])
+        latest = WebsiteBuilder(ctx)._get_latest_stories()
+        urls = [s["url"] for s in latest]
+        assert "https://reddit.com/x" not in urls
+        assert "https://linkedin.com/x" not in urls
+        assert len(latest) == 5
+
+    def test_latest_rail_sorted_recent_first_and_deduped(self):
+        trends = self._news_trends(5)
+        trends.append(dict(trends[0]))  # duplicate URL
+        ctx = BuildContext(trends=trends, images=[], design={}, keywords=[])
+        latest = WebsiteBuilder(ctx)._get_latest_stories()
+        timestamps = [s["timestamp"] for s in latest]
+        assert timestamps == sorted(timestamps, reverse=True)
+        assert len(latest) == len({s["url"] for s in latest})
+
+    def test_brief_grid_renders_with_brief(self):
+        ctx = BuildContext(
+            trends=self._news_trends(),
+            images=[],
+            design={"color_accent": "#6366f1"},
+            keywords=["cmmc"],
+            front_page_brief={
+                "headline": "DoD Tightens CMMC Timeline",
+                "dek": "Contractors face a faster path.",
+                "bullets": [
+                    {
+                        "text": "New rule accelerates rollout.",
+                        "source_name": "Fedscoop",
+                        "source_url": "https://example.com/1",
+                        "source_title": "Story 1",
+                    }
+                ],
+                "op_ed_paragraphs": ["Analysis paragraph one.", "Analysis paragraph two."],
+                "date": "2026-05-28",
+            },
+        )
+        html = WebsiteBuilder(ctx).build()
+        assert 'class="brief-grid' in html
+        assert "DoD Tightens CMMC Timeline" in html
+        assert "New rule accelerates rollout." in html
+        assert "Analysis paragraph one." in html
+        assert 'class="latest-rail"' in html
+
+    def test_brief_grid_fallback_header_without_brief(self):
+        """With no brief but with stories, the Latest rail still renders and no crash."""
+        ctx = BuildContext(trends=self._news_trends(), images=[], design={}, keywords=[])
+        html = WebsiteBuilder(ctx).build()
+        assert 'class="latest-rail"' in html
+        assert "Latest CMMC &amp; Compliance News" in html
+
+    def test_brief_op_ed_is_escaped(self):
+        """Op-ed paragraphs are plain text and must be HTML-escaped (no raw tags)."""
+        ctx = BuildContext(
+            trends=self._news_trends(),
+            images=[],
+            design={},
+            keywords=[],
+            front_page_brief={
+                "headline": "H",
+                "dek": "",
+                "bullets": [{"text": "t", "source_name": "s", "source_url": "https://e.com/1", "source_title": "t"}],
+                "op_ed_paragraphs": ["<script>alert(1)</script>"],
+                "date": "2026-05-28",
+            },
+        )
+        html = WebsiteBuilder(ctx).build()
+        assert "<script>alert(1)</script>" not in html
+        assert "&lt;script&gt;" in html
+
     def test_page_title_generation(self, basic_context):
         """Test that page title is SEO-optimized."""
         builder = WebsiteBuilder(basic_context)

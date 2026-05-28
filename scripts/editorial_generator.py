@@ -102,6 +102,44 @@ EDITORIAL_SCHEMA = {
     "required": ["title", "slug", "summary", "mood", "content", "key_themes"],
 }
 
+BRIEF_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "headline": {
+            "type": "string",
+            "description": "Punchy 4-9 word headline for the day's brief",
+        },
+        "dek": {
+            "type": "string",
+            "description": "One-sentence standfirst summarizing the day",
+        },
+        "bullets": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "type": "string",
+                        "description": "One-sentence takeaway (no HTML)",
+                    },
+                    "story_index": {
+                        "type": "integer",
+                        "description": "0-based index of the source story this bullet is about",
+                    },
+                },
+                "required": ["text", "story_index"],
+            },
+            "description": "3-5 'what matters today' bullets",
+        },
+        "op_ed_paragraphs": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "2-4 short analysis paragraphs (plain text, no HTML)",
+        },
+    },
+    "required": ["headline", "bullets", "op_ed_paragraphs"],
+}
+
 STORY_SUMMARIES_SCHEMA = {
     "type": "object",
     "properties": {
@@ -142,6 +180,27 @@ class EditorialArticle:
     keywords: List[str]
     mood: str  # Overall mood/tone of the article
     url: str  # Full URL path
+
+
+@dataclass
+class BriefBullet:
+    """A single 'what matters today' bullet linked to its source story."""
+
+    text: str
+    source_name: str
+    source_url: str
+    source_title: str
+
+
+@dataclass
+class FrontPageBrief:
+    """Executive brief that leads the front page: sourced bullets + short op-ed."""
+
+    headline: str
+    dek: str  # one-line standfirst under the headline
+    bullets: List[BriefBullet]
+    op_ed_paragraphs: List[str]  # plain text, rendered escaped in <p> tags
+    date: str  # YYYY-MM-DD
 
 
 @dataclass
@@ -221,6 +280,133 @@ class EditorialGenerator:
         )
 
         return tokens
+
+    def generate_front_page_brief(
+        self, trends: List[Dict], keywords: List[str], design: Optional[Dict] = None
+    ) -> FrontPageBrief:
+        """
+        Generate the executive brief that leads the front page.
+
+        Produces a headline, a one-line dek, 3-5 sourced takeaway bullets, and
+        2-4 short op-ed paragraphs. Bullets reference source stories by index so
+        their links are always real (never hallucinated).
+
+        Always returns a FrontPageBrief: if no AI provider is available or the
+        call fails, a deterministic fallback built from the top stories is used.
+        """
+        today = datetime.now().strftime("%Y-%m-%d")
+        top_stories = [t for t in trends if t.get("title") and t.get("url")][:10]
+
+        if len(top_stories) < 3:
+            logger.warning("BRIEF: fewer than 3 usable stories, using fallback")
+            return self._fallback_brief(top_stories, today)
+
+        has_ollama = self._check_ollama_available()
+        if not (has_ollama or self.groq_key or self.openrouter_key or self.google_key):
+            logger.info("BRIEF: no AI provider configured, using fallback brief")
+            return self._fallback_brief(top_stories, today)
+
+        numbered = "\n".join(
+            f"{i}. [{(s.get('source') or 'unknown').replace('_', ' ').title()}] {s.get('title')}"
+            + (f"\n   Summary: {(s.get('description') or '')[:200]}" if s.get("description") else "")
+            for i, s in enumerate(top_stories)
+        )
+
+        prompt = f"""## ROLE
+You are the executive editor of CMMC Watch, writing the daily front-page brief read by
+defense contractors, compliance officers, and CISOs. Be sharp, specific, and useful.
+
+## TODAY'S STORIES (cite by index)
+{numbered}
+
+TRENDING KEYWORDS: {", ".join(keywords[:15])}
+DATE: {datetime.now().strftime("%B %d, %Y")}
+
+## TASK
+1. Write 3-5 "what matters today" bullets. Each bullet is ONE plain-text sentence and
+   MUST set "story_index" to the 0-based index of the story it summarizes.
+2. Write a punchy 4-9 word "headline" and a one-sentence "dek".
+3. Write 2-4 short op-ed paragraphs (plain text, no HTML) that synthesize the day's
+   stories into a clear point of view — connect threads, name the stakes, take a stance.
+
+## RULES
+- Ground every claim in the stories above; do not invent facts or sources.
+- Plain text only (no HTML, no markdown). Keep bullets scannable.
+- Each bullet's story_index must be a valid index from the list above.
+
+Respond with ONLY a valid JSON object:
+{{
+  "headline": "4-9 word headline",
+  "dek": "one-sentence standfirst",
+  "bullets": [{{"text": "one sentence", "story_index": 0}}],
+  "op_ed_paragraphs": ["paragraph one", "paragraph two"]
+}}"""
+
+        try:
+            data = self._call_google_ai_structured(prompt, BRIEF_SCHEMA, max_tokens=4096)
+            if not data:
+                response = self._call_groq(prompt, max_tokens=4096)
+                data = self._parse_json_response(response)
+
+            if not data or not data.get("bullets"):
+                logger.warning("BRIEF: AI returned no bullets, using fallback")
+                return self._fallback_brief(top_stories, today)
+
+            bullets = []
+            for raw in data.get("bullets", []):
+                text = (raw.get("text") or "").strip()
+                if not text:
+                    continue
+                idx = raw.get("story_index")
+                story = top_stories[idx] if isinstance(idx, int) and 0 <= idx < len(top_stories) else None
+                if story is None:
+                    continue
+                bullets.append(
+                    BriefBullet(
+                        text=text,
+                        source_name=(story.get("source") or "").replace("_", " ").title(),
+                        source_url=story.get("url", ""),
+                        source_title=story.get("title", ""),
+                    )
+                )
+
+            if not bullets:
+                logger.warning("BRIEF: no valid bullets after mapping, using fallback")
+                return self._fallback_brief(top_stories, today)
+
+            op_ed = [p.strip() for p in (data.get("op_ed_paragraphs") or []) if p and p.strip()]
+
+            logger.info(f"BRIEF: generated {len(bullets)} bullets, {len(op_ed)} op-ed paragraphs")
+            return FrontPageBrief(
+                headline=(data.get("headline") or "Today in CMMC & Compliance").strip(),
+                dek=(data.get("dek") or "").strip(),
+                bullets=bullets,
+                op_ed_paragraphs=op_ed,
+                date=today,
+            )
+        except Exception:
+            logger.exception("BRIEF: generation failed, using fallback")
+            return self._fallback_brief(top_stories, today)
+
+    def _fallback_brief(self, stories: List[Dict], date: str) -> FrontPageBrief:
+        """Deterministic brief from the top stories (no AI). Always has bullets."""
+        bullets = [
+            BriefBullet(
+                text=s.get("title", ""),
+                source_name=(s.get("source") or "").replace("_", " ").title(),
+                source_url=s.get("url", ""),
+                source_title=s.get("title", ""),
+            )
+            for s in stories[:5]
+            if s.get("title") and s.get("url")
+        ]
+        return FrontPageBrief(
+            headline="Today in CMMC & Compliance",
+            dek="The day's most important compliance and Defense Industrial Base news.",
+            bullets=bullets,
+            op_ed_paragraphs=[],
+            date=date,
+        )
 
     def generate_editorial(
         self, trends: List[Dict], keywords: List[str], design: Optional[Dict] = None

@@ -120,6 +120,79 @@
         </section>
     </div>
 
+    <!-- The Brief (executive summary + op-ed) + Latest rail -->
+    {% if front_page_brief or latest_stories %}
+    <div class="brief-grid{% if not latest_stories %} no-rail{% endif %}">
+        <section class="daily-brief" aria-labelledby="brief-heading">
+            {% if front_page_brief %}
+            <div class="brief-header">
+                <span class="brief-eyebrow">The Brief · {{ date_str }}</span>
+                <h2 id="brief-heading" class="brief-headline">{{ front_page_brief.headline }}</h2>
+                {% if front_page_brief.dek %}
+                <p class="brief-dek">{{ front_page_brief.dek }}</p>
+                {% endif %}
+            </div>
+
+            {% if front_page_brief.bullets %}
+            <ul class="brief-bullets">
+                {% for bullet in front_page_brief.bullets %}
+                <li class="brief-bullet">
+                    <span class="brief-bullet-text">{{ bullet.text }}</span>
+                    {% if bullet.source_url %}
+                    <a class="brief-bullet-source" href="{{ bullet.source_url }}" target="_blank" rel="noopener" aria-label="Source: {{ bullet.source_title }}">{{ bullet.source_name }} &#8599;</a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if front_page_brief.op_ed_paragraphs %}
+            <div class="brief-oped">
+                <h3 class="brief-oped-label">Analysis</h3>
+                {% for para in front_page_brief.op_ed_paragraphs %}
+                <p>{{ para }}</p>
+                {% endfor %}
+                {% if editorial_article and editorial_article.url %}
+                <a class="brief-readmore" href="{{ editorial_article.url }}">Read the full editorial &#8594;</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="brief-header">
+                <span class="brief-eyebrow">Today · {{ date_str }}</span>
+                <h2 id="brief-heading" class="brief-headline">Latest CMMC &amp; Compliance News</h2>
+                <p class="brief-dek">The day's most important compliance and Defense Industrial Base news.</p>
+            </div>
+            {% endif %}
+        </section>
+
+        {% if latest_stories %}
+        <aside class="latest-rail" aria-labelledby="latest-heading">
+            <div class="latest-rail-inner">
+                <div class="section-header">
+                    <h2 id="latest-heading" class="section-title">Latest</h2>
+                    <span class="section-count">{{ latest_stories|length }}</span>
+                </div>
+                <ol class="latest-list">
+                    {% for story in latest_stories %}
+                    <li class="latest-item" data-category="{{ story.category }}">
+                        <a href="{{ story.url }}" target="_blank" rel="noopener" class="latest-link">
+                            <span class="latest-title">{{ story.title }}</span>
+                            <span class="latest-meta">
+                                <span class="latest-source">{{ story.source_display or (story.source | replace('_', ' ') | title) }}</span>
+                                <span aria-hidden="true">·</span>
+                                <time datetime="{{ story.timestamp_iso }}">{{ story.time_ago }}</time>
+                            </span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </aside>
+        {% endif %}
+    </div>
+    {% endif %}
+
     <section class="reading-controls" aria-label="Reading controls">
         <div class="reading-group">
             <span class="reading-label">Density</span>

@@ -57,6 +57,7 @@ class BuildContext:
     why_this_matters: Optional[List[Dict]] = None
     yesterday_trends: Optional[List[Dict]] = None
     editorial_article: Optional[Dict] = None
+    front_page_brief: Optional[Dict] = None
     keyword_history: Optional[Dict] = None
     generated_at: str = ""
 
@@ -452,6 +453,43 @@ class WebsiteBuilder:
             groups[category].append(trend)
 
         return dict(groups)
+
+    def _get_latest_stories(self, limit: int = 30) -> List[Dict]:
+        """Reverse-chronological feed of professional news stories for the 'Latest' rail.
+
+        Excludes Reddit and LinkedIn (they have their own sections) and dedupes by
+        URL. Trends are already enriched (time_ago, source_display, category) by
+        _group_trends during init. Does NOT touch _used_urls, since the rail is a
+        cross-cutting index whose items may also appear in other sections.
+        """
+
+        def get_timestamp(story: Dict) -> datetime:
+            try:
+                return datetime.strptime(story.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
+            except (ValueError, TypeError):
+                return datetime(1970, 1, 1)
+
+        candidates = [
+            t
+            for t in self.ctx.trends
+            if t.get("url")
+            and t.get("title")
+            and not self._is_reddit_source(t.get("source", ""))
+            and not self._is_linkedin_source(t.get("source", ""))
+        ]
+        candidates.sort(key=get_timestamp, reverse=True)
+
+        seen: set = set()
+        latest: List[Dict] = []
+        for story in candidates:
+            url = story.get("url")
+            if url in seen:
+                continue
+            seen.add(url)
+            latest.append(story)
+            if len(latest) >= limit:
+                break
+        return latest
 
     def _select_top_stories(self) -> List[Dict]:
         """
@@ -1450,6 +1488,8 @@ class WebsiteBuilder:
             # Content (pre-computed above for proper deduplication order)
             "hero_story": hero_story,
             "top_stories": top_stories,
+            "front_page_brief": self.ctx.front_page_brief,
+            "latest_stories": self._get_latest_stories(),
             "trends": self.ctx.trends,
             "reddit_stories": self._get_reddit_stories(),
             "linkedin_stories": linkedin_stories,

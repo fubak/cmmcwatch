@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 import pytest
-from editorial_generator import EditorialGenerator
+from editorial_generator import BriefBullet, EditorialGenerator, FrontPageBrief
 
 
 @pytest.fixture
@@ -17,6 +17,46 @@ def generator(tmp_path):
     g.public_dir = tmp_path
     g.session = MagicMock()
     return g
+
+
+class TestFallbackBrief:
+    def _stories(self, n):
+        return [
+            {
+                "title": f"Story {i}",
+                "source": "cmmc_rss_fedscoop",
+                "url": f"https://example.com/{i}",
+            }
+            for i in range(n)
+        ]
+
+    def test_returns_front_page_brief(self, generator):
+        brief = generator._fallback_brief(self._stories(5), "2026-05-28")
+        assert isinstance(brief, FrontPageBrief)
+        assert brief.date == "2026-05-28"
+
+    def test_caps_bullets_at_five(self, generator):
+        brief = generator._fallback_brief(self._stories(8), "2026-05-28")
+        assert len(brief.bullets) == 5
+        assert all(isinstance(b, BriefBullet) for b in brief.bullets)
+
+    def test_bullets_carry_real_source_urls(self, generator):
+        brief = generator._fallback_brief(self._stories(3), "2026-05-28")
+        assert brief.bullets[0].source_url == "https://example.com/0"
+        assert brief.bullets[0].source_name == "Cmmc Rss Fedscoop"
+
+    def test_skips_stories_missing_url_or_title(self, generator):
+        stories = [
+            {"title": "Has both", "source": "x", "url": "https://e.com/1"},
+            {"title": "No url", "source": "x", "url": ""},
+            {"title": "", "source": "x", "url": "https://e.com/3"},
+        ]
+        brief = generator._fallback_brief(stories, "2026-05-28")
+        assert len(brief.bullets) == 1
+
+    def test_op_ed_empty_in_fallback(self, generator):
+        brief = generator._fallback_brief(self._stories(3), "2026-05-28")
+        assert brief.op_ed_paragraphs == []
 
 
 class TestSanitizeSlug:
