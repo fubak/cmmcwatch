@@ -89,3 +89,72 @@ def test_render_article_html_matches_golden():
 
     out = render_article_html(sample_article(), sample_tokens(), sample_related())
     assert out == FIXTURE.read_text(encoding="utf-8")
+
+
+# --- articles index page ----------------------------------------------------
+
+INDEX_FIXTURE = Path(__file__).parent / "fixtures" / "articles_index_golden.html"
+
+
+def sample_index_articles():
+    """Fixed article metadata (the shape get_all_articles returns)."""
+    return [
+        {
+            "title": "DoD publishes final CMMC rule",
+            "date": "2026-06-24",
+            "url": "/articles/2026/06/24/dod-final-cmmc-rule/",
+            "summary": "The long-awaited rule lands; <primes> & subs must comply.",
+            "mood": "urgent",
+            "word_count": 812,
+            "keywords": ["CMMC", "DFARS"],
+        },
+        {
+            "title": "C3PAO assessment backlog grows",
+            "date": "2026-06-20",
+            "url": "/articles/2026/06/20/c3pao-backlog/",
+            "summary": "Assessors report a multi-month queue.",
+            "mood": "informative",
+            "word_count": 540,
+            "keywords": ["C3PAO", "assessment"],
+        },
+        {
+            "title": "Summit 7 webinar recap",
+            "date": "2026-06-18",
+            "url": "/articles/2026/06/18/summit-7-recap/",
+            "summary": "Takeaways for primes preparing SSPs.",
+            "mood": "informative",
+            "word_count": 410,
+            "keywords": ["SSP", "Summit 7"],
+        },
+    ]
+
+
+def _frozen_datetime():
+    """datetime subclass whose now() is fixed, so the index page (which embeds
+    today's date in the shared header/footer) renders deterministically."""
+    from datetime import datetime as _dt
+
+    class _Frozen(_dt):
+        @classmethod
+        def now(cls, tz=None):
+            return _dt(2026, 6, 24, 12, 0, 0)
+
+    return _Frozen
+
+
+def test_generate_articles_index_matches_golden(tmp_path, monkeypatch):
+    """The extracted index renderer must reproduce the index page byte-for-byte.
+
+    Driven end-to-end through the public method (get_all_articles stubbed,
+    datetime.now() frozen). The fixture was captured from the original inline
+    f-string before the extraction, so a pass proves output is unchanged.
+    """
+    import articles_index_renderer
+    import editorial_generator as eg
+
+    monkeypatch.setattr(articles_index_renderer, "datetime", _frozen_datetime())
+    gen = eg.EditorialGenerator(public_dir=tmp_path)
+    monkeypatch.setattr(gen, "get_all_articles", lambda: sample_index_articles())
+
+    out = gen.generate_articles_index(design=None)
+    assert out == INDEX_FIXTURE.read_text(encoding="utf-8")
