@@ -49,7 +49,7 @@ Archive → Collect CMMC trends → Fetch images → Generate design → Generat
 
 **Reddit:** r/CMMC, r/NISTControls, r/FederalEmployees, r/cybersecurity, r/GovContracting
 
-**LinkedIn Influencers:** Katie Arrington, Stacy Bostjanick, Matthew Travis, Summit 7 team (Scott Edwards, Jacob Horne, Daniel Akridge, Jacob Hill), Amira Armond
+**LinkedIn Influencers (9, via Apify):** Katie Arrington, Stacy Bostjanick, Matthew Travis, Summit 7 team (Scott Edwards, Jacob Horne, Daniel Akridge, Jacob Hill), Amira Armond, Joy Beland
 
 ## CMMC Categories
 
