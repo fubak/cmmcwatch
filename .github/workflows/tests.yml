@@ -43,6 +43,9 @@ jobs:
 
       - name: Run tests
         # Skip the integration test that requires live API keys.
-        # Run all unit tests collected from tests/.
+        # Run all unit tests collected from tests/, with coverage.
+        # --cov-fail-under is a ratchet floor (CI unit-test total ~51%); raise it
+        # toward the 80% target as coverage of the big modules improves.
         run: |
-          python -m pytest tests/ -v --tb=short
+          python -m pytest tests/ -v --tb=short \
+            --cov=scripts --cov-report=term-missing --cov-fail-under=50
