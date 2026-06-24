@@ -47,7 +47,7 @@ Archive → Collect CMMC trends → Fetch images → Generate design → Generat
 
 **RSS Feeds:** FedScoop, DefenseScoop, Federal News Network, Nextgov, GovCon Wire, SecurityWeek, Cyberscoop, Breaking Defense, Defense One, Defense News, ExecutiveGov
 
-**Reddit:** r/CMMC, r/NISTControls, r/FederalEmployees, r/cybersecurity, r/GovContracting
+**Reddit:** r/CMMC, r/NISTControls, r/FederalEmployees, r/cybersecurity
 
 **LinkedIn Influencers (9, via Apify):** Katie Arrington, Stacy Bostjanick, Matthew Travis, Summit 7 team (Scott Edwards, Jacob Horne, Daniel Akridge, Jacob Hill), Amira Armond, Joy Beland
 

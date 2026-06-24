@@ -29,3 +29,9 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
 ignore = ["E501"]  # Line too long - handled by formatter
+
+[tool.coverage.run]
+# scripts/tools/ holds standalone, manually-run CLIs (e.g. competitor_monitor.py)
+# that are not part of the daily pipeline. Exclude them so coverage reflects
+# pipeline code, not auxiliary tooling.
+omit = ["scripts/tools/*"]
