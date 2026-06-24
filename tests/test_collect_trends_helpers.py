@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for collect_trends parsing helpers (no network required)."""
+"""Tests for the timestamp parsing helpers (no network required)."""
 
 import sys
 from datetime import datetime, timezone
@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 import pytest
-from collect_trends import _normalize_datetime, parse_feed_entry_timestamp, parse_timestamp
+from timestamp_utils import _normalize_datetime, parse_feed_entry_timestamp, parse_timestamp
 
 
 class TestNormalizeDatetime:
