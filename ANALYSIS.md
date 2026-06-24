@@ -11,6 +11,15 @@
 > fixed, touch-target / contrast WCAG fixes applied, linkedin_fetch.py and
 > linkedin_oauth.py deleted, test coverage raised to 185 tests. See recent
 > commits on `claude/review-project-cpQGY` for current state.
+>
+> **Update (June 2026):** The "No Tests" and "Editorial Generator Complexity
+> (3,688 LOC)" items below are **resolved**. `editorial_generator.py` was
+> decomposed to ~1,558 LOC by extracting `article_renderer.py` and
+> `articles_index_renderer.py`; pure helpers were split into `color_utils.py`,
+> `content_animation.py`, and `timestamp_utils.py`. The suite is now **494 tests
+> across 28 files** with `ruff` lint/format checks and a CI coverage floor
+> (`tests.yml`). The repo-statistics and grade figures below reflect the
+> 2026-01-25 snapshot, not the current tree.
 
 ---
 

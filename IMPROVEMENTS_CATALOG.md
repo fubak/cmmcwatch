@@ -53,7 +53,8 @@ What changed:
   - host-specific retries and retry delays
   - fallback URL support
 - Added content-type/feed-content validation before accepting responses.
-- Added timestamp normalization helpers for heterogeneous feed and API timestamps.
+- Added timestamp normalization helpers for heterogeneous feed and API timestamps
+  (since extracted into `scripts/timestamp_utils.py`).
 
 Why it matters:
 - Prevents repeated hard failures from taking down collection runs.
