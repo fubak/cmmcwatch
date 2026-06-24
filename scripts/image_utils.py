@@ -278,3 +278,89 @@ def get_fallback_gradient_css(seed: str = "") -> str:
         index = random.randint(0, len(gradients) - 1)
 
     return gradients[index]
+
+
+# Keywords that indicate an image likely contains text (screenshots, infographics, etc.)
+TEXT_HEAVY_KEYWORDS = {
+    # Document/screenshot indicators
+    "screenshot",
+    "screen shot",
+    "screen-shot",
+    "screencap",
+    "screen capture",
+    "document",
+    "webpage",
+    "web page",
+    "website",
+    "article",
+    "blog post",
+    "newspaper",
+    "magazine",
+    "book",
+    "text",
+    "words",
+    "writing",
+    "written",
+    # Infographic indicators
+    "infographic",
+    "info graphic",
+    "chart",
+    "graph",
+    "diagram",
+    "flowchart",
+    "timeline",
+    "statistics",
+    "data visualization",
+    "presentation",
+    "slide",
+    # UI/Interface indicators
+    "interface",
+    "dashboard",
+    "app screen",
+    "mobile app",
+    "ui design",
+    "user interface",
+    "menu",
+    "form",
+    "spreadsheet",
+    "table",
+    # Other text-heavy content
+    "quote",
+    "meme",
+    "poster",
+    "banner",
+    "advertisement",
+    "ad",
+    "flyer",
+    "brochure",
+    "certificate",
+    "diploma",
+    "resume",
+    "cv",
+    "letter",
+    "email",
+    "message",
+    "chat",
+    "tweet",
+    "social media post",
+}
+
+
+def is_text_heavy_image(alt_text: str, tags: str = "") -> bool:
+    """
+    Check if an image is likely to contain significant text content.
+
+    Args:
+        alt_text: The alt text or description of the image
+        tags: Additional tags/keywords associated with the image
+
+    Returns:
+        True if the image is likely text-heavy and should be filtered out
+    """
+    combined = f"{alt_text} {tags}".lower()
+
+    for keyword in TEXT_HEAVY_KEYWORDS:
+        if keyword in combined:
+            return True
+
+    return False

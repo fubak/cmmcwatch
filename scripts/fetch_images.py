@@ -20,8 +20,10 @@ from typing import Dict, List, Optional, Tuple
 import requests
 
 try:
+    from image_utils import is_text_heavy_image
     from rate_limiter import check_before_call
 except ImportError:
+    from scripts.image_utils import is_text_heavy_image
     from scripts.rate_limiter import check_before_call
 
 from config import (
@@ -137,92 +139,6 @@ CACHE_DIR = IMAGE_CACHE_DIR
 CACHE_INDEX_FILE = CACHE_DIR / "cache_index.json"
 CACHE_MAX_AGE_DAYS = IMAGE_CACHE_MAX_AGE_DAYS
 CACHE_MAX_ENTRIES = IMAGE_CACHE_MAX_ENTRIES
-
-
-# Keywords that indicate an image likely contains text (screenshots, infographics, etc.)
-TEXT_HEAVY_KEYWORDS = {
-    # Document/screenshot indicators
-    "screenshot",
-    "screen shot",
-    "screen-shot",
-    "screencap",
-    "screen capture",
-    "document",
-    "webpage",
-    "web page",
-    "website",
-    "article",
-    "blog post",
-    "newspaper",
-    "magazine",
-    "book",
-    "text",
-    "words",
-    "writing",
-    "written",
-    # Infographic indicators
-    "infographic",
-    "info graphic",
-    "chart",
-    "graph",
-    "diagram",
-    "flowchart",
-    "timeline",
-    "statistics",
-    "data visualization",
-    "presentation",
-    "slide",
-    # UI/Interface indicators
-    "interface",
-    "dashboard",
-    "app screen",
-    "mobile app",
-    "ui design",
-    "user interface",
-    "menu",
-    "form",
-    "spreadsheet",
-    "table",
-    # Other text-heavy content
-    "quote",
-    "meme",
-    "poster",
-    "banner",
-    "advertisement",
-    "ad",
-    "flyer",
-    "brochure",
-    "certificate",
-    "diploma",
-    "resume",
-    "cv",
-    "letter",
-    "email",
-    "message",
-    "chat",
-    "tweet",
-    "social media post",
-}
-
-
-def is_text_heavy_image(alt_text: str, tags: str = "") -> bool:
-    """
-    Check if an image is likely to contain significant text content.
-
-    Args:
-        alt_text: The alt text or description of the image
-        tags: Additional tags/keywords associated with the image
-
-    Returns:
-        True if the image is likely text-heavy and should be filtered out
-    """
-    combined = f"{alt_text} {tags}".lower()
-
-    for keyword in TEXT_HEAVY_KEYWORDS:
-        if keyword in combined:
-            return True
-
-    return False
 
 
 @dataclass
