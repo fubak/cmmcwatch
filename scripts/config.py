@@ -248,10 +248,14 @@ CMMC_LINKEDIN_PROFILES = [
     "https://www.linkedin.com/in/joybeland/",  # Joy Beland - CMMC consultant
 ]
 
-# LinkedIn scraper limits (to stay within Apify free tier)
-# Uses apimaestro/linkedin-profile-posts actor on Apify
-LINKEDIN_MAX_PROFILES = 10  # Max profiles per run
-LINKEDIN_MAX_POSTS_PER_PROFILE = 5  # Max posts per profile
+# LinkedIn scraper limits (to stay within Apify's $5/month free tier).
+# Uses apimaestro/linkedin-profile-posts actor on Apify. With 9 profiles, the full
+# list is scraped every other day at 3 posts each — well under the free tier. The
+# cadence is stateless (day-of-year parity) because CI wipes data/*.json each run,
+# so a persisted "last fetched" timestamp would not survive between runs.
+LINKEDIN_MAX_PROFILES = 10  # Max profiles scraped per run (9 currently configured)
+LINKEDIN_MAX_POSTS_PER_PROFILE = 3  # Max posts per profile (reduced from 5 for cost)
+LINKEDIN_FETCH_EVERY_N_DAYS = 2  # Scrape on 1-in-N days (by day-of-year); 2 = every other day
 
 # ============================================================================
 # CMMC WATCH KEYWORDS (COMPOSITE)

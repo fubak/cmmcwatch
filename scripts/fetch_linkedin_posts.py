@@ -11,10 +11,12 @@ Free tier limits (Apify):
 - 7-day data retention
 
 To stay within free limits:
-- Runs once daily (via main pipeline)
-- Limited to 10 influencers max
-- Fetches only 5 most recent posts per profile
-- Tracks last fetch time to skip already-seen posts
+- Scrapes the full profile list every other day (stateless day-of-year cadence,
+  configured via LINKEDIN_FETCH_EVERY_N_DAYS) — CI wipes data/*.json each run, so
+  the cadence cannot rely on a persisted timestamp
+- Limited to LINKEDIN_MAX_PROFILES per run
+- Fetches only LINKEDIN_MAX_POSTS_PER_PROFILE recent posts per profile
+- Tracks last fetch time to skip already-seen posts within a run
 """
 
 import json
@@ -26,16 +28,23 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from config import setup_logging
+from config import (
+    LINKEDIN_FETCH_EVERY_N_DAYS,
+    setup_logging,
+)
+from config import (
+    LINKEDIN_MAX_POSTS_PER_PROFILE as MAX_POSTS_PER_PROFILE,
+)
+from config import (
+    LINKEDIN_MAX_PROFILES as MAX_PROFILES,
+)
 
 logger = setup_logging("linkedin_scraper")
 
 # Default actor ID - can be overridden via environment variable
 DEFAULT_APIFY_ACTOR = "apimaestro/linkedin-profile-posts"
 
-# Conservative limits to stay within Apify free tier
-MAX_PROFILES = 10  # Maximum profiles to scrape per run
-MAX_POSTS_PER_PROFILE = 5  # Maximum posts per profile
+# Profile/post caps come from config (single source of truth).
 SCRAPER_TIMEOUT_SECONDS = 120  # Max wait time for scraper
 
 # Last-fetched tracking file
@@ -114,6 +123,19 @@ def _save_last_fetched(data: dict) -> None:
         logger.warning(f"Could not save last-fetched data: {e}")
 
 
+def _should_fetch_today(day_of_year: int, every_n_days: int = LINKEDIN_FETCH_EVERY_N_DAYS) -> bool:
+    """Stateless scrape-cadence gate (Apify free-tier cost control).
+
+    Returns True on 1-in-``every_n_days`` days, keyed off the day of the year so it
+    needs no persisted state (CI wipes data/*.json each run). ``every_n_days <= 1``
+    means "every run". With 9 profiles, every-other-day keeps the full list well
+    within the $5 free tier.
+    """
+    if every_n_days <= 1:
+        return True
+    return day_of_year % every_n_days == 0
+
+
 def fetch_linkedin_posts(
     profile_urls: List[str],
     max_posts_per_profile: int = MAX_POSTS_PER_PROFILE,
@@ -130,6 +152,15 @@ def fetch_linkedin_posts(
     """
     client = get_apify_client()
     if not client:
+        return []
+
+    # Apify free-tier cost control: only scrape on the every-other-day cadence.
+    day_of_year = datetime.now(timezone.utc).timetuple().tm_yday
+    if not _should_fetch_today(day_of_year):
+        logger.info(
+            f"Skipping LinkedIn fetch — off-cadence day "
+            f"(every {LINKEDIN_FETCH_EVERY_N_DAYS} days, Apify free-tier control)"
+        )
         return []
 
     actor_id = os.getenv("APIFY_ACTOR_ID", DEFAULT_APIFY_ACTOR)

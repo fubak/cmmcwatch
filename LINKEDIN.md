@@ -12,12 +12,14 @@ After testing RSSHub and LinkedIn API:
 ## Apify Free Tier Usage
 
 **Free credits:** $5/month  
-**Current config:** 9 profiles × up to 5 posts × 1 fetch/day
+**Current config:** all 9 profiles × up to 3 posts, scraped **every other day**
 
-> ⚠️ **Budget note:** This reverts the earlier 4-profile / 3-post optimization. At
-> 9 profiles the run is ~2–4× the old basis (~$3/mo), so usage **likely exceeds the
-> $5 free tier**. Verify at the Apify console; reduce `LINKEDIN_MAX_PROFILES`/posts or
-> fetch frequency if over budget.
+> ✅ **Budget:** All 9 influencers are monitored, but the full list is scraped every
+> other day (`LINKEDIN_FETCH_EVERY_N_DAYS = 2`) at 3 posts each — about the same
+> per-run volume as the old 4-profile / 3-post setup, run ~15×/month instead of 30×.
+> That keeps usage within the $5 free tier. The cadence is **stateless** (day-of-year
+> parity) because CI wipes `data/*.json` each run, so a persisted "last fetched"
+> timestamp would not survive between runs.
 
 ### Current Config
 
@@ -27,24 +29,24 @@ CMMC_LINKEDIN_PROFILES = [ ... 9 URLs ... ]  # Katie Arrington, Stacy Bostjanick
 # Matthew Travis, Amira Armond, Scott Edwards, Jacob Horne, Daniel Akridge,
 # Jacob Hill, Joy Beland
 
-LINKEDIN_MAX_PROFILES = 10          # Max profiles per run
-LINKEDIN_MAX_POSTS_PER_PROFILE = 5  # Max posts per profile
+LINKEDIN_MAX_PROFILES = 10          # Max profiles per run (all 9 scraped)
+LINKEDIN_MAX_POSTS_PER_PROFILE = 3  # Max posts per profile
+LINKEDIN_FETCH_EVERY_N_DAYS = 2     # Scrape every other day (free-tier cost control)
 ```
 
-**Daily volume:**
+**Per fetch (every other day):**
 - up to 10 profiles per run (9 configured)
-- up to 5 posts per profile
-- 1 fetch per day
-- **Total:** ~45 posts/day
+- up to 3 posts per profile
+- ~27 posts per fetch, ~15 fetches/month
 
 ### Cost Breakdown (estimated)
 
 | Activity | Cost per Run | Runs/Month | Total/Month |
 |----------|--------------|------------|-------------|
-| 9 profiles × 5 posts | ~$0.20–0.40 (est.) | 30 | **~$6–11 (est.)** |
+| 9 profiles × 3 posts | ~$0.20 (est.) | ~15 (every other day) | **~$3–3.5 (est.)** |
 
-**Result:** ⚠️ Likely **over** the $5 free tier. Estimates scale the prior
-4-profile / $3 figure by profile and post count — confirm against actual Apify billing.
+**Result:** ✅ Within the $5 free tier — the every-other-day cadence offsets the larger
+profile list. Confirm against actual Apify billing.
 
 ## Profiles Monitored (9)
 
@@ -74,13 +76,16 @@ We also added these **FREE** RSS feeds for broader CMMC coverage:
 Check Apify usage:
 1. Go to https://console.apify.com/account/usage
 2. Monitor "Platform usage" for current month
-3. If approaching $5 limit, reduce to 3 profiles or fetch every other day
+3. If still approaching the $5 limit, lower `LINKEDIN_MAX_POSTS_PER_PROFILE` or raise
+   `LINKEDIN_FETCH_EVERY_N_DAYS` (e.g. 3 = every third day)
 
 ## Future Optimization
 
-If free tier becomes insufficient:
-- Reduce to 3 most important profiles (keep Katie, Stacy, Matthew)
-- Fetch every other day instead of daily
+The every-other-day cadence (`LINKEDIN_FETCH_EVERY_N_DAYS = 2`) is already in place. If
+the free tier still becomes insufficient:
+- Raise `LINKEDIN_FETCH_EVERY_N_DAYS` to 3+ (scrape less often)
+- Lower `LINKEDIN_MAX_POSTS_PER_PROFILE`
+- Trim `CMMC_LINKEDIN_PROFILES` to the highest-signal accounts
 - Switch to Google Alerts for supplementary monitoring
 
 ---
