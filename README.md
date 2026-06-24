@@ -104,11 +104,13 @@ APIFY_ACTOR_ID=scraper-engine/linkedin-post-scraper
 ### Reddit Communities (4 subreddits)
 - r/CMMC, r/NISTControls, r/FederalEmployees, r/cybersecurity
 
-### LinkedIn Influencers (4 profiles)
+### LinkedIn Influencers (9 profiles)
 - Katie Arrington (DoD CIO, CMMC architect)
 - Stacy Bostjanick (DoD Chief DIB Cybersecurity)
 - Matthew Travis (Cyber-AB CEO)
 - Amira Armond (C3PAO, CMMC Audit)
+- Summit 7 team: Scott Edwards, Jacob Horne, Daniel Akridge, Jacob Hill
+- Joy Beland (CMMC educator)
 
 **See [SOURCES.md](SOURCES.md) for complete list.**
 
@@ -303,7 +305,7 @@ If you discover a security vulnerability, please email [security contact here] i
 ## 📈 Roadmap
 
 ### Current (v1.0)
-- ✅ Daily news aggregation from 24 sources
+- ✅ Daily news aggregation from 29 sources (20 RSS + 9 LinkedIn)
 - ✅ AI-powered design generation
 - ✅ Editorial article generation
 - ✅ PWA support

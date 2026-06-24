@@ -41,7 +41,7 @@ Complete list of sources for daily CMMC/compliance news aggregation.
 
 ## LinkedIn Profiles (Apify - FREE TIER)
 
-### Key CMMC Influencers (4 profiles)
+### Key CMMC Influencers (9 profiles)
 1. **Katie Arrington** - DoD CIO (former CISO, original CMMC architect)
    - https://www.linkedin.com/in/katie-arrington-a6949425/
 
@@ -54,15 +54,31 @@ Complete list of sources for daily CMMC/compliance news aggregation.
 4. **Amira Armond** - Kieri Solutions (C3PAO), cmmcaudit.org editor
    - https://www.linkedin.com/in/amira-armond/
 
-**Fetch limits (optimized for free tier):**
-- 4 profiles max
-- 3 posts per profile max
-- 1 fetch per day
-- ~12 posts/day total
+5. **Scott Edwards** - Summit 7
+   - https://www.linkedin.com/in/mscottedwards/
 
-**Expected usage:** ~$3/month  
-**Free tier limit:** $5/month  
-**Cost:** $0/month (within free tier) ✅
+6. **Jacob Horne** - Summit 7
+   - https://www.linkedin.com/in/jacob-evan-horne/
+
+7. **Daniel Akridge** - Summit 7
+   - https://www.linkedin.com/in/danielakridge/
+
+8. **Jacob Hill** - Summit 7 / GRC community
+   - https://www.linkedin.com/in/jacobrhill/
+
+9. **Joy Beland** - CMMC educator
+   - https://www.linkedin.com/in/joybeland/
+
+**Fetch limits (`config.py` / `fetch_linkedin_posts.py`):**
+- 10 profiles max per run (`LINKEDIN_MAX_PROFILES`); 9 currently configured
+- 5 posts per profile max (`LINKEDIN_MAX_POSTS_PER_PROFILE`)
+- 1 fetch per day
+- ~45 posts/day total
+
+**Free tier limit:** $5/month
+**Cost:** ⚠️ The earlier 4-profile / 3-post optimization (~$3/mo) has been reverted — at
+9 profiles × 5 posts the run is ~2–4× larger and **likely exceeds the $5 free tier**.
+Verify actual usage at the Apify console (see [LINKEDIN.md](LINKEDIN.md)).
 
 ### LinkedIn API Credentials (Optional)
 
@@ -77,8 +93,8 @@ The pipeline uses Apify exclusively (`scripts/fetch_linkedin_posts.py`).
 
 ## Summary
 
-**Total sources:** 20 RSS feeds + 4 LinkedIn profiles = 24 sources  
-**Total cost:** $0/month (Apify free tier)  
+**Total sources:** 20 RSS feeds + 9 LinkedIn profiles = 29 sources  
+**Total cost:** RSS $0/month; Apify LinkedIn may exceed the $5 free tier at 9 profiles (verify usage)  
 **Expected daily content:** 50+ posts/day
 
 **Recent additions (2026-01-25):**
@@ -101,4 +117,4 @@ The pipeline uses Apify exclusively (`scripts/fetch_linkedin_posts.py`).
    - Fetch every other day
    - Or upgrade to paid tier ($49/month for more credits)
 
-**Current config stays well within free tier.** No action needed. ✅
+**At 9 profiles the config may exceed the $5 free tier** — monitor usage, and if needed reduce `LINKEDIN_MAX_PROFILES`/posts or fetch less often.
