@@ -68,9 +68,19 @@ jobs:
             echo "Removing existing archive for $TODAY"
             rm -rf "public/archive/$TODAY"
           fi
-          # Also clear cached data to force fresh content
-          rm -f data/*.json 2>/dev/null || true
-          echo "Cleared stale data files"
+          # Clear regenerated content (trends/images/design) but PRESERVE the
+          # persistent state the GH Actions cache restores each run: design &
+          # keyword variety history, the feed-failure cooldown cache, source
+          # health, and LinkedIn dedup. Wiping all of data/*.json defeated those
+          # features. (data/image_cache/ is a subdir and is left untouched.)
+          find data -maxdepth 1 -name '*.json' \
+            ! -name 'design_history.json' \
+            ! -name 'feed_runtime_cache.json' \
+            ! -name 'keyword_history.json' \
+            ! -name 'linkedin_last_fetched.json' \
+            ! -name 'source_health.json' \
+            -delete 2>/dev/null || true
+          echo "Cleared regenerated content; preserved persistent state"
 
       - name: Clean up orphaned articles (metadata without HTML)
         run: |
