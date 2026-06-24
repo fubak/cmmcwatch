@@ -28,13 +28,19 @@ Archive → Collect CMMC trends → Fetch images → Generate design → Generat
 | `collect_trends.py` | CMMC RSS feeds, Reddit, LinkedIn |
 | `fetch_images.py` | Pexels/Unsplash images |
 | `fetch_linkedin_posts.py` | Apify LinkedIn scraper |
-| `generate_design.py` | AI-driven design generation |
+| `generate_design.py` | AI-driven design generation (color math → `color_utils`, animation → `content_animation`) |
 | `build_website.py` | HTML/CSS/JS builder |
-| `editorial_generator.py` | Daily article generation |
+| `editorial_generator.py` | Daily article generation (page HTML → `article_renderer`/`articles_index_renderer`) |
+| `article_renderer.py` | Article-page HTML renderer (pure; extracted from `editorial_generator`) |
+| `articles_index_renderer.py` | Articles-index page HTML renderer (pure) |
 | `generate_rss.py` | RSS 2.0 feed |
 | `archive_manager.py` | 30-day snapshots |
 | `ai_providers.py` | Shared HTTP layer for Groq/OpenRouter/Google AI/Mistral/HF/Ollama |
 | `json_utils.py` | Shared LLM-JSON repair helpers (`parse_llm_json`, `repair_json`) |
+| `timestamp_utils.py` | Feed/API timestamp parsing → naive UTC (used by `collect_trends`) |
+| `color_utils.py` | WCAG contrast/luminance math (used by `generate_design`) |
+| `content_animation.py` | News-sentiment → animation intensity (used by `generate_design`) |
+| `image_utils.py` | Image-URL validation/sanitization + text-heavy image filter |
 | `config.py` | All constants and settings (incl. `SITE_URL`, `SITE_NAME`) |
 
 ## Data Sources
