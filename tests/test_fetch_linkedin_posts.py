@@ -14,8 +14,30 @@ from fetch_linkedin_posts import (
     _extract_keywords,
     _get_profile_username,
     _parse_linkedin_item,
+    _should_fetch_today,
     linkedin_posts_to_trends,
 )
+
+
+class TestShouldFetchToday:
+    """The stateless scrape cadence keeps Apify usage within the free tier."""
+
+    def test_every_other_day_fetches_on_even_day_of_year(self):
+        assert _should_fetch_today(2, every_n_days=2) is True
+        assert _should_fetch_today(4, every_n_days=2) is True
+
+    def test_every_other_day_skips_on_odd_day_of_year(self):
+        assert _should_fetch_today(1, every_n_days=2) is False
+        assert _should_fetch_today(3, every_n_days=2) is False
+
+    def test_every_third_day(self):
+        assert _should_fetch_today(6, every_n_days=3) is True
+        assert _should_fetch_today(7, every_n_days=3) is False
+
+    def test_n_le_1_means_every_run(self):
+        # disabling the cadence (e.g. 1 or 0) must never skip a run
+        assert _should_fetch_today(1, every_n_days=1) is True
+        assert _should_fetch_today(7, every_n_days=0) is True
 
 
 def _post(**overrides):

@@ -71,14 +71,14 @@ Complete list of sources for daily CMMC/compliance news aggregation.
 
 **Fetch limits (`config.py` / `fetch_linkedin_posts.py`):**
 - 10 profiles max per run (`LINKEDIN_MAX_PROFILES`); 9 currently configured
-- 5 posts per profile max (`LINKEDIN_MAX_POSTS_PER_PROFILE`)
-- 1 fetch per day
-- ~45 posts/day total
+- 3 posts per profile max (`LINKEDIN_MAX_POSTS_PER_PROFILE`)
+- scraped every other day (`LINKEDIN_FETCH_EVERY_N_DAYS = 2`, stateless cadence)
+- ~27 posts per fetch, ~15 fetches/month
 
 **Free tier limit:** $5/month
-**Cost:** ⚠️ The earlier 4-profile / 3-post optimization (~$3/mo) has been reverted — at
-9 profiles × 5 posts the run is ~2–4× larger and **likely exceeds the $5 free tier**.
-Verify actual usage at the Apify console (see [LINKEDIN.md](LINKEDIN.md)).
+**Cost:** ✅ ~$3–3.5/month (est.) — all 9 profiles are kept, but the every-other-day
+cadence offsets the larger list to stay within the $5 free tier. Verify actual usage at
+the Apify console (see [LINKEDIN.md](LINKEDIN.md)).
 
 ### LinkedIn API Credentials (Optional)
 
@@ -94,7 +94,7 @@ The pipeline uses Apify exclusively (`scripts/fetch_linkedin_posts.py`).
 ## Summary
 
 **Total sources:** 20 RSS feeds + 9 LinkedIn profiles = 29 sources  
-**Total cost:** RSS $0/month; Apify LinkedIn may exceed the $5 free tier at 9 profiles (verify usage)  
+**Total cost:** $0/month for RSS; Apify LinkedIn ~$3–3.5/month (est.), within the $5 free tier via the every-other-day cadence  
 **Expected daily content:** 50+ posts/day
 
 **Recent additions (2026-01-25):**
@@ -112,9 +112,9 @@ The pipeline uses Apify exclusively (`scripts/fetch_linkedin_posts.py`).
 
 1. Go to https://console.apify.com/account/usage
 2. Check "Platform usage" for current month
-3. If approaching $5 limit:
-   - Reduce to 3 profiles
-   - Fetch every other day
+3. If still approaching the $5 limit:
+   - Raise `LINKEDIN_FETCH_EVERY_N_DAYS` to 3+ (scrape less often)
+   - Lower `LINKEDIN_MAX_POSTS_PER_PROFILE`
    - Or upgrade to paid tier ($49/month for more credits)
 
-**At 9 profiles the config may exceed the $5 free tier** — monitor usage, and if needed reduce `LINKEDIN_MAX_PROFILES`/posts or fetch less often.
+**The every-other-day cadence keeps all 9 profiles within the $5 free tier** (~$3–3.5/month est.) — monitor actual usage at the Apify console.
