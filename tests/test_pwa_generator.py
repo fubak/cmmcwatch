@@ -114,7 +114,11 @@ class TestSavePwaAssets:
         assert (tmp_path / "sw.js").exists()
         assert (tmp_path / "offline.html").exists()
         # Icon may be PNG or SVG depending on path; check for either
-        assert (tmp_path / "icons").exists() or (tmp_path / "icon.svg").exists()
+        assert (tmp_path / "icons" / "icon.svg").exists()
+        assert (tmp_path / "icons" / "icon-192.png").exists()
+        assert (tmp_path / "icons" / "icon-512.png").exists()
+        assert (tmp_path / "og-image.png").exists()
+        assert (tmp_path / "saved" / "index.html").exists()
 
     def test_manifest_is_valid_json(self, tmp_path):
         save_pwa_assets(tmp_path)

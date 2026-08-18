@@ -26,6 +26,7 @@ class TestGetNavLinks:
     def test_includes_archive_link(self):
         nav = get_nav_links()
         assert "/archive" in nav.lower()
+        assert "/saved/" in nav
 
     def test_marks_active_page(self):
         nav = get_nav_links(active_page="archive")

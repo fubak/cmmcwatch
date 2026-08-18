@@ -38,6 +38,12 @@ class TestGenerateSitemap:
         xml = generate_sitemap()
         assert "/feed.xml" in xml
 
+    def test_does_not_advertise_removed_cmmc_paths(self):
+        xml = generate_sitemap(base_url="https://cmmcwatch.com")
+        assert "/cmmc/" not in xml
+        assert "/cmmc/feed.xml" not in xml
+        assert "/saved/" in xml
+
     def test_includes_explicit_archive_dates(self):
         xml = generate_sitemap(archive_dates=["2025-12-25", "2025-12-26"])
         assert "/archive/2025-12-25/" in xml

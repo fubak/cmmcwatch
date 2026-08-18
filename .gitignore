@@ -38,6 +38,7 @@ data/trends.json
 data/images.json
 data/design.json
 data/feed_runtime_cache.json
+data/source_health.json
 data/competitor_monitor/
 
 # Generated site content (deployed via gh-pages branch)

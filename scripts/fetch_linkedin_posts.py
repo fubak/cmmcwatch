@@ -102,6 +102,17 @@ def _get_profile_username(profile_url: str) -> str:
     return profile_url
 
 
+def _as_unix_seconds(value) -> float:
+    """Normalize Apify / persisted timestamps to unix seconds."""
+    try:
+        ts = float(value or 0)
+    except (TypeError, ValueError):
+        return 0.0
+    if ts > 10_000_000_000:
+        ts = ts / 1000.0
+    return ts
+
+
 def _load_last_fetched() -> dict:
     """Load last-fetched tracking data."""
     try:
@@ -206,7 +217,9 @@ def fetch_linkedin_posts(
                 # Filter out posts older than last fetch
                 posted_at = item.get("posted_at", {})
                 post_ts = posted_at.get("timestamp", 0)
-                if last_fetched_ts and post_ts and post_ts <= last_fetched_ts:
+                post_ts = _as_unix_seconds(post_ts)
+                last_ts = _as_unix_seconds(last_fetched_ts)
+                if last_ts and post_ts and post_ts <= last_ts:
                     continue
 
                 post = _parse_linkedin_item(item)
@@ -228,7 +241,7 @@ def fetch_linkedin_posts(
         now = datetime.now(timezone.utc)
         _save_last_fetched(
             {
-                "last_fetched_ts": int(now.timestamp() * 1000),
+                "last_fetched_ts": int(now.timestamp()),
                 "last_fetched_date": now.isoformat(),
             }
         )
@@ -326,7 +339,7 @@ def linkedin_posts_to_trends(posts: List[LinkedInPost]) -> List[Dict]:
             "source": "cmmc_linkedin",
             "url": post.post_url or post.author_url,
             "description": post.content[:500],
-            "category": "cmmc",
+            "category": "cmmc_program",
             "score": _calculate_post_score(post),
             "keywords": _extract_keywords(post.content),
             "timestamp": post.timestamp.isoformat() if post.timestamp else None,

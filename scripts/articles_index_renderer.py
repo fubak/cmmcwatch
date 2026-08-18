@@ -807,9 +807,9 @@ def render_articles_index(
             // Length filter
             if (state.lengthFilter !== 'all') {{
                 switch (state.lengthFilter) {{
-                    case 'short': filtered = filtered.filter(a => a.word_count < 800); break;
-                    case 'medium': filtered = filtered.filter(a => a.word_count >= 800 && a.word_count <= 1000); break;
-                    case 'long': filtered = filtered.filter(a => a.word_count > 1000); break;
+                    case 'short': filtered = filtered.filter(a => a.word_count < 400); break;
+                    case 'medium': filtered = filtered.filter(a => a.word_count >= 400 && a.word_count <= 600); break;
+                    case 'long': filtered = filtered.filter(a => a.word_count > 600); break;
                 }}
             }}
 

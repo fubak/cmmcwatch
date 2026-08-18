@@ -24,6 +24,7 @@ import requests
 from bs4 import BeautifulSoup
 from config import SITE_URL, setup_logging
 from fetch_images import FallbackImageGenerator
+from html_utils import css_safe_image_url, is_public_http_url, sanitize_http_url
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 logger = setup_logging("pipeline")
@@ -73,6 +74,7 @@ class WebsiteBuilder:
         self.ctx = context
         self.design = context.design
         self._description_cache = {}
+        self._sanitize_outbound_urls()
 
         # Setup Jinja2 environment
         # Assuming templates are in a 'templates' folder at the project root
@@ -106,6 +108,20 @@ class WebsiteBuilder:
 
         # Find the best hero image based on headline content
         self._hero_image = self._find_relevant_hero_image()
+
+    def _sanitize_outbound_urls(self) -> None:
+        """Drop non-http(s) hrefs from feed/LLM fields before they hit templates."""
+        for trend in self.ctx.trends or []:
+            if isinstance(trend, dict):
+                trend["url"] = sanitize_http_url(trend.get("url"))
+        brief = self.ctx.front_page_brief
+        if isinstance(brief, dict):
+            for bullet in brief.get("bullets") or []:
+                if isinstance(bullet, dict) and "source_url" in bullet:
+                    bullet["source_url"] = sanitize_http_url(bullet.get("source_url"))
+        for post in getattr(self.ctx, "linkedin_posts", None) or []:
+            if isinstance(post, dict):
+                post["url"] = sanitize_http_url(post.get("url"))
         self._category_card_limit = 8  # 2 rows × 4 columns (must be multiple of 4)
 
         # Track URLs used across all sections to prevent duplicates anywhere on the page
@@ -738,6 +754,9 @@ class WebsiteBuilder:
             "cmmc_program",
             "nist_compliance",
             "defense_industrial_base",
+            "intelligence_threats",
+            "insider_threats",
+            "federal_cybersecurity",
         }
 
         # Check category
@@ -835,7 +854,7 @@ class WebsiteBuilder:
 
     def _fetch_story_description(self, url: str) -> str:
         """Fetch a concise meta description for a story URL."""
-        if not url or not url.startswith(("http://", "https://")):
+        if not url or not is_public_http_url(url):
             return ""
         if url in self._description_cache:
             return self._description_cache[url]
@@ -857,7 +876,7 @@ class WebsiteBuilder:
                 if tag and tag.get("content"):
                     description = tag.get("content", "").strip()
                     break
-        except (AttributeError, TypeError, ValueError) as e:
+        except (AttributeError, TypeError, ValueError, requests.RequestException) as e:
             logger.debug(f"Failed to extract meta description from {url}: {e}")
             description = ""
 
@@ -1028,8 +1047,8 @@ class WebsiteBuilder:
                 "FedRAMP",
                 "DFARS",
             ],
-            "publishingPrinciples": f"{SITE_URL}/about",
-            "masthead": f"{SITE_URL}/about",
+            "publishingPrinciples": f"{SITE_URL}/",
+            "masthead": f"{SITE_URL}/",
             "actionableFeedbackPolicy": "https://github.com/bshannon/cmmcwatch/issues",
         }
 
@@ -1397,9 +1416,10 @@ class WebsiteBuilder:
         hero_image_url = ""
         if self._hero_image:
             url = self._hero_image.get("url_large") or self._hero_image.get("url_medium")
-            if url:
-                hero_image_url = url
-                hero_bg_css = f"url('{url}') center center / cover no-repeat #0a0a0a"
+            safe_url = css_safe_image_url(url)
+            if safe_url:
+                hero_image_url = safe_url
+                hero_bg_css = f'url("{safe_url}") center center / cover no-repeat #0a0a0a'
 
         # Prepare styles from design spec
         d = self.design

@@ -887,8 +887,9 @@
         </button>
         <ul class="nav-links" id="nav-links">
             <li><a href="/">Home</a></li>
-            <li><a href="/articles/" class="active">Articles</a></li>
+            <li><a href="/articles/" class="active" aria-current="page">Articles</a></li>
             <li><a href="/archive/">Archive</a></li>
+            <li><a href="/saved/">Saved</a></li>
             <li><a href="/feed.xml">RSS Feed</a></li>
         </ul>
         <div class="nav-actions">
@@ -1024,7 +1025,7 @@
         'use strict';
 
         // Article data (server-rendered, escaped)
-        const ARTICLES = [{"title": "DoD publishes final CMMC rule", "date": "2026-06-24", "url": "/articles/2026/06/24/dod-final-cmmc-rule/", "summary": "The long-awaited rule lands; &lt;primes&gt; & subs must comply.", "mood": "urgent", "word_count": 812, "keywords": ["CMMC", "DFARS"]}, {"title": "C3PAO assessment backlog grows", "date": "2026-06-20", "url": "/articles/2026/06/20/c3pao-backlog/", "summary": "Assessors report a multi-month queue.", "mood": "informative", "word_count": 540, "keywords": ["C3PAO", "assessment"]}, {"title": "Summit 7 webinar recap", "date": "2026-06-18", "url": "/articles/2026/06/18/summit-7-recap/", "summary": "Takeaways for primes preparing SSPs.", "mood": "informative", "word_count": 410, "keywords": ["SSP", "Summit 7"]}];
+        const ARTICLES = [{"title": "DoD publishes final CMMC rule", "date": "2026-06-24", "url": "/articles/2026/06/24/dod-final-cmmc-rule/", "summary": "The long-awaited rule lands; \u003cprimes\u003e \u0026 subs must comply.", "mood": "urgent", "word_count": 812, "keywords": ["CMMC", "DFARS"]}, {"title": "C3PAO assessment backlog grows", "date": "2026-06-20", "url": "/articles/2026/06/20/c3pao-backlog/", "summary": "Assessors report a multi-month queue.", "mood": "informative", "word_count": 540, "keywords": ["C3PAO", "assessment"]}, {"title": "Summit 7 webinar recap", "date": "2026-06-18", "url": "/articles/2026/06/18/summit-7-recap/", "summary": "Takeaways for primes preparing SSPs.", "mood": "informative", "word_count": 410, "keywords": ["SSP", "Summit 7"]}];
 
         // State
         let state = {
@@ -1130,9 +1131,9 @@
             // Length filter
             if (state.lengthFilter !== 'all') {
                 switch (state.lengthFilter) {
-                    case 'short': filtered = filtered.filter(a => a.word_count < 800); break;
-                    case 'medium': filtered = filtered.filter(a => a.word_count >= 800 && a.word_count <= 1000); break;
-                    case 'long': filtered = filtered.filter(a => a.word_count > 1000); break;
+                    case 'short': filtered = filtered.filter(a => a.word_count < 400); break;
+                    case 'medium': filtered = filtered.filter(a => a.word_count >= 400 && a.word_count <= 600); break;
+                    case 'long': filtered = filtered.filter(a => a.word_count > 600); break;
                 }
             }
 

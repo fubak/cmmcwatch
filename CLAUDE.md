@@ -45,7 +45,7 @@ Archive → Collect CMMC trends → Fetch images → Generate design → Generat
 
 ## Data Sources
 
-**RSS Feeds:** FedScoop, DefenseScoop, Federal News Network, Nextgov, GovCon Wire, SecurityWeek, Cyberscoop, Breaking Defense, Defense One, Defense News, ExecutiveGov
+**RSS Feeds:** 20 official/trade feeds in `scripts/source_catalog.py` (FedScoop, DefenseScoop, FNN, Nextgov, GovCon Wire, SecurityWeek, Cyberscoop, Breaking Defense, Defense One, Defense News, ExecutiveGov, Industrial Cyber, IntelNews, CSIS, Cyberpress, Reuters Security, DOJ, NIST CSRC, CMMC Audit, Cyber-AB). Also Federal Register API.
 
 **Reddit:** r/CMMC, r/NISTControls, r/FederalEmployees, r/cybersecurity
 
@@ -55,8 +55,17 @@ Archive → Collect CMMC trends → Fetch images → Generate design → Generat
 
 1. **CMMC Program News** - Core CMMC keywords (cmmc, c3pao, cyber-ab)
 2. **NIST & Compliance** - NIST 800-171, DFARS, FedRAMP, FISMA
-3. **Defense Industrial Base** - DoD contractors, DIB news
-4. **Federal Cybersecurity** - General federal cyber news
+3. **Intelligence Threats** - Espionage, nation-state actors, APTs
+4. **Insider Threats** - Insider risks, employee recruitment, data theft
+5. **Defense Industrial Base** - DoD contractors, DIB news
+6. **Federal Cybersecurity** - General federal cyber news
+
+## Rules-as-Spec (specs/)
+
+Editorial/classification rules are specified in plain English in `specs/` with stable
+IDs (`CW-CLASS-01`, …), each mapped to implementing code and verifying tests. Any change
+to classification, filtering, categories, dedup, freshness, or sources MUST update the
+matching rule in `specs/content-rules.md` and reference its ID in the commit/PR.
 
 ## Continuous Improvement
 

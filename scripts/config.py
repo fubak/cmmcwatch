@@ -7,7 +7,10 @@ Centralizes all magic numbers, timeouts, and environment-specific settings.
 
 import logging
 import os
+import re
 from pathlib import Path
+
+from source_catalog import COLLECTOR_SOURCES
 
 # ============================================================================
 # SITE CONFIGURATION
@@ -74,34 +77,9 @@ LIMITS = {
 # CMMC RSS FEEDS
 # ============================================================================
 
-CMMC_RSS_FEEDS = {
-    # Federal IT, defense, and cybersecurity news sources
-    "FedScoop": "https://fedscoop.com/feed/",
-    "DefenseScoop": "https://defensescoop.com/feed/",
-    "Federal News Network": "https://federalnewsnetwork.com/category/technology-main/cybersecurity/feed/",
-    "Nextgov Cybersecurity": "https://www.nextgov.com/rss/cybersecurity/",
-    "GovCon Wire": "https://www.govconwire.com/feed/",
-    "SecurityWeek": "https://www.securityweek.com/feed/",
-    "Cyberscoop": "https://cyberscoop.com/feed/",
-    # Defense-focused sources
-    "Breaking Defense": "https://breakingdefense.com/feed/",
-    "Defense One": "https://www.defenseone.com/rss/all/",
-    "Defense News": "https://www.defensenews.com/arc/outboundfeeds/rss/?outputType=xml",
-    "ExecutiveGov": "https://executivegov.com/feed/",
-    # Intelligence, espionage, and nation-state threat sources
-    "Industrial Cyber": "https://industrialcyber.co/feed/",
-    "IntelNews": "https://intelnews.org/feed/",
-    "CSIS": "https://www.csis.org/rss/analysis/all",
-    "Cyberpress": "https://cyberpress.org/feed/",
-    "Reuters Security": "https://www.reuters.com/arc/outboundfeeds/v3/rss/section/world/cybersecurity/?outputType=xml",
-    # DOJ Press Releases (National Security Division)
-    "DOJ National Security": "https://www.justice.gov/feeds/opa/justice-news.xml",
-    # NIST CSRC (official NIST 800-171 updates)
-    "NIST CSRC": "https://csrc.nist.gov/csrc/media/feeds/metafeeds/all.rss",
-    # CMMC-specific resources
-    "CMMC Audit Blog": "https://cmmcaudit.org/feed/",
-    "Cyber-AB News": "https://cyberab.org/feed/",
-}
+# Derived from the live catalog so this dict cannot drift from collection.
+# Add or remove RSS sources in scripts/source_catalog.py, not here.
+CMMC_RSS_FEEDS = {source.name: source.url for source in COLLECTOR_SOURCES if source.collector == "cmmc_rss"}
 
 # ============================================================================
 # CMMC WATCH KEYWORDS
@@ -291,6 +269,22 @@ _ADDITIONAL_KEYWORDS = [
     "supply chain risk",
     "scrm",
 ]
+
+
+def keyword_in_text(keyword: str, text: str) -> bool:
+    """True if keyword occurs in text.
+
+    Multi-word / punctuated phrases stay substring matches ("nist 800-171").
+    Short tokens use word boundaries so "pla" does not match "platform".
+    """
+    if not keyword or not text:
+        return False
+    kw = keyword.lower()
+    hay = text.lower()
+    if any(ch.isspace() or ch in ".-/" for ch in kw):
+        return kw in hay
+    return re.search(r"\b" + re.escape(kw) + r"\b", hay) is not None
+
 
 # Composite keyword list for filtering CMMC-relevant content from RSS feeds
 # Composed from category-specific lists plus additional broader keywords

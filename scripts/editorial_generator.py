@@ -472,8 +472,7 @@ Respond with ONLY a valid JSON object:
                     shutil.rmtree(metadata_path.parent)
 
                 except Exception as e:
-                    logger.warning(f"Failed to load existing article: {e}")
-                    return None
+                    logger.warning(f"Failed to load existing article: {e}; generating a new one")
 
         # Build rich context from top stories
         top_stories = trends[:8]
@@ -876,10 +875,12 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
 
         Note: Editorial defaults to 'complex' as it requires high-quality writing.
         """
-        # Always try Ollama first if available (local, free, fast)
-        result = self._call_ollama(prompt, max_tokens)
-        if result:
-            return result
+        # Only probe Ollama when explicitly configured — a 5s timeout on every
+        # call burns the daily job when nothing is listening on :11434.
+        if os.getenv("OLLAMA_URL") or os.getenv("OLLAMA_HOST"):
+            result = self._call_ollama(prompt, max_tokens)
+            if result:
+                return result
 
         if task_complexity == "simple":
             # For simple tasks, prioritize free models to save quota
@@ -905,8 +906,9 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
 
             return self._call_google_ai(prompt, max_tokens, max_retries)
         else:
-            # For complex tasks, prioritize higher quality models (Mistral is high quality)
-            result = self._call_mistral(prompt, max_tokens, max_retries)
+            # Groq is the documented primary. Try it first so a configured-but-failing
+            # free-tier chain cannot burn the 15-minute daily job.
+            result = self._call_groq_direct(prompt, max_tokens, max_retries)
             if result:
                 return result
 
@@ -918,15 +920,15 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
             if result:
                 return result
 
+            result = self._call_mistral(prompt, max_tokens, max_retries)
+            if result:
+                return result
+
             result = self._call_opencode(prompt, max_tokens, max_retries)
             if result:
                 return result
 
-            result = self._call_huggingface(prompt, max_tokens, max_retries)
-            if result:
-                return result
-
-            return self._call_groq_direct(prompt, max_tokens, max_retries)
+            return self._call_huggingface(prompt, max_tokens, max_retries)
 
     def _check_ollama_available(self) -> bool:
         """Check if Ollama is running and accessible."""
@@ -1036,7 +1038,10 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
                             # This is a quota exhaustion - mark provider as exhausted
                             mark_provider_exhausted("google", "daily quota exceeded")
                             return None
-                    except (ValueError, requests.exceptions.JSONDecodeError) as parse_err:
+                    except (
+                        ValueError,
+                        requests.exceptions.JSONDecodeError,
+                    ) as parse_err:
                         logger.debug(f"Could not parse 429 error body as JSON: {parse_err}")
 
                     # Temporary rate limit - wait and retry
@@ -1062,7 +1067,12 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
     def _call_openrouter(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
         """Call OpenRouter API (delegates to shared ai_providers)."""
         return call_openai_compatible(
-            "openrouter", prompt, max_tokens, max_retries, self.session, api_key=self.openrouter_key
+            "openrouter",
+            prompt,
+            max_tokens,
+            max_retries,
+            self.session,
+            api_key=self.openrouter_key,
         )
 
     def _call_groq_direct(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
@@ -1131,9 +1141,7 @@ DATE: {datetime.now().strftime("%B %d, %Y")}"""
             "What People Think",
             "What's Actually Happening",
             "The Hidden Tradeoffs",
-            "The Best Counterarguments",
             "What This Means Next",
-            "Practical Framework",
             "Conclusion",
         ]
 
@@ -1267,7 +1275,11 @@ Respond with ONLY a valid JSON object:
                 # Save updated metadata atomically — a crash mid-write would
                 # corrupt the article state file the regen pipeline depends on.
                 with tempfile.NamedTemporaryFile(
-                    "w", dir=metadata_file.parent, suffix=".tmp", delete=False, encoding="utf-8"
+                    "w",
+                    dir=metadata_file.parent,
+                    suffix=".tmp",
+                    delete=False,
+                    encoding="utf-8",
                 ) as tmp:
                     json.dump(metadata, tmp, indent=2)
                     tmp_path = Path(tmp.name)
@@ -1446,13 +1458,15 @@ Respond with ONLY a valid JSON object:
 
         # Escape article data for JSON embedding
         # The data comes from our own metadata files (trusted), but we still escape for HTML safety
-        articles_json = json.dumps(
+        from html_utils import json_for_script
+
+        articles_json = json_for_script(
             [
                 {
-                    "title": a.get("title", "").replace("<", "&lt;").replace(">", "&gt;"),
+                    "title": a.get("title", ""),
                     "date": a.get("date", ""),
-                    "url": a.get("url", ""),
-                    "summary": (a.get("summary", "") or "").replace("<", "&lt;").replace(">", "&gt;"),
+                    "url": (a.get("url", "") if str(a.get("url", "")).startswith("/articles/") else ""),
+                    "summary": a.get("summary", "") or "",
                     "mood": a.get("mood", "informative"),
                     "word_count": a.get("word_count", 0),
                     "keywords": a.get("keywords", []),

@@ -175,15 +175,8 @@ def test_categorize_trend():
 
 ### Adding an RSS Feed
 
-1. Edit `scripts/config.py`
-2. Add to `CMMC_RSS_FEEDS` dictionary:
-
-```python
-CMMC_RSS_FEEDS = {
-    # ... existing feeds
-    "New Source Name": "https://example.com/feed.xml",
-}
-```
+1. Edit `scripts/source_catalog.py` (the live registry). `config.CMMC_RSS_FEEDS` is derived from it.
+2. Add a `_rss(...)` entry to `COLLECTOR_SOURCES` (see existing FedScoop / NIST CSRC rows).
 
 3. Test the feed:
 

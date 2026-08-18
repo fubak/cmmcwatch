@@ -76,6 +76,7 @@ class TestGetHealthSources:
         sources = get_health_sources()
         keys = {s.key for s in sources}
         assert "cmmc_fedscoop" in keys
+        assert "cmmc_federal_register" in keys
 
     def test_only_returns_healthcheck_enabled(self):
         sources = get_health_sources()
@@ -117,7 +118,11 @@ class TestCatalogIntegrity:
 
     def test_all_have_valid_kind(self):
         for spec in COLLECTOR_SOURCES:
-            assert spec.kind in ("rss", "json", "html"), f"{spec.key} has invalid kind: {spec.kind}"
+            assert spec.kind in (
+                "rss",
+                "json",
+                "html",
+            ), f"{spec.key} has invalid kind: {spec.kind}"
 
 
 if __name__ == "__main__":

@@ -45,7 +45,10 @@ except ImportError:
         call_openai_compatible,
     )
     from scripts.color_utils import adjust_color_for_contrast, validate_color_contrast
-    from scripts.content_animation import analyze_content_sentiment, get_content_aware_animation
+    from scripts.content_animation import (
+        analyze_content_sentiment,
+        get_content_aware_animation,
+    )
     from scripts.json_utils import parse_llm_json
 
 
@@ -1008,10 +1011,14 @@ class DesignGenerator:
             headline = selected_variant.get("headline") or self._create_headline(trends, rng)
             subheadline = selected_variant.get("subheadline") or self._create_subheadline(keywords, rng)
             # Override scheme with AI colors/theme
-            if selected_variant.get("color_accent"):
+            from html_utils import is_safe_hex_color
+
+            if selected_variant.get("color_accent") and is_safe_hex_color(selected_variant["color_accent"]):
                 scheme = {**scheme}
                 scheme["accent"] = selected_variant["color_accent"]
-            if selected_variant.get("color_accent_secondary"):
+            if selected_variant.get("color_accent_secondary") and is_safe_hex_color(
+                selected_variant["color_accent_secondary"]
+            ):
                 scheme["accent_secondary"] = selected_variant["color_accent_secondary"]
             if selected_variant.get("theme_name"):
                 scheme["name"] = selected_variant["theme_name"]
@@ -1368,7 +1375,12 @@ Respond with ONLY a valid JSON object:
     def _call_openrouter(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:
         """Call OpenRouter API (delegates to shared ai_providers)."""
         return call_openai_compatible(
-            "openrouter", prompt, max_tokens, max_retries, self.session, api_key=self.openrouter_key
+            "openrouter",
+            prompt,
+            max_tokens,
+            max_retries,
+            self.session,
+            api_key=self.openrouter_key,
         )
 
     def _call_groq_direct(self, prompt: str, max_tokens: int = 1000, max_retries: int = 1) -> Optional[str]:

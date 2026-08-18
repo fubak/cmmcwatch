@@ -339,7 +339,7 @@ STORIES TO VALIDATE:
 Respond with ONLY a valid JSON array. Each element must have:
 - index: story number (1-based)
 - relevant: boolean
-- category: one of the 4 valid categories
+- category: one of the 6 valid categories listed above
 - reason: string (only if relevant=false, explain why)
 
 Example:
@@ -486,11 +486,18 @@ Example:
             idx = i + 1  # 1-based index
             if idx in results_by_index:
                 r = results_by_index[idx]
+                raw_category = r.get("category", story.get("category", "federal_cybersecurity"))
+                if raw_category not in self.VALID_CATEGORIES:
+                    raw_category = (
+                        story.get("category")
+                        if story.get("category") in self.VALID_CATEGORIES
+                        else "federal_cybersecurity"
+                    )
                 results.append(
                     ValidationResult(
                         is_relevant=r.get("relevant", True),
                         relevance_score=1.0 if r.get("relevant", True) else 0.0,
-                        correct_category=r.get("category", story.get("category", "federal_cybersecurity")),
+                        correct_category=raw_category,
                         category_confidence=0.9,
                         rejection_reason=r.get("reason"),
                     )
@@ -534,13 +541,15 @@ Example:
         # Apply duplicate clusters
         urls_to_remove: Set[str] = set()
         for cluster in clusters:
-            urls_to_remove.update(cluster.duplicate_urls)
+            for dup_url in cluster.duplicate_urls:
+                if dup_url:
+                    urls_to_remove.add(dup_url)
 
         valid = []
         rejected = []
         for story in stories:
-            url = story.get("url", "")
-            if url in urls_to_remove:
+            url = story.get("url") or ""
+            if url and url in urls_to_remove:
                 story["rejection_reason"] = "Semantic duplicate"
                 rejected.append(story)
             else:

@@ -17,13 +17,16 @@ def get_nav_links(active_page: str = "") -> str:
         ("/", "Home", "home"),
         ("/articles/", "Articles", "articles"),
         ("/archive/", "Archive", "archive"),
+        ("/saved/", "Saved", "saved"),
         ("/feed.xml", "RSS Feed", "rss"),
     ]
 
     items = []
     for href, label, page_id in links:
-        active_class = ' class="active"' if page_id == active_page else ""
-        items.append(f'<li><a href="{href}"{active_class}>{label}</a></li>')
+        if page_id == active_page:
+            items.append(f'<li><a href="{href}" class="active" aria-current="page">{label}</a></li>')
+        else:
+            items.append(f'<li><a href="{href}">{label}</a></li>')
 
     return "\n            ".join(items)
 

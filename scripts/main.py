@@ -30,7 +30,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from archive_manager import ArchiveManager
 from collect_trends import TrendCollector
 from config import (
+    MIN_TRENDS,
     PROJECT_ROOT,
+    SITE_URL,
     setup_logging,
 )
 from editorial_generator import EditorialGenerator
@@ -133,12 +135,29 @@ class CMMCWatchPipeline:
             return False
 
         try:
-            # Step 1: Archive previous
-            if archive:
+            from source_health_check import run_health_check
+
+            health = run_health_check(timeout=8.0, workers=8, attempts=1)
+            _safe_write_json(self.data_dir / "source_health.json", health, indent=2)
+            summary = health.get("summary", {})
+            logger.info(
+                "Source health: %s healthy / %s down / %s total",
+                summary.get("healthy"),
+                summary.get("down"),
+                summary.get("total"),
+            )
+        except Exception:
+            logger.exception("Source health check failed (non-fatal)")
+
+        try:
+            # Step 1: Archive previous (never on dry-run — that would stamp today)
+            if archive and not dry_run:
                 logger.info("[1/10] Archiving previous website...")
                 # Load previous design to save with archive
                 prev_design = _load_json_dict(self.data_dir / "design.json")
                 self.archive_manager.archive_current(design=prev_design)
+            elif dry_run:
+                logger.info("[1/10] Dry run — skipping archive")
 
             # Step 2: Collect trends
             logger.info("[2/10] Collecting CMMC trends...")
@@ -146,8 +165,8 @@ class CMMCWatchPipeline:
             self.keywords = self.trend_collector.get_global_keywords()
             logger.info(f"Collected {len(self.trends)} CMMC trends")
 
-            if len(self.trends) < 3:
-                logger.error("Not enough trends collected. Aborting.")
+            if len(self.trends) < MIN_TRENDS:
+                logger.error(f"Not enough trends collected ({len(self.trends)} < {MIN_TRENDS}). Aborting.")
                 return False
 
             if dry_run:
@@ -183,7 +202,7 @@ class CMMCWatchPipeline:
 
             # Step 9: Sitemap
             logger.info("[9/10] Generating sitemap...")
-            save_sitemap(self.public_dir, base_url="https://cmmcwatch.com")
+            save_sitemap(self.public_dir, base_url=SITE_URL)
 
             # Step 10: Cleanup
             logger.info("[10/10] Cleaning up old archives...")
@@ -341,14 +360,24 @@ class CMMCWatchPipeline:
             output_path=self.public_dir / "feed.xml",
             title="CMMC Watch",
             description="Daily CMMC & Compliance News Aggregator",
-            link="https://cmmcwatch.com",
+            link=SITE_URL,
         )
         logger.info(f"RSS feed saved to {self.public_dir / 'feed.xml'}")
 
     def _save_data(self):
         """Save pipeline data to JSON files atomically."""
-        _safe_write_json(self.data_dir / "trends.json", _to_dict_list(self.trends), indent=2, default=str)
-        _safe_write_json(self.data_dir / "images.json", _to_dict_list(self.images), indent=2, default=str)
+        _safe_write_json(
+            self.data_dir / "trends.json",
+            _to_dict_list(self.trends),
+            indent=2,
+            default=str,
+        )
+        _safe_write_json(
+            self.data_dir / "images.json",
+            _to_dict_list(self.images),
+            indent=2,
+            default=str,
+        )
         _safe_write_json(self.data_dir / "design.json", self.design, indent=2, default=str)
         logger.info(f"Pipeline data saved to {self.data_dir}")
 

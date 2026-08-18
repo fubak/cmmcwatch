@@ -23,7 +23,7 @@ def _hostile_article():
         slug="hostile",
         date="2026-05-08",
         summary='"><img src=x onerror=alert("summary")>',
-        content="<p>Legitimate content stays.</p>",  # intentionally not escaped
+        content="<p>Legitimate content stays.</p><script>alert('content')</script>",
         word_count=100,
         top_stories=["<script>alert('story')</script>", "Normal Story"],
         keywords=["<script>alert('kw')</script>", "cmmc"],
@@ -95,9 +95,9 @@ class TestArticleHtmlXssEscaping:
     def test_legitimate_content_passes_through(self, generator):
         article = _hostile_article()
         html = generator._generate_article_html(article, _design_tokens())
-        # article.content is intentionally NOT escaped (it holds rendered markdown
-        # HTML produced by our trusted pipeline), so legitimate content stays.
+        # Allowlisted editorial tags stay; scripts in content must not.
         assert "<p>Legitimate content stays.</p>" in html
+        assert "alert('content')" not in html
 
     def test_normal_story_title_is_present(self, generator):
         article = _hostile_article()

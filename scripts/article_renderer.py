@@ -13,6 +13,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 try:
+    from html_utils import sanitize_article_html, sanitize_hex_color
     from shared_components import (
         build_footer,
         build_header,
@@ -21,6 +22,7 @@ try:
         get_theme_script,
     )
 except ImportError:
+    from scripts.html_utils import sanitize_article_html, sanitize_hex_color
     from scripts.shared_components import (
         build_footer,
         build_header,
@@ -62,6 +64,17 @@ def render_article_html(
     # Backwards-compatible aliases used in attribute contexts below
     title_escaped = title_html
     summary_escaped = summary_html
+    article_content = sanitize_article_html(article.content)
+    tokens = {
+        **tokens,
+        "primary_color": sanitize_hex_color(tokens.get("primary_color"), "#1a365d"),
+        "accent_color": sanitize_hex_color(tokens.get("accent_color"), "#c53030"),
+        "bg_color": sanitize_hex_color(tokens.get("bg_color"), "#0a0a0a"),
+        "text_color": sanitize_hex_color(tokens.get("text_color"), "#f7fafc"),
+        "muted_color": sanitize_hex_color(tokens.get("muted_color"), "#a0aec0"),
+        "border_color": sanitize_hex_color(tokens.get("border_color"), "#2d3748"),
+        "card_bg": sanitize_hex_color(tokens.get("card_bg"), "#1a202c"),
+    }
 
     # Build related articles HTML
     related_html = ""
@@ -69,18 +82,19 @@ def render_article_html(
         related_cards = []
         for rel in related_articles:
             rel_date = datetime.strptime(rel["date"], "%Y-%m-%d").strftime("%B %d, %Y")
-            rel_title = rel.get("title", "").replace("<", "&lt;").replace(">", "&gt;")
-            rel_summary = (rel.get("summary", "") or "")[:100]
-            if len(rel.get("summary", "")) > 100:
+            rel_title = html.escape(rel.get("title", ""), quote=True)
+            rel_summary = html.escape((rel.get("summary", "") or "")[:100], quote=True)
+            if len(rel.get("summary", "") or "") > 100:
                 rel_summary += "..."
-            related_cards.append(
-                f"""
-                <a href="{rel.get("url", "")}" class="related-card">
-                    <time datetime="{rel["date"]}">{rel_date}</time>
+            rel_url = rel.get("url", "") or ""
+            if not rel_url.startswith("/articles/"):
+                rel_url = "#"
+            related_cards.append(f"""
+                <a href="{html.escape(rel_url, quote=True)}" class="related-card">
+                    <time datetime="{html.escape(rel["date"], quote=True)}">{rel_date}</time>
                     <h4>{rel_title}</h4>
                     <p>{rel_summary}</p>
-                </a>"""
-            )
+                </a>""")
         related_html = f"""
             <div class="related-articles">
                 <h3>More Analysis</h3>
@@ -164,7 +178,7 @@ def render_article_html(
                 "itemListElement": [
                     {{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://cmmcwatch.com/"}},
                     {{"@type": "ListItem", "position": 2, "name": "Articles", "item": "https://cmmcwatch.com/articles/"}},
-                    {{"@type": "ListItem", "position": 3, "name": "{title_escaped}"}}
+                    {{"@type": "ListItem", "position": 3, "name": "{title_json}"}}
                 ]
             }}
         ]
@@ -558,7 +572,7 @@ def render_article_html(
         </header>
 
         <div class="article-content">
-            {article.content}
+            {article_content}
         </div>
 
         <footer class="article-footer">

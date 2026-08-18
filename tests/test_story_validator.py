@@ -36,7 +36,7 @@ def _story(
 class TestFilterOldStories:
     def setup_method(self):
         self.validator = StoryValidator.__new__(StoryValidator)
-        self.validator.MAX_STORY_AGE_DAYS = 7
+        self.validator.MAX_STORY_AGE_DAYS = StoryValidator.MAX_STORY_AGE_DAYS
 
     def test_recent_stories_pass_through(self):
         stories = [_story("Recent", days_ago=0), _story("Yesterday", days_ago=1)]
@@ -45,11 +45,21 @@ class TestFilterOldStories:
         assert len(rejected) == 0
 
     def test_old_stories_are_rejected(self):
-        stories = [_story("Old Story", days_ago=10)]
+        stories = [_story("Old Story", days_ago=15)]
         valid, rejected = self.validator._filter_old_stories(stories)
         assert len(valid) == 0
         assert len(rejected) == 1
         assert "rejection_reason" in rejected[0]
+
+    def test_cw_age_01_is_fourteen_days(self):
+        assert StoryValidator.MAX_STORY_AGE_DAYS == 14
+        borderline = [_story("Keep", days_ago=13)]
+        too_old = [_story("Drop", days_ago=15)]
+        valid, _ = self.validator._filter_old_stories(borderline)
+        assert len(valid) == 1
+        valid, rejected = self.validator._filter_old_stories(too_old)
+        assert len(valid) == 0
+        assert len(rejected) == 1
 
     def test_mixed_stories_filtered_correctly(self):
         stories = [
@@ -62,7 +72,11 @@ class TestFilterOldStories:
         assert len(rejected) == 1
 
     def test_missing_timestamp_passes_through(self):
-        story = {"title": "No Timestamp", "url": "https://example.com/x", "category": "cmmc_program"}
+        story = {
+            "title": "No Timestamp",
+            "url": "https://example.com/x",
+            "category": "cmmc_program",
+        }
         valid, rejected = self.validator._filter_old_stories([story])
         assert len(valid) == 1
 
@@ -138,11 +152,16 @@ class TestCategoryValidation:
         self.validator = StoryValidator.__new__(StoryValidator)
 
     def test_valid_categories_are_accepted(self):
-        valid_categories = ["cmmc_program", "nist_compliance", "dib_news", "federal_cybersecurity"]
-        for cat in valid_categories:
+        assert self.validator.VALID_CATEGORIES == [
+            "cmmc_program",
+            "nist_compliance",
+            "intelligence_threats",
+            "insider_threats",
+            "defense_industrial_base",
+            "federal_cybersecurity",
+        ]
+        for cat in self.validator.VALID_CATEGORIES:
             story = _story(category=cat)
-            # Category validation is part of broader validate logic;
-            # just ensure the field is present
             assert story["category"] == cat
 
 

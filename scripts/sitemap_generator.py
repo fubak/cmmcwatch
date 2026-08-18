@@ -66,19 +66,11 @@ def generate_sitemap(
     ET.SubElement(rss_feed, "changefreq").text = "daily"
     ET.SubElement(rss_feed, "priority").text = "0.6"
 
-    # Add CMMC Watch page (standalone Defense Industrial Base news)
-    cmmc_page = ET.SubElement(urlset, "url")
-    ET.SubElement(cmmc_page, "loc").text = f"{base_url}/cmmc/"
-    ET.SubElement(cmmc_page, "lastmod").text = today
-    ET.SubElement(cmmc_page, "changefreq").text = "daily"
-    ET.SubElement(cmmc_page, "priority").text = "0.8"
-
-    # Add CMMC Watch RSS feed
-    cmmc_feed = ET.SubElement(urlset, "url")
-    ET.SubElement(cmmc_feed, "loc").text = f"{base_url}/cmmc/feed.xml"
-    ET.SubElement(cmmc_feed, "lastmod").text = today
-    ET.SubElement(cmmc_feed, "changefreq").text = "daily"
-    ET.SubElement(cmmc_feed, "priority").text = "0.6"
+    saved_page = ET.SubElement(urlset, "url")
+    ET.SubElement(saved_page, "loc").text = f"{base_url}/saved/"
+    ET.SubElement(saved_page, "lastmod").text = today
+    ET.SubElement(saved_page, "changefreq").text = "monthly"
+    ET.SubElement(saved_page, "priority").text = "0.3"
 
     # Discover archive dates from public directory if not provided
     if archive_dates is None and public_dir:

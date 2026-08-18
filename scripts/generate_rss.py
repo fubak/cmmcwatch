@@ -20,6 +20,7 @@ from config import (
     RSS_FEED_TITLE,
     setup_logging,
 )
+from html_utils import is_http_url
 
 # Setup logging
 logger = setup_logging("rss")
@@ -140,8 +141,8 @@ def generate_rss_feed(
         if not title_text:
             continue
 
-        # Use a generated URL if none provided
-        if not url:
+        # Use a generated URL if none provided or scheme is unsafe
+        if not url or not is_http_url(url):
             url = f"{link}#trend-{items_added}"
 
         # Skip duplicate URLs

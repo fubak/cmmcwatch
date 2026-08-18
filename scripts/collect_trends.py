@@ -37,8 +37,10 @@ from config import (
     LIMITS,
     NIST_KEYWORDS,
     TIMEOUTS,
+    keyword_in_text,
     setup_logging,
 )
+from html_utils import is_public_http_url, sanitize_http_url
 from source_catalog import (
     DEFAULT_BROWSER_UA,
     DOMAIN_FETCH_PROFILES,
@@ -83,8 +85,10 @@ class Trend:
 
     def __post_init__(self):
         parsed_timestamp = parse_timestamp(self.timestamp)
-        # Match _normalize_datetime: store naive UTC for consistency
-        self.timestamp = parsed_timestamp or datetime.now(timezone.utc).replace(tzinfo=None)
+        # Keep None when parse fails — inventing "now" would bypass the age gate
+        # and give undated items a recency boost they did not earn.
+        self.timestamp = parsed_timestamp
+        self.url = sanitize_http_url(self.url)
 
         if not self.source_metadata:
             self.source_metadata = source_metadata_dict(self.source)
@@ -397,6 +401,9 @@ class TrendCollector:
         # Collect from LinkedIn
         self._collect_linkedin()
 
+        # Official dockets (Federal Register)
+        self._collect_federal_register()
+
         # Basic deduplicate (quick, rule-based)
         self._deduplicate()
 
@@ -438,6 +445,9 @@ class TrendCollector:
                     "score": t.score,
                     "keywords": t.keywords,
                     "image_url": t.image_url,
+                    "corroborating_sources": t.corroborating_sources,
+                    "corroborating_urls": t.corroborating_urls,
+                    "source_diversity": t.source_diversity,
                 }
             )
 
@@ -470,7 +480,7 @@ class TrendCollector:
                         # recency-weighted ranking.
                         logger.warning(
                             f"Unparseable timestamp from upstream: {timestamp!r}; "
-                            f"falling back to current time for {td.get('source', 'unknown')} "
+                            f"leaving unset for {td.get('source', 'unknown')} "
                             f"item {td.get('url', 'unknown')!r}"
                         )
                         timestamp = None
@@ -485,6 +495,9 @@ class TrendCollector:
                 keywords=td.get("keywords", []),
                 timestamp=timestamp,
                 image_url=td.get("image_url"),
+                corroborating_sources=td.get("corroborating_sources") or [],
+                corroborating_urls=td.get("corroborating_urls") or [],
+                source_diversity=td.get("source_diversity") or 1,
             )
             self.trends.append(trend)
 
@@ -516,8 +529,8 @@ class TrendCollector:
                         continue
 
                     # Check if CMMC-related
-                    content = (title + " " + description).lower()
-                    is_cmmc = any(kw.lower() in content for kw in CMMC_KEYWORDS)
+                    content = title + " " + description
+                    is_cmmc = any(keyword_in_text(kw, content) for kw in CMMC_KEYWORDS)
 
                     if is_cmmc:
                         trend = Trend(
@@ -573,8 +586,8 @@ class TrendCollector:
                     if source.key in ["cmmc_reddit_cmmc", "cmmc_reddit_nistcontrols"]:
                         include_post = True
                     else:
-                        content = (title + " " + description).lower()
-                        include_post = any(kw.lower() in content for kw in CMMC_KEYWORDS)
+                        content = title + " " + description
+                        include_post = any(keyword_in_text(kw, content) for kw in CMMC_KEYWORDS)
 
                     if include_post:
                         trend = Trend(
@@ -635,6 +648,46 @@ class TrendCollector:
         except Exception as e:
             logger.warning(f"LinkedIn collection error: {e}")
 
+    def _collect_federal_register(self):
+        """Collect recent CMMC/DFARS documents from the Federal Register API."""
+        logger.info("Fetching from Federal Register...")
+        url = "https://www.federalregister.gov/api/v1/documents.json"
+        params = {
+            "conditions[term]": 'CMMC OR DFARS OR "800-171"',
+            "per_page": 15,
+            "order": "newest",
+        }
+        try:
+            response = self.session.get(url, params=params, timeout=self.default_timeout)
+            response.raise_for_status()
+            payload = response.json()
+        except (requests.RequestException, ValueError) as e:
+            logger.warning(f"Federal Register collection error: {e}")
+            return
+
+        count = 0
+        for doc in payload.get("results") or []:
+            title = (doc.get("title") or "").strip()
+            if not title:
+                continue
+            abstract = doc.get("abstract") or ""
+            content = title + " " + abstract
+            if not any(keyword_in_text(kw, content) for kw in CMMC_KEYWORDS):
+                continue
+            href = sanitize_http_url(doc.get("html_url") or doc.get("pdf_url"))
+            trend = Trend(
+                title=title[:200],
+                source="cmmc_federal_register",
+                url=href,
+                description=self._clean_html(abstract),
+                category=self._categorize_trend(title, abstract),
+                score=self._calculate_score(title, abstract) + 0.4,
+                timestamp=parse_timestamp(doc.get("publication_date")),
+            )
+            self.trends.append(trend)
+            count += 1
+        logger.info(f"  Found {count} Federal Register documents")
+
     def _categorize_trend(self, title: str, description: str) -> str:
         """Categorize a trend based on keywords.
 
@@ -646,33 +699,33 @@ class TrendCollector:
         5. defense_industrial_base - DoD contractors, defense contracts
         6. federal_cybersecurity - General federal cyber news (fallback)
         """
-        content = (title + " " + description).lower()
+        content = title + " " + description
 
-        # Check categories in priority order
-        if any(kw.lower() in content for kw in CMMC_CORE_KEYWORDS):
+        # Check categories in priority order (must match specs/content-rules.md CW-CLASS-02)
+        if any(keyword_in_text(kw, content) for kw in CMMC_CORE_KEYWORDS):
             return "cmmc_program"
-        elif any(kw.lower() in content for kw in NIST_KEYWORDS):
+        elif any(keyword_in_text(kw, content) for kw in NIST_KEYWORDS):
             return "nist_compliance"
-        elif any(kw.lower() in content for kw in INTELLIGENCE_KEYWORDS):
+        elif any(keyword_in_text(kw, content) for kw in INTELLIGENCE_KEYWORDS):
             return "intelligence_threats"
-        elif any(kw.lower() in content for kw in INSIDER_THREAT_KEYWORDS):
+        elif any(keyword_in_text(kw, content) for kw in INSIDER_THREAT_KEYWORDS):
             return "insider_threats"
-        elif any(kw.lower() in content for kw in DIB_KEYWORDS):
+        elif any(keyword_in_text(kw, content) for kw in DIB_KEYWORDS):
             return "defense_industrial_base"
         else:
             return "federal_cybersecurity"
 
     def _calculate_score(self, title: str, description: str) -> float:
         """Calculate relevance score based on keyword matches."""
-        content = (title + " " + description).lower()
+        content = title + " " + description
         score = 1.0
 
         # Boost for core CMMC keywords
-        core_matches = sum(1 for kw in CMMC_CORE_KEYWORDS if kw.lower() in content)
+        core_matches = sum(1 for kw in CMMC_CORE_KEYWORDS if keyword_in_text(kw, content))
         score += core_matches * 0.3
 
         # Boost for NIST keywords
-        nist_matches = sum(1 for kw in NIST_KEYWORDS if kw.lower() in content)
+        nist_matches = sum(1 for kw in NIST_KEYWORDS if keyword_in_text(kw, content))
         score += nist_matches * 0.2
 
         return min(score, 3.0)  # Cap at 3.0
@@ -871,7 +924,7 @@ class TrendCollector:
 
     def _fetch_og_image(self, url: str) -> Optional[str]:
         """Fetch og:image meta tag from article page."""
-        if not url:
+        if not url or not is_public_http_url(url):
             return None
 
         try:

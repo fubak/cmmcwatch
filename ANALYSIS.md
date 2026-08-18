@@ -1,5 +1,14 @@
 # CMMC Watch - Repository Analysis Report
 
+**Superseded.** Do not use this file for current architecture, test counts, or
+source lists. See `README.md`, `specs/content-rules.md`, and `CLAUDE.md`.
+
+The body below is a 2026-01-25 snapshot kept only as historical notes.
+
+---
+
+# CMMC Watch - Repository Analysis Report (historical)
+
 **Date:** 2026-01-25 (⚠️ outdated — superseded by sweep on branch `claude/review-project-cpQGY`, 2026-05-05)
 **Analyst:** Clawd AI
 **Repository:** https://github.com/fubak/cmmcwatch

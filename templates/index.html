@@ -19,6 +19,10 @@
             <span aria-hidden="true">•</span>
             <span><span class="stat-countup" data-countup="{{ total_trends_count }}">{{ total_trends_count }}</span> stories analyzed</span>
         </div>
+        <form class="home-search" role="search" action="/" method="get">
+            <label class="sr-only" for="home-q">Search today's stories</label>
+            <input id="home-q" type="search" name="q" placeholder="Search today's stories" autocomplete="off">
+        </form>
     </div>
 </header>
 

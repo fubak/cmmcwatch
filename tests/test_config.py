@@ -17,7 +17,9 @@ from config import (
     NIST_KEYWORDS,
     SITE_NAME,
     SITE_URL,
+    keyword_in_text,
 )
+from source_catalog import COLLECTOR_SOURCES
 
 
 class TestConfig:
@@ -60,8 +62,22 @@ class TestConfig:
     def test_limits_configured(self):
         """Test that rate limits are configured."""
         assert isinstance(LIMITS, dict)
-        assert "news_rss" in LIMITS
-        assert LIMITS["news_rss"] > 0
+        assert "cmmc_rss" in LIMITS
+        assert LIMITS["cmmc_rss"] > 0
+
+    def test_rss_feeds_match_catalog(self):
+        catalog = {s.name: s.url for s in COLLECTOR_SOURCES if s.collector == "cmmc_rss"}
+        assert CMMC_RSS_FEEDS == catalog
+
+    def test_keyword_in_text_word_boundaries(self):
+        """CW-CLASS-02 / CW-FILTER-01: short tokens must not match inside words."""
+        assert keyword_in_text("cmmc", "New CMMC rule published")
+        assert not keyword_in_text("pla", "The platform update shipped")
+        assert not keyword_in_text("dia", "media reports said")
+        assert not keyword_in_text("nsa", "unnecessary delay")
+        assert not keyword_in_text("ato", "laboratory tests")
+        assert keyword_in_text("apt", "APT group attributed")
+        assert keyword_in_text("nist 800-171", "Updates to NIST 800-171 Rev 3")
 
 
 if __name__ == "__main__":

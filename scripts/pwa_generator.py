@@ -9,6 +9,8 @@ Includes:
 """
 
 import json
+import struct
+import zlib
 from datetime import datetime
 from pathlib import Path
 
@@ -286,4 +288,76 @@ def save_pwa_assets(public_dir: Path):
     icon_svg_path.write_text(generate_pwa_icon_placeholder())
     logger.info(f"  Created {icon_svg_path}")
 
+    icons_dir = public_dir / "icons"
+    (icons_dir / "icon-192.png").write_bytes(_solid_png(192, 192, (99, 102, 241)))
+    (icons_dir / "icon-512.png").write_bytes(_solid_png(512, 512, (99, 102, 241)))
+    (public_dir / "og-image.png").write_bytes(_solid_png(1200, 630, (26, 54, 93)))
+    logger.info("  Created PNG icons and og-image.png")
+
+    saved_path = public_dir / "saved" / "index.html"
+    saved_path.parent.mkdir(parents=True, exist_ok=True)
+    saved_path.write_text(generate_saved_page(), encoding="utf-8")
+    logger.info(f"  Created {saved_path}")
+
     logger.info(f"PWA assets saved to {public_dir}")
+
+
+def _solid_png(width: int, height: int, rgb: tuple) -> bytes:
+    """Minimal RGB PNG (stdlib only) so PWA/OG icon URLs resolve."""
+
+    def chunk(tag: bytes, data: bytes) -> bytes:
+        return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+
+    raw = b"".join(b"\x00" + (bytes(rgb) * width) for _ in range(height))
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
+        + chunk(b"IDAT", zlib.compress(raw, 9))
+        + chunk(b"IEND", b"")
+    )
+
+
+def generate_saved_page() -> str:
+    """Static page that reads localStorage['cmmcwatch_saved']."""
+    return """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved stories | CMMC Watch</title>
+    <link rel="stylesheet" href="/">
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 42rem; margin: 2rem auto; padding: 0 1rem; }
+        h1 { font-size: 1.5rem; }
+        ul { list-style: none; padding: 0; }
+        li { border-bottom: 1px solid #ddd; padding: 0.75rem 0; }
+        .empty { color: #666; }
+    </style>
+</head>
+<body>
+    <p><a href="/">← Home</a></p>
+    <h1>Saved stories</h1>
+    <p id="empty" class="empty">No saved stories yet. Use Save on the homepage.</p>
+    <ul id="list"></ul>
+    <script>
+    const KEY = 'cmmcwatch_saved';
+    const items = JSON.parse(localStorage.getItem(KEY) || '[]');
+    const list = document.getElementById('list');
+    const empty = document.getElementById('empty');
+    if (items.length) {
+        empty.hidden = true;
+        items.forEach(item => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = item.url || '#';
+            a.textContent = item.title || item.url || 'Untitled';
+            a.rel = 'noopener';
+            a.target = '_blank';
+            li.appendChild(a);
+            list.appendChild(li);
+        });
+    }
+    </script>
+</body>
+</html>
+"""

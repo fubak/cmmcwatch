@@ -189,7 +189,7 @@ python main.py --dry-run
 # Run specific modules
 python collect_trends.py     # Test data collection
 python fetch_images.py       # Test image fetching
-python editorial_generator.py --test  # Test article generation
+python editorial_generator.py --validate  # Check existing articles for required sections
 ```
 
 ### Environment Variables

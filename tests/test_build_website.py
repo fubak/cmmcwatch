@@ -515,7 +515,10 @@ class TestWebsiteBuilder:
                         "source_title": "Story 1",
                     }
                 ],
-                "op_ed_paragraphs": ["Analysis paragraph one.", "Analysis paragraph two."],
+                "op_ed_paragraphs": [
+                    "Analysis paragraph one.",
+                    "Analysis paragraph two.",
+                ],
                 "date": "2026-05-28",
             },
         )
@@ -543,7 +546,14 @@ class TestWebsiteBuilder:
             front_page_brief={
                 "headline": "H",
                 "dek": "",
-                "bullets": [{"text": "t", "source_name": "s", "source_url": "https://e.com/1", "source_title": "t"}],
+                "bullets": [
+                    {
+                        "text": "t",
+                        "source_name": "s",
+                        "source_url": "https://e.com/1",
+                        "source_title": "t",
+                    }
+                ],
                 "op_ed_paragraphs": ["<script>alert(1)</script>"],
                 "date": "2026-05-28",
             },
@@ -626,8 +636,9 @@ class TestWebsiteBuilder:
 
         # Should still produce valid HTML without crashing
         assert len(html) > 0
-        # Jinja2 autoescape should escape quotes in any rendered URLs
-        assert "javascript:alert(&#" in html or "javascript:alert(&#39;" in html or "javascript:alert(" in html
+        # javascript: URLs must not be live hrefs (scheme allowlist)
+        assert 'href="javascript:' not in html
+        assert "href='javascript:" not in html
 
     def test_none_values_in_trends(self, basic_context):
         """Test handling of None values in trend data."""
