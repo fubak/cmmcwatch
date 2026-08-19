@@ -103,6 +103,14 @@
     white-space: nowrap;
 }
 
+.ticker-item[hidden] {
+    display: none !important;
+}
+
+.ticker-wrap[hidden] {
+    display: none !important;
+}
+
 .ticker-source {
     font-size: 0.7rem;
     text-transform: uppercase;

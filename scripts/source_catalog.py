@@ -275,6 +275,7 @@ COLLECTOR_SOURCES: List[SourceSpec] = [
         source_type="gov",
         risk="low",
         parser="json",
+        json_count_path="results",
         healthcheck=True,
     ),
     # Reddit feeds

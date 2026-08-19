@@ -643,9 +643,9 @@ def render_articles_index(
                 <label class="filter-label" for="length-filter">Length:</label>
                 <select id="length-filter">
                     <option value="all">Any Length</option>
-                    <option value="short">Quick (&lt;800)</option>
-                    <option value="medium">Standard (800-1000)</option>
-                    <option value="long">Deep Dive (&gt;1000)</option>
+                    <option value="short">Quick (&lt;400)</option>
+                    <option value="medium">Standard (400–600)</option>
+                    <option value="long">Deep Dive (&gt;600)</option>
                 </select>
             </div>
 

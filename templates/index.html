@@ -30,7 +30,7 @@
     <div class="ticker-label">Breaking</div>
     <div class="ticker">
         {% for trend in trends[:15] %}
-        <div class="ticker-item">
+        <div class="ticker-item" data-search="{{ trend.title }}">
             {# Display derived category or source part as badge #}
             {% set source_display = trend.source | replace('_', ' ') | title %}
             {% set category_badge_class = trend.source.split('_')[0] if '_' in trend.source else trend.source %}
@@ -176,7 +176,7 @@
                 {% endif %}
                 <ol class="latest-list">
                     {% for story in latest_stories %}
-                    <li class="latest-item" data-category="{{ story.category }}">
+                    <li class="latest-item" data-category="{{ story.category }}" data-search="{{ story.title }}">
                         <a href="{{ story.url }}" target="_blank" rel="noopener" class="latest-link">
                             <span class="latest-title">{{ story.title }}</span>
                             <span class="latest-meta">
@@ -216,7 +216,6 @@
              data-ad-slot="auto"
              data-ad-format="horizontal"
              data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
     <!-- Top Stories + Influencer Spotlight -->
@@ -231,7 +230,7 @@
             <div class="top-stories">
                 {% for story in display_top_stories %}
                 {% set summary = story.summary or story.description %}
-                <article class="story-card {% if loop.first %}featured{% endif %}{% if not summary %} no-summary{% endif %}">
+                <article class="story-card {% if loop.first %}featured{% endif %}{% if not summary %} no-summary{% endif %}" data-search="{{ story.title }} {{ summary or '' }}">
                     <div class="story-actions">
                         <button class="save-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" data-source="{{ story.source_display or (story.source | replace('_', ' ') | title) }}" aria-label="Save story" aria-pressed="false" title="Save for later">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
@@ -325,7 +324,6 @@
              data-ad-slot="auto"
              data-ad-format="auto"
              data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
     <!-- Category Sections - Tabbed Interface -->
@@ -345,7 +343,7 @@
             <div class="compact-story-list">
                 {% for category in categories %}
                 {% for story in category.stories %}
-                <a href="{{ story.url }}" target="_blank" rel="noopener" class="compact-story-row">
+                <a href="{{ story.url }}" target="_blank" rel="noopener" class="compact-story-row" data-search="{{ story.title }}">
                     <span class="compact-source-badge {{ story.source|lower|replace(' ','-')|replace('_','-') }}">{{ story.source_display or (story.source|replace('_',' ')|title) }}</span>
                     <span class="compact-story-title">{{ story.title }}</span>
                     <time class="compact-story-time">{{ story.time_ago }}</time>
@@ -360,7 +358,7 @@
         <div class="tab-panel" role="tabpanel" data-panel="{{ loop.index }}">
             <div class="compact-story-list">
                 {% for story in category.stories %}
-                <a href="{{ story.url }}" target="_blank" rel="noopener" class="compact-story-row">
+                <a href="{{ story.url }}" target="_blank" rel="noopener" class="compact-story-row" data-search="{{ story.title }}">
                     <span class="compact-source-badge {{ story.source|lower|replace(' ','-')|replace('_','-') }}">{{ story.source_display or (story.source|replace('_',' ')|title) }}</span>
                     <span class="compact-story-title">{{ story.title }}</span>
                     <time class="compact-story-time">{{ story.time_ago }}</time>
@@ -395,7 +393,7 @@
 
         <div class="stories-grid" style="--category-columns: 4">
             {% for story in reddit_stories %}
-            <article class="story-card no-summary reddit-card">
+            <article class="story-card no-summary reddit-card" data-search="{{ story.title }}">
                 <div class="story-actions">
                     <button class="save-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" data-source="{{ story.source_display or (story.source | replace('_', ' ') | title) }}" aria-label="Save story" aria-pressed="false" title="Save for later">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
@@ -448,7 +446,6 @@
              data-ad-slot="auto"
              data-ad-format="auto"
              data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
 </main>

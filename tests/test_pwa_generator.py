@@ -118,6 +118,7 @@ class TestSavePwaAssets:
         assert (tmp_path / "icons" / "icon-192.png").exists()
         assert (tmp_path / "icons" / "icon-512.png").exists()
         assert (tmp_path / "og-image.png").exists()
+        assert (tmp_path / "favicon.ico").exists()
         assert (tmp_path / "saved" / "index.html").exists()
 
     def test_manifest_is_valid_json(self, tmp_path):

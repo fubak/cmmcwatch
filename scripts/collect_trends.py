@@ -671,9 +671,8 @@ class TrendCollector:
             if not title:
                 continue
             abstract = doc.get("abstract") or ""
-            content = title + " " + abstract
-            if not any(keyword_in_text(kw, content) for kw in CMMC_KEYWORDS):
-                continue
+            # The API query already scoped the result set; empty abstracts
+            # used to fail the second keyword pass and drop every docket.
             href = sanitize_http_url(doc.get("html_url") or doc.get("pdf_url"))
             trend = Trend(
                 title=title[:200],

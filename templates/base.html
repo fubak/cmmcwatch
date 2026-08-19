@@ -60,7 +60,10 @@
 
     <!-- PWA Support -->
     <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="icon" type="image/png" href="/icons/icon-192.png" sizes="192x192">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CMMC Watch">
@@ -410,13 +413,35 @@
             // Homepage story search (?q= claimed by SearchAction schema)
             const homeSearch = document.getElementById('home-q');
             if (homeSearch) {
+                const searchHaystack = (el) => {
+                    const explicit = el.getAttribute('data-search');
+                    if (explicit) return explicit.toLowerCase();
+                    const parts = el.querySelectorAll(
+                        '.story-title, .story-summary, .compact-story-title, .latest-title, .ticker-item a'
+                    );
+                    if (parts.length) {
+                        return Array.from(parts)
+                            .map((n) => n.textContent || '')
+                            .join(' ')
+                            .toLowerCase();
+                    }
+                    return '';
+                };
                 const applyQuery = (raw) => {
                     const q = (raw || '').trim().toLowerCase();
-                    const cards = document.querySelectorAll('.story-card, .compact-story-row, .latest-item, .ticker-item');
+                    const cards = document.querySelectorAll(
+                        '.story-card, .compact-story-row, .latest-item, .ticker-item'
+                    );
                     cards.forEach((el) => {
-                        const text = (el.textContent || '').toLowerCase();
+                        const text = searchHaystack(el);
                         el.hidden = Boolean(q) && !text.includes(q);
                     });
+                    const tickerItems = document.querySelectorAll('.ticker-item');
+                    const tickerWrap = document.querySelector('.ticker-wrap');
+                    if (tickerWrap && tickerItems.length) {
+                        const anyVisible = Array.from(tickerItems).some((el) => !el.hidden);
+                        tickerWrap.hidden = Boolean(q) && !anyVisible;
+                    }
                 };
                 const params = new URLSearchParams(window.location.search);
                 if (params.get('q')) {
@@ -425,6 +450,14 @@
                 }
                 homeSearch.addEventListener('input', () => applyQuery(homeSearch.value));
             }
+
+            // Ad slots are CSS-hidden until approved; never push into a 0-width box.
+            document.querySelectorAll('.ad-container').forEach((box) => {
+                if (getComputedStyle(box).display === 'none' || box.offsetWidth < 1) {
+                    return;
+                }
+                (window.adsbygoogle = window.adsbygoogle || []).push({});
+            });
         })();
     </script>
     <script>

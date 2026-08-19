@@ -207,6 +207,29 @@ class TestTrendCollector:
         collector._apply_recency_and_sort()
         assert collector.trends[0].source == "cmmc_nist_csrc"
 
+    def test_federal_register_keeps_api_hits_without_keyword_in_abstract(self):
+        collector = TrendCollector()
+        payload = {
+            "results": [
+                {
+                    "title": "Defense Federal Acquisition Regulation Supplement",
+                    "abstract": None,
+                    "html_url": "https://www.federalregister.gov/documents/2026/08/01/dfars",
+                    "publication_date": "2026-08-01",
+                }
+            ]
+        }
+        response = requests.Response()
+        response.status_code = 200
+        response._content = __import__("json").dumps(payload).encode()
+        response.url = "https://www.federalregister.gov/api/v1/documents.json"
+        collector.session = MagicMock()
+        collector.session.get.return_value = response
+        collector._collect_federal_register()
+        assert len(collector.trends) == 1
+        assert collector.trends[0].source == "cmmc_federal_register"
+        assert collector.trends[0].url.endswith("/dfars")
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

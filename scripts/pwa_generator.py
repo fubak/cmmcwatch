@@ -291,8 +291,9 @@ def save_pwa_assets(public_dir: Path):
     icons_dir = public_dir / "icons"
     (icons_dir / "icon-192.png").write_bytes(_solid_png(192, 192, (99, 102, 241)))
     (icons_dir / "icon-512.png").write_bytes(_solid_png(512, 512, (99, 102, 241)))
+    (public_dir / "favicon.ico").write_bytes(_solid_png(32, 32, (99, 102, 241)))
     (public_dir / "og-image.png").write_bytes(_solid_png(1200, 630, (26, 54, 93)))
-    logger.info("  Created PNG icons and og-image.png")
+    logger.info("  Created PNG icons, favicon.ico, and og-image.png")
 
     saved_path = public_dir / "saved" / "index.html"
     saved_path.parent.mkdir(parents=True, exist_ok=True)
